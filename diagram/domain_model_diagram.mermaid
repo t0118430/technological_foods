@@ -1,0 +1,87 @@
+graph TB
+    subgraph "Organization Context"
+        ORG[Organization<br/>Aggregate Root]
+        ORG --> FAC[Facility<br/>Entity]
+        ORG --> USR[User<br/>Entity]
+        ORG --> SUB[Subscription<br/>Value Object]
+    end
+
+    subgraph "Device Management Context"
+        DEV[Device<br/>Aggregate Root]
+        DEV --> SEN[Sensor<br/>Entity]
+        DEV --> ACT[Actuator<br/>Entity]
+        DEV --> DEVHEALTH[DeviceHealth<br/>Value Object]
+        DEV --> CONN[Connectivity<br/>Value Object]
+        SEN --> SENTYPE[SensorType<br/>Entity]
+        SEN --> CALIB[Calibration<br/>Value Object]
+    end
+
+    subgraph "Environmental Monitoring Context"
+        SNAP[DeviceSnapshot<br/>Aggregate Root]
+        SNAP --> READ[SensorReading<br/>Value Object]
+        READ --> MET[Metric<br/>Entity]
+        MET --> RANGE[OptimalRange<br/>Value Object]
+        
+        AGG[AggregatedData<br/>Aggregate Root]
+        AGG --> HOUR[HourlyStats<br/>Value Object]
+        AGG --> DAILY[DailyStats<br/>Value Object]
+    end
+
+    subgraph "Control & Automation Context"
+        ALERT[Alert<br/>Aggregate Root]
+        ALERT --> RULE[AlertRule<br/>Entity]
+        ALERT --> COND[Condition<br/>Value Object]
+        ALERT --> CMD[Command<br/>Entity]
+        
+        CMD --> CMDTYPE[CommandType<br/>Entity]
+        CMD --> CMDSTATUS[CommandStatus<br/>Value Object]
+        ACT --> ACTSTATE[ActuatorState<br/>Value Object]
+    end
+
+    subgraph "Crop Management Context"
+        CYCLE[GrowCycle<br/>Aggregate Root]
+        CYCLE --> VAR[CropVariety<br/>Entity]
+        CYCLE --> PERF[Performance<br/>Entity]
+        CYCLE --> GROWSTAGE[GrowthStage<br/>Value Object]
+        VAR --> OPTPARAM[OptimalParameters<br/>Value Object]
+    end
+
+    subgraph "Economic Analysis Context"
+        ECON[EconomicReport<br/>Aggregate Root]
+        ECON --> CALC[Calculation<br/>Value Object]
+        ECON --> COST[ResourceCost<br/>Entity]
+        ECON --> KPI[KPI<br/>Value Object]
+    end
+
+    subgraph "Domain Services"
+        VPDSVC{VPD Calculator<br/>Domain Service}
+        ALERTSVC{Alert Evaluator<br/>Domain Service}
+        CMDSVC{Command Orchestrator<br/>Domain Service}
+        ECONSVC{Economic Calculator<br/>Domain Service}
+    end
+
+    %% Relationships between contexts
+    FAC -.->|contains| DEV
+    DEV -.->|produces| SNAP
+    SNAP -.->|triggers| ALERT
+    ALERT -.->|issues| CMD
+    CMD -.->|controls| ACT
+    CYCLE -.->|tracked_in| FAC
+    SNAP -.->|affects| CYCLE
+    CYCLE -.->|feeds| ECON
+
+    %% Domain Services relationships
+    VPDSVC -.->|calculates_for| SNAP
+    ALERTSVC -.->|evaluates| ALERT
+    CMDSVC -.->|orchestrates| CMD
+    ECONSVC -.->|computes| ECON
+
+    classDef aggregate fill:#ff9999,stroke:#cc0000,stroke-width:3px
+    classDef entity fill:#99ccff,stroke:#0066cc,stroke-width:2px
+    classDef valueObject fill:#99ff99,stroke:#00cc00,stroke-width:2px
+    classDef service fill:#ffcc99,stroke:#ff6600,stroke-width:2px
+
+    class ORG,DEV,SNAP,ALERT,CYCLE,ECON,AGG aggregate
+    class FAC,USR,SEN,ACT,SENTYPE,MET,RULE,CMD,CMDTYPE,VAR,PERF,COST entity
+    class SUB,DEVHEALTH,CONN,CALIB,READ,RANGE,HOUR,DAILY,COND,CMDSTATUS,ACTSTATE,GROWSTAGE,OPTPARAM,CALC,KPI valueObject
+    class VPDSVC,ALERTSVC,CMDSVC,ECONSVC service

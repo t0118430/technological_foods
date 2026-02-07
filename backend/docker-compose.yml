@@ -1,0 +1,67 @@
+services:
+  # InfluxDB - Time-series database for sensor data
+  influxdb:
+    image: influxdb:2.7
+    container_name: agritech-influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - INFLUXDB_DB=hydroponics
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USERNAME:-admin}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD:-agritech2026}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG:-agritech}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET:-hydroponics}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN:-agritech-super-secret-token}
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-config:/etc/influxdb2
+    restart: unless-stopped
+    networks:
+      - agritech-network
+
+  # Grafana - Dashboard visualization
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: agritech-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-agritech2026}
+      - GF_INSTALL_PLUGINS=grafana-clock-panel
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - influxdb
+    restart: unless-stopped
+    networks:
+      - agritech-network
+
+  # Node-RED - Visual flow programming
+  nodered:
+    image: nodered/node-red:3.1
+    container_name: agritech-nodered
+    ports:
+      - "1880:1880"
+    environment:
+      - TZ=Europe/Lisbon
+    volumes:
+      - nodered-data:/data
+    depends_on:
+      - influxdb
+    restart: unless-stopped
+    networks:
+      - agritech-network
+
+networks:
+  agritech-network:
+    driver: bridge
+
+volumes:
+  influxdb-data:
+  influxdb-config:
+  grafana-data:
+  nodered-data:

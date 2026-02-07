@@ -1,0 +1,158 @@
+graph TB
+    subgraph "Zona de Cultivo / Estufa"
+        subgraph "Arduino Node 1"
+            ARD1[Arduino/ESP32]
+            TEMP1[Sensor Temperatura]
+            HUM1[Sensor Humidade]
+            CO21[Sensor CO2]
+            LIGHT1[Sensor Luz]
+            RELAY1[Relés/Atuadores]
+
+            TEMP1 --> ARD1
+            HUM1 --> ARD1
+            CO21 --> ARD1
+            LIGHT1 --> ARD1
+            ARD1 --> RELAY1
+        end
+
+        subgraph "Arduino Node 2"
+            ARD2[Arduino/ESP32]
+            TEMP2[Sensor Temperatura]
+            HUM2[Sensor Humidade]
+            SOIL2[Sensor Solo]
+            PUMP2[Bomba de Água]
+
+            TEMP2 --> ARD2
+            HUM2 --> ARD2
+            SOIL2 --> ARD2
+            ARD2 --> PUMP2
+        end
+
+        subgraph "Arduino Node N"
+            ARDN[Arduino/ESP32]
+            SENSN[Sensores...]
+            ACTN[Atuadores...]
+
+            SENSN --> ARDN
+            ARDN --> ACTN
+        end
+    end
+
+    subgraph "Gateway Local"
+        RPI[Raspberry Pi<br/>Gateway/Aggregator]
+        MODEM[Modem 4G/LTE]
+        LOCALDB[(Cache Local<br/>SQLite)]
+
+        RPI --> MODEM
+        RPI --> LOCALDB
+    end
+
+    subgraph "Comunicação"
+        MQTT{MQTT Broker<br/>HiveMQ Cloud}
+    end
+
+    subgraph "Backend Central"
+        subgraph "Ingestão de Dados"
+            INGEST[Serviço de Ingestão<br/>MQTT Subscriber]
+            VALID[Validação &<br/>Transformação]
+        end
+
+        subgraph "Processamento"
+            REALTIME[Processamento<br/>Real-time]
+            BATCH[Processamento<br/>Batch/Agregação]
+            ALERTS[Motor de<br/>Alertas]
+        end
+
+        subgraph "Serviços de Domínio"
+            VPDSVC[VPD Calculator]
+            CTRLSVC[Control Service]
+            ECONSVC[Economic Analysis]
+            CROPSVC[Crop Management]
+        end
+    end
+
+    subgraph "Camada de Dados"
+        TSDB[(TimescaleDB<br/>Séries Temporais)]
+        RELDB[(PostgreSQL<br/>Dados Relacionais)]
+        CACHE[(Redis<br/>Cache/Pub-Sub)]
+    end
+
+    subgraph "API & Interface"
+        API[REST API<br/>GraphQL]
+        WS[WebSocket<br/>Real-time]
+        DASH[Dashboard<br/>Web App]
+        MOBILE[App Mobile]
+    end
+
+    subgraph "Integrações Externas"
+        WEATHER[API Meteorológica]
+        NOTIF[Notificações<br/>Email/SMS/Push]
+    end
+
+    %% Fluxo de dados dos Arduinos para o Gateway
+    ARD1 -->|Serial/WiFi| RPI
+    ARD2 -->|Serial/WiFi| RPI
+    ARDN -->|Serial/WiFi| RPI
+
+    %% Gateway para Cloud
+    MODEM -->|Publish| MQTT
+
+    %% MQTT para Backend
+    MQTT -->|Subscribe| INGEST
+    INGEST --> VALID
+    VALID --> REALTIME
+    VALID --> BATCH
+    REALTIME --> ALERTS
+
+    %% Serviços de Domínio
+    REALTIME --> VPDSVC
+    REALTIME --> CTRLSVC
+    BATCH --> ECONSVC
+    BATCH --> CROPSVC
+
+    %% Comandos de volta
+    CTRLSVC -->|Commands| MQTT
+    MQTT -->|Commands| RPI
+    RPI -->|Commands| ARD1
+    RPI -->|Commands| ARD2
+    RPI -->|Commands| ARDN
+
+    %% Persistência
+    REALTIME --> TSDB
+    BATCH --> RELDB
+    REALTIME --> CACHE
+    ALERTS --> CACHE
+
+    %% API Layer
+    TSDB --> API
+    RELDB --> API
+    CACHE --> WS
+    API --> DASH
+    WS --> DASH
+    API --> MOBILE
+    WS --> MOBILE
+
+    %% Externos
+    WEATHER --> REALTIME
+    ALERTS --> NOTIF
+
+    %% Estilos
+    classDef arduino fill:#00979D,stroke:#005C5C,color:white,stroke-width:2px
+    classDef sensor fill:#87CEEB,stroke:#4682B4,stroke-width:1px
+    classDef actuator fill:#FFB347,stroke:#FF8C00,stroke-width:1px
+    classDef gateway fill:#DDA0DD,stroke:#8B008B,stroke-width:2px
+    classDef cloud fill:#98FB98,stroke:#228B22,stroke-width:2px
+    classDef service fill:#FFD700,stroke:#DAA520,stroke-width:2px
+    classDef database fill:#B0C4DE,stroke:#4169E1,stroke-width:2px
+    classDef api fill:#FFA07A,stroke:#FF4500,stroke-width:2px
+    classDef external fill:#E6E6FA,stroke:#9370DB,stroke-width:1px
+
+    class ARD1,ARD2,ARDN arduino
+    class TEMP1,HUM1,CO21,LIGHT1,TEMP2,HUM2,SOIL2,SENSN sensor
+    class RELAY1,PUMP2,ACTN actuator
+    class RPI,MODEM,LOCALDB gateway
+    class MQTT cloud
+    class INGEST,VALID,REALTIME,BATCH,ALERTS,VPDSVC,CTRLSVC,ECONSVC,CROPSVC service
+    class TSDB,RELDB,CACHE database
+    class API,WS,DASH,MOBILE api
+    class WEATHER,NOTIF external

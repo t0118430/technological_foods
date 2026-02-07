@@ -1,0 +1,275 @@
+erDiagram
+    %% Core Business Entities
+    organizations ||--o{ facilities : "owns"
+    organizations ||--o{ users : "has"
+    
+    %% Facility and Devices
+    facilities ||--o{ devices : "contains"
+    facilities ||--o{ grow_cycles : "operates"
+    facilities ||--o{ resource_costs : "tracks"
+    facilities ||--o{ alert_rules : "configures"
+    
+    %% Device and Sensors
+    devices ||--o{ sensors : "has"
+    devices ||--o{ actuators : "controls"
+    devices ||--o{ device_snapshots : "sends"
+    devices ||--o{ device_commands : "receives"
+    devices ||--o{ device_health_log : "logs"
+    devices ||--o{ mqtt_messages : "exchanges"a
+    devices ||--o{ alerts : "generates"
+    
+    %% Sensors and Readings
+    sensor_types ||--o{ sensors : "defines"
+    sensors ||--o{ sensor_readings : "produces"
+    sensors ||--o{ hourly_aggregates : "aggregated_in"
+    sensors ||--o{ daily_aggregates : "aggregated_in"
+    sensors ||--o{ alerts : "triggers"
+    
+    %% Metrics Framework
+    metrics ||--o{ sensor_readings : "measures"
+    metrics ||--o{ alert_rules : "monitors"
+    metrics ||--o{ crop_performance_records : "tracks"
+    metrics ||--o{ economic_calculations : "calculates"
+    metrics ||--o{ hourly_aggregates : "summarizes"
+    metrics ||--o{ daily_aggregates : "summarizes"
+    
+    %% Commands and Control
+    command_types ||--o{ device_commands : "defines"
+    command_types ||--o{ alert_rules : "auto_executes"
+    device_commands ||--o{ actuator_state_log : "triggers"
+    device_commands ||--o{ alerts : "responds_to"
+    
+    %% Actuators
+    actuators ||--o{ actuator_state_log : "records"
+    
+    %% Crop Management
+    crop_varieties ||--o{ grow_cycles : "planted_in"
+    grow_cycles ||--o{ crop_performance_records : "measures"
+    grow_cycles ||--o{ economic_calculations : "evaluates"
+    
+    %% Alerts
+    alert_rules ||--o{ alerts : "triggers"
+    users ||--o{ alerts : "acknowledges"
+    users ||--o{ device_commands : "issues"
+    users ||--o{ crop_performance_records : "records"
+    users ||--o{ audit_log : "performs"
+    
+    %% Entity Definitions
+    organizations {
+        uuid organization_id PK
+        varchar name
+        varchar subscription_tier
+        varchar status
+        timestamp created_at
+    }
+    
+    facilities {
+        uuid facility_id PK
+        uuid organization_id FK
+        varchar name
+        varchar location
+        decimal area_sqm
+        varchar timezone
+    }
+    
+    users {
+        uuid user_id PK
+        uuid organization_id FK
+        varchar email
+        varchar full_name
+        varchar role
+        jsonb notification_preferences
+    }
+    
+    devices {
+        uuid device_id PK
+        uuid facility_id FK
+        varchar device_code
+        varchar device_type
+        varchar firmware_version
+        varchar sim_card_number
+        varchar status
+        timestamp last_heartbeat
+        timestamp last_data_received
+        decimal battery_level
+        integer signal_strength
+    }
+    
+    sensors {
+        uuid sensor_id PK
+        uuid device_id FK
+        int sensor_type_id FK
+        varchar sensor_code
+        varchar pin_number
+        varchar status
+        date last_calibration_date
+    }
+    
+    sensor_types {
+        int sensor_type_id PK
+        varchar name
+        varchar manufacturer
+        varchar measurement_unit
+        varchar metric_category
+        boolean calibration_required
+    }
+    
+    metrics {
+        int metric_id PK
+        int metric_number
+        varchar metric_name
+        varchar category
+        varchar measurement_unit
+        decimal optimal_range_min
+        decimal optimal_range_max
+        text optimization_strategy
+        boolean is_automated
+        boolean is_calculated
+    }
+    
+    sensor_readings {
+        bigint reading_id PK
+        uuid sensor_id FK
+        int metric_id FK
+        timestamp timestamp
+        decimal value
+        varchar unit
+        decimal quality_score
+        boolean is_anomaly
+        jsonb metadata
+    }
+    
+    device_snapshots {
+        uuid snapshot_id PK
+        uuid device_id FK
+        timestamp timestamp
+        jsonb snapshot_data
+        int reading_count
+        varchar processing_status
+    }
+    
+    command_types {
+        int command_type_id PK
+        varchar name
+        varchar category
+        jsonb parameters_schema
+        boolean requires_confirmation
+    }
+    
+    device_commands {
+        uuid command_id PK
+        uuid device_id FK
+        int command_type_id FK
+        uuid issued_by FK
+        timestamp issued_at
+        varchar mqtt_topic
+        jsonb command_payload
+        varchar status
+        timestamp executed_at
+        jsonb execution_result
+    }
+    
+    actuators {
+        uuid actuator_id PK
+        uuid device_id FK
+        varchar actuator_type
+        varchar name
+        varchar pin_number
+        varchar controls_equipment
+        varchar current_state
+    }
+    
+    actuator_state_log {
+        bigint log_id PK
+        uuid actuator_id FK
+        timestamp timestamp
+        varchar previous_state
+        varchar new_state
+        uuid command_id FK
+    }
+    
+    grow_cycles {
+        uuid cycle_id PK
+        uuid facility_id FK
+        uuid variety_id FK
+        varchar cycle_name
+        date start_date
+        date expected_harvest_date
+        date actual_harvest_date
+        decimal growth_area_sqm
+        int plant_count
+        varchar status
+    }
+    
+    crop_varieties {
+        uuid variety_id PK
+        varchar name
+        varchar crop_type
+        decimal optimal_vpd_min
+        decimal optimal_temp_day
+        decimal optimal_ph_min
+        int typical_cycle_days
+    }
+    
+    crop_performance_records {
+        uuid record_id PK
+        uuid cycle_id FK
+        int metric_id FK
+        date measurement_date
+        decimal value
+        uuid measured_by FK
+    }
+    
+    alert_rules {
+        uuid rule_id PK
+        uuid facility_id FK
+        int metric_id FK
+        varchar rule_name
+        varchar condition_type
+        decimal threshold_value
+        varchar severity
+        int auto_command_type_id FK
+        boolean is_active
+    }
+    
+    alerts {
+        uuid alert_id PK
+        uuid rule_id FK
+        uuid device_id FK
+        uuid sensor_id FK
+        int metric_id FK
+        timestamp triggered_at
+        varchar severity
+        varchar title
+        varchar status
+        uuid acknowledged_by FK
+        uuid command_id FK
+    }
+    
+    economic_calculations {
+        uuid calculation_id PK
+        uuid cycle_id FK
+        int metric_id FK
+        date calculation_date
+        decimal value
+        jsonb calculation_details
+    }
+    
+    resource_costs {
+        uuid cost_id PK
+        uuid facility_id FK
+        varchar resource_type
+        decimal cost_per_unit
+        varchar unit
+        date effective_from
+    }
+    
+    mqtt_messages {
+        bigint message_id PK
+        uuid device_id FK
+        varchar topic
+        jsonb payload
+        varchar direction
+        timestamp timestamp
+        boolean processed
+    }

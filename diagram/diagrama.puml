@@ -1,0 +1,73 @@
+@startuml POC_Producao_MQTT
+
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+title Sistema de Coleta de Dados de Produção - POC
+
+' Zona de Produção
+rectangle "Centro de Produção" #LightYellow {
+    component "Sensores\nTemperatura/Kits" as sensors #LightBlue
+    
+    rectangle "Raspberry Pi #1\n[Publisher]" #Pink {
+        component "Script Python\npublisher.py" as pub
+        component "Modem 4G/LTE\n+ SIM Card" as modem #Orange
+    }
+}
+
+' Cloud
+cloud "Internet" #LightCyan {
+    rectangle "MQTT Broker\n(HiveMQ Cloud)" #LightGreen {
+        queue "Topic:\nproducao/temperatura" as topic #Yellow
+    }
+}
+
+' Rede Externa
+rectangle "Rede Externa / Escritório" #LightYellow {
+    rectangle "Raspberry Pi #2\n[Subscriber]" #Pink {
+        component "Script Python\nsubscriber.py" as sub
+    }
+    database "Base de Dados\nPostgreSQL/SQLite" as db #LightGray
+}
+
+' Relações
+sensors -down-> pub : Leitura dados\n(GPIO/Modbus)
+pub -down-> modem : MQTT Publish\nJSON
+modem -down-> topic : 4G/LTE\nConnection
+topic -down-> sub : MQTT Subscribe\nJSON
+sub -down-> db : INSERT\ndados
+
+' Notas
+note right of pub
+  **Dados Publicados (JSON):**
+  {
+    "timestamp": 1234567890,
+    "temperatura": 25.5,
+    "kit_id": "KIT_001",
+    "linha": "Linha_A"
+  }
+  
+  **Protocolo:** MQTT
+  **QoS:** 1 (garantia entrega)
+  **Frequência:** 5 segundos
+end note
+
+note left of sub
+  **Ações do Subscriber:**
+  ✓ Recebe dados em real-time
+  ✓ Valida informação
+  ✓ Armazena em BD
+  ✓ Triggers/Alertas (opcional)
+  ✓ Dashboard (opcional)
+end note
+
+note top of topic
+  **MQTT Broker Config:**
+  • Host: broker.hivemq.com
+  • Porta: 1883 (ou 8883 TLS)
+  • Autenticação: user/password
+  • Persistência: sim
+end note
+
+@enduml
