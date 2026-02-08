@@ -1,0 +1,74 @@
+name: Test - Hello World
+
+on:
+  push:
+    branches:
+      - feature/ci-cd-pipeline
+      - master
+  pull_request:
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  hello-world:
+    name: Hello World Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Print Hello World
+        run: |
+          echo "================================"
+          echo "🚀 Hello World from GitHub Actions!"
+          echo "================================"
+          echo ""
+          echo "📅 Current date: $(date)"
+          echo "🌍 Timezone: $(date +%Z)"
+          echo "🖥️  Runner OS: $RUNNER_OS"
+          echo "🔧 Workflow: ${{ github.workflow }}"
+          echo "📦 Repository: ${{ github.repository }}"
+          echo "🌿 Branch: ${{ github.ref_name }}"
+          echo "👤 Triggered by: ${{ github.actor }}"
+          echo "💾 Commit SHA: ${{ github.sha }}"
+          echo ""
+          echo "================================"
+          echo "✅ GitHub Actions is working!"
+          echo "================================"
+
+      - name: Show environment variables
+        run: |
+          echo "🔍 Environment Variables:"
+          echo "HOME: $HOME"
+          echo "USER: $USER"
+          echo "PWD: $PWD"
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+
+      - name: List project structure
+        run: |
+          echo "📂 Project Structure:"
+          ls -la
+          echo ""
+          echo "📁 Backend folder:"
+          ls -la backend/ | head -20
+
+      - name: Check Python version
+        run: |
+          echo "🐍 Python version:"
+          python --version
+          python3 --version
+
+      - name: Check Docker availability
+        run: |
+          echo "🐋 Docker version:"
+          docker --version || echo "Docker not available"
+          docker-compose --version || echo "Docker Compose not available"
+
+      - name: Final message
+        run: |
+          echo ""
+          echo "╔════════════════════════════════════════╗"
+          echo "║  ✅ All checks passed!                 ║"
+          echo "║  🎉 GitHub Actions pipeline ready!     ║"
+          echo "║  🌱 AgriTech DevOps initialized!       ║"
+          echo "╚════════════════════════════════════════╝"

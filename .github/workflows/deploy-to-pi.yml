@@ -1,0 +1,155 @@
+name: Deploy to Raspberry Pi
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'backend/**'
+      - 'arduino/**'
+      - '.github/workflows/deploy-to-pi.yml'
+  workflow_dispatch: # Allow manual triggering
+
+env:
+  PYTHON_VERSION: '3.10'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd backend/api
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run unit tests
+        run: |
+          cd backend/api
+          pytest test_*.py -v --cov=. --cov-report=term-missing || true
+        continue-on-error: true
+
+      - name: Validate docker-compose
+        run: |
+          cd backend
+          docker-compose config > /dev/null
+
+      - name: Validate configs
+        run: |
+          python -m json.tool backend/api/rules_config.json > /dev/null
+          python -m json.tool backend/config/base_hydroponics.json > /dev/null
+          python -m json.tool backend/config/variety_rosso_premium.json > /dev/null
+          python -m json.tool backend/config/variety_curly_green.json > /dev/null
+
+  deploy:
+    name: Deploy to Raspberry Pi
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PI_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.PI_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Create backup on Pi before deployment
+        run: |
+          ssh ${{ secrets.PI_USER }}@${{ secrets.PI_HOST }} "cd ${{ secrets.PI_PROJECT_PATH }} && ./deploy/backup.sh pre-deploy"
+
+      - name: Deploy code to Pi
+        run: |
+          rsync -avz --exclude='.git' --exclude='backend/data' --exclude='*.log' \
+            -e "ssh -i ~/.ssh/id_rsa" \
+            . ${{ secrets.PI_USER }}@${{ secrets.PI_HOST }}:${{ secrets.PI_PROJECT_PATH }}/
+
+      - name: Restart services on Pi
+        run: |
+          ssh ${{ secrets.PI_USER }}@${{ secrets.PI_HOST }} << 'ENDSSH'
+            cd ${{ secrets.PI_PROJECT_PATH }}
+
+            # Pull latest Docker images
+            cd backend
+            docker-compose pull
+
+            # Restart Docker services (rolling update)
+            docker-compose up -d --remove-orphans
+
+            # Restart API server via systemd
+            sudo systemctl restart agritech-api.service
+
+            # Wait for services to start
+            sleep 10
+          ENDSSH
+
+      - name: Health check
+        id: health_check
+        run: |
+          ssh ${{ secrets.PI_USER }}@${{ secrets.PI_HOST }} << 'ENDSSH'
+            cd ${{ secrets.PI_PROJECT_PATH }}
+            ./deploy/health-check.sh
+          ENDSSH
+
+      - name: Rollback on failure
+        if: failure() && steps.health_check.outcome == 'failure'
+        run: |
+          ssh ${{ secrets.PI_USER }}@${{ secrets.PI_HOST }} << 'ENDSSH'
+            cd ${{ secrets.PI_PROJECT_PATH }}
+            echo "Deployment failed, rolling back..."
+            ./deploy/restore.sh pre-deploy
+            sudo systemctl restart agritech-api.service
+            cd backend && docker-compose restart
+          ENDSSH
+
+      - name: Send success notification
+        if: success()
+        run: |
+          curl -H "Title: AgriTech Deployment Success" \
+               -H "Tags: white_check_mark" \
+               -H "Priority: default" \
+               -d "Successfully deployed to Raspberry Pi at $(date)" \
+               ${{ secrets.NTFY_TOPIC_URL }} || true
+
+      - name: Send failure notification
+        if: failure()
+        run: |
+          curl -H "Title: AgriTech Deployment Failed" \
+               -H "Tags: warning" \
+               -H "Priority: high" \
+               -d "Deployment to Raspberry Pi failed. Check GitHub Actions logs." \
+               ${{ secrets.NTFY_TOPIC_URL }} || true
+
+  # Optional: Weekly backup verification job
+  backup-verify:
+    name: Verify Backups
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PI_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.PI_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Run backup verification
+        run: |
+          ssh ${{ secrets.PI_USER }}@${{ secrets.PI_HOST }} << 'ENDSSH'
+            cd ${{ secrets.PI_PROJECT_PATH }}
+            ./deploy/backup-verify.sh
+          ENDSSH

@@ -1,0 +1,48 @@
+[Unit]
+Description=AgriTech API Server
+Documentation=https://github.com/yourusername/technological_foods
+After=network-online.target docker.service agritech-docker.service
+Wants=network-online.target
+Requires=agritech-docker.service
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/agritech/backend/api
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+
+# Load environment variables from .env file
+EnvironmentFile=/home/pi/agritech/backend/.env
+
+# Start the API server
+ExecStart=/usr/bin/python3 /home/pi/agritech/backend/api/server.py
+
+# Restart policy: Always restart on failure
+Restart=always
+RestartSec=10s
+
+# Watchdog: Kill if service hangs for 2 minutes
+WatchdogSec=120s
+
+# Resource limits for Pi 4 (4GB RAM)
+MemoryLimit=512M
+CPUQuota=50%
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=agritech-api
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Graceful shutdown
+TimeoutStopSec=30s
+KillMode=mixed
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target

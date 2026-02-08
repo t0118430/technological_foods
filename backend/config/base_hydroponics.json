@@ -1,0 +1,188 @@
+{
+  "_comment": "Base configuration for hydroponic lettuce cultivation",
+  "_source": "Based on Cornell CEA, University of Arizona, and NASA research",
+  "_version": "1.0.0",
+
+  "common": {
+    "system_name": "AgriTech Hydroponics",
+    "cultivation_method": "NFT",
+    "alert_cooldown_minutes": 15,
+    "snapshot_retention_days": 90
+  },
+
+  "sensors": {
+    "temperature": {
+      "unit": "°C",
+      "calibration_interval_days": 90,
+      "accuracy": "±0.5°C",
+      "sensor_type": "DHT20"
+    },
+    "humidity": {
+      "unit": "%",
+      "calibration_interval_days": 90,
+      "accuracy": "±2%",
+      "sensor_type": "DHT20"
+    },
+    "ph": {
+      "unit": "pH",
+      "calibration_interval_days": 30,
+      "accuracy": "±0.1",
+      "requires_buffer_solution": true,
+      "buffer_solutions": ["pH 4.0", "pH 7.0", "pH 10.0"]
+    },
+    "ec": {
+      "unit": "mS/cm",
+      "calibration_interval_days": 30,
+      "accuracy": "±0.05",
+      "requires_standard_solution": true,
+      "standard_solution": "1.413 mS/cm at 25°C"
+    },
+    "water_level": {
+      "unit": "%",
+      "calibration_interval_days": 180,
+      "accuracy": "±5%"
+    },
+    "light": {
+      "unit": "lux",
+      "calibration_interval_days": 365,
+      "accuracy": "±10%",
+      "note": "Compare with quantum sensor if available"
+    }
+  },
+
+  "base_ranges": {
+    "temperature": {
+      "absolute_min": 10.0,
+      "critical_min": 15.0,
+      "optimal_min": 18.0,
+      "optimal_max": 24.0,
+      "critical_max": 28.0,
+      "absolute_max": 32.0,
+      "warning_margin": 2.0,
+      "unit": "°C",
+      "notes": "General lettuce temperature range"
+    },
+    "humidity": {
+      "absolute_min": 30.0,
+      "critical_min": 40.0,
+      "optimal_min": 50.0,
+      "optimal_max": 70.0,
+      "critical_max": 80.0,
+      "absolute_max": 90.0,
+      "warning_margin": 5.0,
+      "unit": "%",
+      "notes": "Prevents disease and promotes growth"
+    },
+    "ph": {
+      "absolute_min": 4.5,
+      "critical_min": 5.5,
+      "optimal_min": 5.8,
+      "optimal_max": 6.5,
+      "critical_max": 7.0,
+      "absolute_max": 8.0,
+      "warning_margin": 0.3,
+      "unit": "pH",
+      "notes": "Nutrient availability optimal at 5.8-6.5"
+    },
+    "ec": {
+      "absolute_min": 0.5,
+      "critical_min": 0.8,
+      "optimal_min": 1.2,
+      "optimal_max": 2.0,
+      "critical_max": 2.5,
+      "absolute_max": 3.5,
+      "warning_margin": 0.3,
+      "unit": "mS/cm",
+      "notes": "Electrical conductivity - nutrient concentration"
+    },
+    "water_level": {
+      "absolute_min": 0.0,
+      "critical_min": 20.0,
+      "optimal_min": 40.0,
+      "optimal_max": 100.0,
+      "critical_max": 100.0,
+      "absolute_max": 100.0,
+      "warning_margin": 10.0,
+      "unit": "%",
+      "notes": "Reservoir water level"
+    },
+    "light": {
+      "absolute_min": 0.0,
+      "critical_min": 200.0,
+      "optimal_min": 300.0,
+      "optimal_max": 600.0,
+      "critical_max": 800.0,
+      "absolute_max": 1000.0,
+      "warning_margin": 100.0,
+      "unit": "lux",
+      "notes": "12-16 hours photoperiod recommended"
+    }
+  },
+
+  "maintenance_schedule": {
+    "daily": [
+      "Visual inspection of plants",
+      "Check water level",
+      "Monitor system operation"
+    ],
+    "weekly": [
+      "Clean filters and pumps",
+      "Check pH and EC",
+      "Inspect roots for health",
+      "Top up nutrient solution"
+    ],
+    "biweekly": [
+      "Deep clean growing channels",
+      "Check all sensors for drift",
+      "Inspect lighting system"
+    ],
+    "monthly": [
+      "Full system sanitization",
+      "Calibrate pH and EC sensors",
+      "Replace worn components",
+      "Review and adjust nutrient formula"
+    ],
+    "quarterly": [
+      "Calibrate temperature and humidity sensors",
+      "Deep clean entire system",
+      "Review growth data and optimize"
+    ],
+    "annually": [
+      "Replace all sensors",
+      "System overhaul",
+      "Calibrate light sensors"
+    ]
+  },
+
+  "time_based_notifications": {
+    "morning_check": {
+      "time": "08:00",
+      "timezone": "Europe/Lisbon",
+      "message": "☀️ Morning Check: Review overnight conditions",
+      "priority": "low",
+      "days": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+    },
+    "evening_check": {
+      "time": "20:00",
+      "timezone": "Europe/Lisbon",
+      "message": "🌙 Evening Check: Verify systems before night",
+      "priority": "low",
+      "days": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+    },
+    "weekly_maintenance": {
+      "time": "09:00",
+      "timezone": "Europe/Lisbon",
+      "message": "🔧 Weekly Maintenance: Time for filters, pH, EC check",
+      "priority": "medium",
+      "days": ["saturday"]
+    },
+    "monthly_calibration": {
+      "day_of_month": 1,
+      "time": "10:00",
+      "timezone": "Europe/Lisbon",
+      "message": "📐 Monthly Calibration: pH and EC sensors need calibration",
+      "priority": "high",
+      "action_required": true
+    }
+  }
+}
