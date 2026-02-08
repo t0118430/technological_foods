@@ -26,9 +26,15 @@ Complete CI/CD pipeline for the AgriTech Hydroponics SaaS Platform with automate
   - **Security Scan**: Checks for vulnerabilities (safety, bandit)
   - **Test Summary**: Overall results
 
-### 3. **deploy-to-pi.yml** - Production Deployment
-- **Purpose**: Deploy to Raspberry Pi with health checks and rollback
-- **Triggers**: Push to `master` affecting backend/arduino, manual dispatch
+### 3. **deploy-server-pi.yml** - Server Deployment
+- **Purpose**: Deploy backend to Raspberry Pi server with health checks and rollback
+- **Triggers**: Push to `master` affecting `backend/**`, manual dispatch
+- **What it deploys**: Backend API, Docker services, configs, database
+
+### 4. **deploy-arduino-ota.yml** - Arduino OTA Deployment
+- **Purpose**: Deploy firmware to Arduino R4 WiFi over WiFi (no USB needed!)
+- **Triggers**: Push to `master` affecting `arduino/**`, manual dispatch
+- **What it deploys**: Compiled firmware binary to IoT device
 - **Jobs**:
   - **Test**: Run all tests before deployment
   - **Deploy**:
@@ -43,19 +49,24 @@ Complete CI/CD pipeline for the AgriTech Hydroponics SaaS Platform with automate
 
 Set these in your repository settings (Settings → Secrets and variables → Actions):
 
-### Raspberry Pi Access
+### Raspberry Pi Server Access
 - `PI_SSH_KEY` - SSH private key for Pi access
-- `PI_HOST` - Raspberry Pi hostname or IP (e.g., `192.168.1.100`)
+- `PI_HOST` - Raspberry Pi hostname or IP (e.g., `192.168.1.10`)
 - `PI_USER` - SSH username (e.g., `pi`)
 - `PI_PROJECT_PATH` - Project path on Pi (e.g., `/home/pi/technological_foods`)
+
+### Arduino IoT Device Access
+- `ARDUINO_IP` - Arduino IP address (e.g., `192.168.1.100`)
+- `ARDUINO_OTA_PASSWORD` - OTA password (optional but recommended)
 
 ### Notifications
 - `NTFY_TOPIC_URL` - ntfy.sh topic URL (e.g., `https://ntfy.sh/techfoods`)
 
-## Deployment Flow
+## Deployment Flows
 
+### Server Deployment (Pi)
 ```
-Code Push to master
+Backend code push to master
     ↓
 Run Tests (all must pass)
     ↓
@@ -63,13 +74,33 @@ Create Backup on Pi
     ↓
 Deploy Code via rsync
     ↓
-Restart Services
+Restart Services (Docker + systemd)
     ↓
 Health Check
     ↓
-✅ Success → Send notification
+✅ Success → Notification
 ❌ Failure → Rollback + notify
 ```
+
+### Arduino Deployment (OTA)
+```
+Arduino code push to master
+    ↓
+Build Firmware (.bin)
+    ↓
+Upload Artifact
+    ↓
+Deploy via OTA (WiFi)
+    ↓
+Arduino Reboots
+    ↓
+Verify New Version
+    ↓
+✅ Success → Create Release
+❌ Failure → Notify (manual USB flash)
+```
+
+**Note**: These run **independently** - changing backend doesn't redeploy Arduino and vice versa!
 
 ## Local Testing
 
