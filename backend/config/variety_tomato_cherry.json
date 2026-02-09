@@ -1,0 +1,115 @@
+{
+  "variety_id": "tomato_cherry",
+  "common_name": "Cherry Tomato",
+  "scientific_name": "Solanum lycopersicum var. cerasiforme",
+  "category": "fruiting_vegetable",
+  "market_position": "premium_summer",
+  "target_market": "restaurants_markets_algarve",
+
+  "production_system": "DWC_large",
+
+  "growth_stages": {
+    "germination": {
+      "duration_days": 7,
+      "description": "Seed sprouting",
+      "temperature_range": [20, 25],
+      "water_temp_range": [22, 24],
+      "light_hours": 16,
+      "humidity_range": [70, 80]
+    },
+    "seedling": {
+      "duration_days": 14,
+      "description": "First true leaves",
+      "temperature_range": [20, 26],
+      "water_temp_range": [20, 23],
+      "light_hours": 14,
+      "humidity_range": [60, 70],
+      "ph_range": [5.8, 6.3],
+      "ec_range": [1.2, 1.6]
+    },
+    "vegetative": {
+      "duration_days": 21,
+      "description": "Stem and leaf growth",
+      "temperature_range": [22, 28],
+      "water_temp_range": [20, 24],
+      "light_hours": 14,
+      "humidity_range": [60, 70],
+      "ph_range": [6.0, 6.5],
+      "ec_range": [1.8, 2.2]
+    },
+    "flowering": {
+      "duration_days": 14,
+      "description": "Flower formation",
+      "temperature_range": [22, 28],
+      "water_temp_range": [21, 24],
+      "light_hours": 14,
+      "humidity_range": [50, 65],
+      "ph_range": [6.0, 6.5],
+      "ec_range": [2.0, 2.5],
+      "notes": "Hand pollination may be needed in greenhouse"
+    },
+    "fruiting": {
+      "duration_days": 30,
+      "description": "Fruit development and ripening",
+      "temperature_range": [24, 30],
+      "water_temp_range": [21, 24],
+      "light_hours": 14,
+      "humidity_range": [50, 60],
+      "ph_range": [6.2, 6.8],
+      "ec_range": [2.2, 2.8],
+      "notes": "High EC = sweeter tomatoes"
+    }
+  },
+
+  "algarve_climate": {
+    "optimal_season": "may_to_september",
+    "heat_tolerance": "excellent",
+    "winter_viable": false,
+    "greenhouse_required": true,
+    "notes": "Perfect for Algarve summer. High temps = high sugar content."
+  },
+
+  "business_metrics": {
+    "market_price_wholesale_eur_per_kg": 5,
+    "market_price_restaurant_eur_per_kg": 8,
+    "target_customer": "restaurants_tourist_markets",
+    "shelf_life_days": 10,
+    "growth_cycle_days": 80,
+    "annual_cycles": 4,
+    "avg_plant_yield_kg": 3.5,
+    "revenue_per_plant_per_year": 70,
+    "margin_percent": 55
+  },
+
+  "local_demand": {
+    "algarve_restaurants": "very_high",
+    "tourist_season_multiplier": 2.0,
+    "top_markets": ["loule_market", "tourist_areas", "restaurants"],
+    "customer_type": "restaurants_summer_salads",
+    "premium_justification": "sweet_sun_ripened_local"
+  },
+
+  "sensor_requirements": {
+    "water_temp_critical": true,
+    "dissolved_oxygen_critical": true,
+    "ph_monitoring": "every_4_hours",
+    "ec_monitoring": "every_4_hours",
+    "redundancy_level": "high",
+    "notes": "Temperature swings affect sweetness. Monitor closely."
+  },
+
+  "growing_challenges": {
+    "high_sensor_needs": true,
+    "longer_growth_cycle": true,
+    "pollination_required": true,
+    "support_structure_needed": true,
+    "notes": "Most complex crop. Start after mastering lettuce/herbs."
+  },
+
+  "sweetness_optimization": {
+    "high_ec_fruiting": "2.5-2.8 for maximum sweetness",
+    "temperature_control": "23-27C optimal for sugar development",
+    "harvest_timing": "fully_red_on_vine",
+    "water_stress_technique": "reduce_water_7_days_before_harvest"
+  }
+}

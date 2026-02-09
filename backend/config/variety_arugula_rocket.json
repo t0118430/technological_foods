@@ -1,0 +1,94 @@
+{
+  "variety_id": "arugula_rocket",
+  "common_name": "Arugula (Rocket)",
+  "scientific_name": "Eruca vesicaria sativa",
+  "category": "leafy_green",
+  "market_position": "premium_fast",
+  "target_market": "restaurants_markets_algarve",
+
+  "production_system": "NFT",
+
+  "growth_stages": {
+    "germination": {
+      "duration_days": 3,
+      "description": "Ultra-fast sprouting",
+      "temperature_range": [15, 20],
+      "water_temp_range": [18, 20],
+      "light_hours": 12,
+      "humidity_range": [60, 70]
+    },
+    "seedling": {
+      "duration_days": 7,
+      "description": "First leaves",
+      "temperature_range": [15, 22],
+      "water_temp_range": [18, 21],
+      "light_hours": 12,
+      "humidity_range": [55, 65],
+      "ph_range": [6.0, 6.5],
+      "ec_range": [0.8, 1.2]
+    },
+    "vegetative": {
+      "duration_days": 10,
+      "description": "Leaf development",
+      "temperature_range": [16, 24],
+      "water_temp_range": [18, 22],
+      "light_hours": 12,
+      "humidity_range": [50, 60],
+      "ph_range": [6.0, 6.8],
+      "ec_range": [1.2, 1.6]
+    },
+    "harvest": {
+      "duration_days": 20,
+      "description": "Ready to harvest",
+      "temperature_range": [15, 25],
+      "water_temp_range": [18, 22],
+      "light_hours": 12,
+      "humidity_range": [50, 60],
+      "ph_range": [6.2, 7.0],
+      "ec_range": [1.4, 1.8],
+      "notes": "Harvest before bolting in hot weather"
+    }
+  },
+
+  "algarve_climate": {
+    "optimal_season": "spring_autumn_winter",
+    "heat_tolerance": "moderate",
+    "winter_viable": true,
+    "greenhouse_required": false,
+    "notes": "Best Nov-May. Use shade cloth Jun-Aug to prevent bolting."
+  },
+
+  "business_metrics": {
+    "market_price_wholesale_eur_per_kg": 8,
+    "market_price_restaurant_eur_per_kg": 12,
+    "target_customer": "restaurants_loule_market",
+    "shelf_life_days": 7,
+    "growth_cycle_days": 20,
+    "annual_cycles": 18,
+    "avg_plant_weight_kg": 0.12,
+    "revenue_per_plant_per_year": 17.28,
+    "margin_percent": 65
+  },
+
+  "local_demand": {
+    "algarve_restaurants": "high",
+    "tourist_season_multiplier": 1.3,
+    "top_markets": ["loule_market", "olhao", "faro_sunday"],
+    "customer_type": "restaurants_locals",
+    "premium_justification": "peppery_flavor_when_fresh"
+  },
+
+  "sensor_requirements": {
+    "water_temp_critical": false,
+    "dissolved_oxygen_critical": false,
+    "ph_monitoring": "daily",
+    "ec_monitoring": "daily",
+    "redundancy_level": "medium"
+  },
+
+  "growing_tips": {
+    "succession_planting": "plant_every_2_weeks",
+    "heat_management": "shade_cloth_above_28C",
+    "bolting_prevention": "harvest_before_flower_stems"
+  }
+}

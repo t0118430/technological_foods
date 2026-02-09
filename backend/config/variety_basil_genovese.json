@@ -1,0 +1,87 @@
+{
+  "variety_id": "basil_genovese",
+  "common_name": "Genovese Basil",
+  "scientific_name": "Ocimum basilicum 'Genovese'",
+  "category": "herb",
+  "market_position": "premium",
+  "target_market": "restaurants_algarve",
+
+  "production_system": "DWC",
+
+  "growth_stages": {
+    "germination": {
+      "duration_days": 5,
+      "description": "Seed sprouting phase",
+      "temperature_range": [20, 25],
+      "water_temp_range": [20, 24],
+      "light_hours": 16,
+      "humidity_range": [60, 70]
+    },
+    "seedling": {
+      "duration_days": 10,
+      "description": "First true leaves",
+      "temperature_range": [20, 25],
+      "water_temp_range": [20, 23],
+      "light_hours": 14,
+      "humidity_range": [55, 65],
+      "ph_range": [5.5, 6.0],
+      "ec_range": [0.8, 1.2]
+    },
+    "vegetative": {
+      "duration_days": 15,
+      "description": "Rapid leaf growth",
+      "temperature_range": [22, 28],
+      "water_temp_range": [20, 22],
+      "light_hours": 14,
+      "humidity_range": [50, 60],
+      "ph_range": [5.8, 6.2],
+      "ec_range": [1.2, 1.6]
+    },
+    "harvest": {
+      "duration_days": "continuous",
+      "description": "Weekly leaf harvest",
+      "temperature_range": [22, 28],
+      "water_temp_range": [20, 22],
+      "light_hours": 14,
+      "humidity_range": [50, 60],
+      "ph_range": [6.0, 6.4],
+      "ec_range": [1.4, 1.8]
+    }
+  },
+
+  "algarve_climate": {
+    "optimal_season": "may_to_september",
+    "heat_tolerance": "excellent",
+    "winter_viable": false,
+    "greenhouse_required": true,
+    "notes": "Thrives in Algarve summer heat. Use shade cloth if >35°C outside."
+  },
+
+  "business_metrics": {
+    "market_price_wholesale_eur_per_kg": 20,
+    "market_price_restaurant_eur_per_kg": 32,
+    "target_customer": "italian_restaurants_bars",
+    "shelf_life_days": 5,
+    "growth_cycle_days": 25,
+    "annual_cycles": 14,
+    "avg_plant_weight_kg": 0.15,
+    "revenue_per_plant_per_year": 67.2,
+    "margin_percent": 80
+  },
+
+  "local_demand": {
+    "algarve_restaurants": "extreme",
+    "tourist_season_multiplier": 2.5,
+    "top_markets": ["vilamoura", "lagos", "albufeira", "olhao"],
+    "customer_type": "chefs_cocktail_bars",
+    "premium_justification": "fresh_aroma_no_wilting"
+  },
+
+  "sensor_requirements": {
+    "water_temp_critical": true,
+    "dissolved_oxygen_critical": true,
+    "ph_monitoring": "hourly",
+    "ec_monitoring": "hourly",
+    "redundancy_level": "high"
+  }
+}
