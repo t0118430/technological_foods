@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriTech Business Intelligence Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .metric {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-healthy {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-critical {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            background: #f5f5f5;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #888;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .opportunity {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 4px;
+        }
+
+        .opportunity-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .opportunity-value {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #5568d3;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+        }
+
+        .bar {
+            background: #667eea;
+            height: 24px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .timestamp {
+            text-align: right;
+            color: #888;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌱 AgriTech Business Intelligence</h1>
+            <p class="subtitle">Real-time metrics for Algarve premium hydroponics</p>
+            <button class="refresh-btn" onclick="loadDashboard()">🔄 Refresh Data</button>
+        </header>
+
+        <div id="error-container"></div>
+        <div id="loading" class="loading">Loading dashboard data...</div>
+        <div id="dashboard-content" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin.replace('8080', '3001'); // Adjust if needed
+
+        async function loadDashboard() {
+            const loadingEl = document.getElementById('loading');
+            const contentEl = document.getElementById('dashboard-content');
+            const errorEl = document.getElementById('error-container');
+
+            loadingEl.style.display = 'block';
+            contentEl.style.display = 'none';
+            errorEl.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/business/dashboard`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+                renderDashboard(data);
+
+                loadingEl.style.display = 'none';
+                contentEl.style.display = 'block';
+            } catch (error) {
+                errorEl.innerHTML = `<div class="error">❌ Failed to load dashboard: ${error.message}. Is the API server running on port 3001?</div>`;
+                loadingEl.style.display = 'none';
+            }
+        }
+
+        function renderDashboard(data) {
+            const container = document.getElementById('dashboard-content');
+            const overview = data.business_overview;
+            const revenue = data.revenue_metrics;
+            const crops = data.crop_status;
+            const sensors = data.sensor_health;
+            const clients = data.client_health;
+            const market = data.local_market_data;
+            const opportunities = data.opportunities;
+            const alerts = data.alerts_summary;
+
+            container.innerHTML = `
+                <!-- Business Overview -->
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-title">Active Clients</div>
+                        <div class="metric">${overview.active_clients}</div>
+                        <div class="metric-label">
+                            <span class="status-badge status-${overview.status}">${overview.status}</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Monthly Recurring Revenue</div>
+                        <div class="metric">€${overview.mrr.toFixed(0)}</div>
+                        <div class="metric-label">Service: +€${overview.service_revenue_month.toFixed(0)}</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Total Revenue (Month)</div>
+                        <div class="metric">€${overview.total_revenue_month.toFixed(0)}</div>
+                        <div class="metric-label">
+                            Growth: <span style="color: ${overview.growth_rate_percent >= 0 ? '#28a745' : '#dc3545'}">
+                                ${overview.growth_rate_percent >= 0 ? '+' : ''}${overview.growth_rate_percent.toFixed(1)}%
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Service Visits (Month)</div>
+                        <div class="metric">${overview.visits_this_month}</div>
+                        <div class="metric-label">${overview.active_crops} active crops</div>
+                    </div>
+                </div>
+
+                <!-- Revenue Breakdown -->
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-title">Revenue by Tier</div>
+                        ${Object.entries(revenue.by_tier).map(([tier, info]) => `
+                            <div style="margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                    <span style="text-transform: capitalize; font-weight: 600;">${tier}</span>
+                                    <span>€${info.mrr.toFixed(0)}/mo</span>
+                                </div>
+                                <div style="font-size: 12px; color: #888;">${info.client_count} clients</div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Projected Annual Revenue</div>
+                        <div class="metric">€${revenue.projected_annual.toFixed(0)}</div>
+                        <div class="metric-label">
+                            Avg per client: €${revenue.avg_revenue_per_client.toFixed(0)}/mo
+                        </div>
+                        <div class="metric-label">
+                            Churn rate: ${revenue.churn_rate_percent.toFixed(1)}%
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Sensor Health</div>
+                        <div class="metric">${sensors.uptime_percent.toFixed(1)}%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${sensors.uptime_percent}%"></div>
+                        </div>
+                        <div class="metric-label">
+                            ${sensors.sensors_online}/${sensors.total_sensors} online
+                        </div>
+                        ${sensors.overdue_calibrations > 0 ? `
+                            <div style="margin-top: 12px; color: #dc3545; font-weight: 600;">
+                                ⚠️ ${sensors.overdue_calibrations} sensors need calibration
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Client Health</div>
+                        <div class="metric">${clients.avg_health_score.toFixed(0)}/100</div>
+                        <div class="metric-label">
+                            Healthy: ${clients.by_health_range.healthy || 0} |
+                            Warning: ${clients.by_health_range.warning || 0} |
+                            Critical: ${clients.by_health_range.critical || 0}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Crop Status -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-title">Crop Production Status</div>
+                    <div class="chart-container">
+                        ${Object.entries(crops.by_stage).map(([stage, count]) => {
+                            const maxCount = Math.max(...Object.values(crops.by_stage));
+                            const width = (count / maxCount * 100);
+                            return `
+                                <div class="bar" style="width: ${width}%; min-width: 80px;">
+                                    ${stage}: ${count}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    ${crops.upcoming_harvests.length > 0 ? `
+                        <div style="margin-top: 20px;">
+                            <strong>🌾 Upcoming Harvests (Next 7 days):</strong>
+                            <ul style="margin-top: 8px; list-style: none;">
+                                ${crops.upcoming_harvests.map(h => `
+                                    <li style="padding: 4px 0;">
+                                        ${h.variety} - ${h.days_until} days (${h.harvest_date})
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- Local Market Performance -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-title">🗺️ Local Algarve Market Performance</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Market</th>
+                                <th>Location</th>
+                                <th>Weekly Revenue</th>
+                                <th>Customers</th>
+                                <th>Premium</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${market.top_markets.map(m => `
+                                <tr>
+                                    <td style="font-weight: 600;">${m.name}</td>
+                                    <td>${m.location}</td>
+                                    <td style="color: #28a745;">€${m.weekly_revenue}</td>
+                                    <td>${m.customers}</td>
+                                    <td>${(m.premium_multiplier * 100 - 100).toFixed(0)}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+
+                    <div style="margin-top: 20px;">
+                        <strong>📈 Top Products:</strong>
+                        ${market.top_products.map(p => `
+                            <div style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
+                                <span style="font-weight: 600;">${p.name}</span>:
+                                ${p.weekly_kg}kg/week = €${p.revenue}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Revenue Opportunities -->
+                ${opportunities.length > 0 ? `
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-title">💰 Revenue Opportunities</div>
+                        ${opportunities.map(opp => `
+                            <div class="opportunity">
+                                <div class="opportunity-title">
+                                    ${opp.type === 'upsell' ? '📈' : opp.type === 'service_visit' ? '🔧' : '🆕'}
+                                    ${opp.client_name || opp.description}
+                                </div>
+                                <div>${opp.description}</div>
+                                <div style="margin-top: 8px;">
+                                    <span class="opportunity-value">+€${opp.estimated_value}</span>
+                                    <span style="margin-left: 12px; text-transform: uppercase; font-size: 11px; font-weight: 600; color: ${opp.priority === 'high' ? '#dc3545' : '#ffc107'};">
+                                        ${opp.priority} priority
+                                    </span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                <!-- Clients Needing Service -->
+                ${clients.needs_service.length > 0 ? `
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-title">⚠️ Clients Needing Service</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Health Score</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${clients.needs_service.map(c => `
+                                    <tr>
+                                        <td style="font-weight: 600;">${c.name}</td>
+                                        <td>
+                                            <span class="status-badge status-${c.health_score >= 60 ? 'warning' : 'critical'}">
+                                                ${c.health_score}/100
+                                            </span>
+                                        </td>
+                                        <td>📞 Call + schedule visit</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                ` : ''}
+
+                <!-- Recent Alerts -->
+                <div class="card">
+                    <div class="card-title">🔔 Alert Summary (24h)</div>
+                    <div style="margin-bottom: 16px;">
+                        Total alerts: <strong>${alerts.total_24h}</strong>
+                        <span class="status-badge status-${alerts.status === 'ok' ? 'healthy' : alerts.status === 'warning' ? 'warning' : 'critical'}">
+                            ${alerts.status}
+                        </span>
+                    </div>
+
+                    ${alerts.recent_critical.length > 0 ? `
+                        <div>
+                            <strong>Recent Critical:</strong>
+                            <ul style="margin-top: 8px; list-style: none;">
+                                ${alerts.recent_critical.map(a => `
+                                    <li style="padding: 4px 0; font-size: 13px;">
+                                        ${a.message} <span style="color: #888;">(${new Date(a.timestamp).toLocaleString()})</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    ` : '<div style="color: #28a745;">✅ No critical alerts in last 24h</div>'}
+                </div>
+
+                <div class="timestamp">
+                    Last updated: ${new Date(data.timestamp).toLocaleString()}
+                </div>
+            `;
+        }
+
+        // Load dashboard on page load
+        loadDashboard();
+
+        // Auto-refresh every 5 minutes
+        setInterval(loadDashboard, 300000);
+    </script>
+</body>
+</html>

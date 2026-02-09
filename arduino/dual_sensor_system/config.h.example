@@ -1,0 +1,25 @@
+// AgriTech Dual Sensor System Configuration
+// Copy this file to config.h and fill in your values
+
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// ── WiFi Configuration ────────────────────────────────────────
+#define WIFI_SSID "your-wifi-ssid"
+#define WIFI_PASSWORD "your-wifi-password"
+
+// ── API Server Configuration ──────────────────────────────────
+#define API_HOST "192.168.1.100"  // Your Raspberry Pi IP
+#define API_PORT 3001
+#define API_KEY "agritech-secret-key-2026"
+
+// ── Sensor Configuration ──────────────────────────────────────
+#define SENSOR_ID "arduino_dual_1"  // Unique identifier for this Arduino
+
+// ── I2C Addresses (if using different addresses) ─────────────
+// Standard DHT20 uses 0x38
+// If you have sensors with different addresses, specify here:
+// #define DHT20_PRIMARY_ADDR 0x38
+// #define DHT20_SECONDARY_ADDR 0x39
+
+#endif
