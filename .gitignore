@@ -45,3 +45,10 @@ logs/
 
 # Windows artifacts
 nul
+
+# SonarQube
+sonarqube/.env
+sonarqube/backups/
+sonarqube/data/
+sonarqube/logs/
+.scannerwork/

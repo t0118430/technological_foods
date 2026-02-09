@@ -3,7 +3,10 @@
     "allow": [
       "Bash(git checkout:*)",
       "Bash(git add:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(python:*)",
+      "Bash(chmod:*)",
+      "Bash(./find_conversation.sh:*)"
     ]
   }
 }

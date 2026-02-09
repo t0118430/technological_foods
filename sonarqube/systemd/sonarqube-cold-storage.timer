@@ -1,0 +1,18 @@
+[Unit]
+Description=Weekly SonarQube Cold Storage Archival Timer
+Documentation=https://docs.sonarqube.org/
+Requires=sonarqube.service
+
+[Timer]
+# Run weekly on Sunday at 3:00 AM
+OnCalendar=weekly
+OnCalendar=Sun *-*-* 03:00:00
+
+# Run on first boot if missed
+Persistent=true
+
+# Randomize start time by up to 30 minutes
+RandomizedDelaySec=30min
+
+[Install]
+WantedBy=timers.target

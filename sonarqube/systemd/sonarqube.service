@@ -1,0 +1,42 @@
+[Unit]
+Description=SonarQube Code Quality Platform
+Documentation=https://docs.sonarqube.org/
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/sonarqube
+EnvironmentFile=/opt/sonarqube/.env
+
+# Start SonarQube and PostgreSQL
+ExecStart=/usr/bin/docker-compose up -d sonarqube sonarqube-db
+
+# Stop services gracefully
+ExecStop=/usr/bin/docker-compose down
+
+# Health check (wait for SonarQube to be ready)
+ExecStartPost=/bin/bash -c 'for i in {1..60}; do curl -sf http://localhost:9000/api/system/status && break || sleep 5; done'
+
+# Reload configuration
+ExecReload=/usr/bin/docker-compose restart sonarqube
+
+# Restart policy
+Restart=on-failure
+RestartSec=30s
+TimeoutStartSec=300
+TimeoutStopSec=60
+
+# Security hardening
+PrivateTmp=yes
+NoNewPrivileges=yes
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sonarqube
+
+[Install]
+WantedBy=multi-user.target
