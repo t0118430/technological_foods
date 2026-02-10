@@ -6,6 +6,9 @@
 config.h
 !config.h.example
 
+# Password databases
+*.kdbx
+
 # Python
 __pycache__/
 *.py[cod]
