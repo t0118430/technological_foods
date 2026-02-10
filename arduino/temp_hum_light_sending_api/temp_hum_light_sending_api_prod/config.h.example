@@ -1,0 +1,10 @@
+// WiFi credentials
+#define WIFI_SSID "your-wifi-ssid"
+#define WIFI_PASS "your-wifi-password"
+
+// API server
+#define API_HOST "your-server-ip"
+#define API_PORT 3001
+
+// API authentication (must match API_KEY in backend/.env)
+#define API_KEY "your-api-key-here"
