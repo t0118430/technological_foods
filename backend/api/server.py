@@ -202,7 +202,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         path, query = self._parsed_path()
 
-        if path in ("/", "/api/health", "/api/docs", "/api/openapi.json"):
+        if path in ("/", "/api/health", "/api/docs", "/api/openapi.json", "/business", "/site-visits") or path.startswith("/api/site-visits"):
             pass  # Public endpoints — no auth required
         elif not self._check_api_key():
             return
@@ -414,9 +414,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._send_json(404, {"error": "Not found"})
 
     def do_POST(self):
-        if not self._check_api_key():
-            return
         path, _ = self._parsed_path()
+        if not path.startswith("/api/site-visits"):
+            if not self._check_api_key():
+                return
 
         if path == "/api/data":
             try:
@@ -828,9 +829,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._send_json(404, {"error": "Not found"})
 
     def do_PUT(self):
-        if not self._check_api_key():
-            return
         path, _ = self._parsed_path()
+        if not path.startswith("/api/site-visits"):
+            if not self._check_api_key():
+                return
 
         if path.startswith("/api/rules/"):
             rule_id = path.split("/api/rules/")[1]
@@ -865,9 +867,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._send_json(404, {"error": "Not found"})
 
     def do_DELETE(self):
-        if not self._check_api_key():
-            return
         path, _ = self._parsed_path()
+        if not path.startswith("/api/site-visits"):
+            if not self._check_api_key():
+                return
 
         if path.startswith("/api/rules/"):
             rule_id = path.split("/api/rules/")[1]
