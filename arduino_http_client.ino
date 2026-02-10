@@ -16,6 +16,20 @@ int status = WL_IDLE_STATUS;
 // DHT20 sensor (I2C)
 DHT20 dht20;
 
+// ── Simulated sensor state ────────────────────────────────────
+float sim_ph = 6.2;
+float sim_ec = 1.5;
+float sim_water_level = 85.0;
+float sim_light_level = 450.0;
+
+float drift(float current, float step, float lo, float hi) {
+  float delta = (random(-100, 101) / 100.0) * step;
+  float next = current + delta;
+  if (next < lo) next = lo + step;
+  if (next > hi) next = hi - step;
+  return next;
+}
+
 void setup() {
   Serial.begin(9600);
   while (!Serial);
@@ -24,6 +38,9 @@ void setup() {
   Wire.begin();
   dht20.begin();
   Serial.println("DHT20 sensor initialized");
+
+  // Seed RNG for simulated sensors
+  randomSeed(analogRead(A1));
 
   if (WiFi.status() == WL_NO_MODULE) {
     Serial.println("Communication with WiFi module failed!");
@@ -49,10 +66,22 @@ void loop() {
     float temperature = dht20.getTemperature();
     float humidity = dht20.getHumidity();
 
-    // Build JSON payload
+    // Update simulated sensors
+    sim_ph = drift(sim_ph, 0.05, 5.0, 7.5);
+    sim_ec = drift(sim_ec, 0.03, 0.5, 3.0);
+    sim_water_level -= random(0, 30) / 100.0;
+    if (sim_water_level < 10.0) sim_water_level = 90.0;
+    sim_light_level = drift(sim_light_level, 15.0, 100.0, 900.0);
+
+    // Build JSON payload with ALL sensor fields
     String jsonPayload = "{";
+    jsonPayload += "\"sensor_id\":\"arduino_1\",";
     jsonPayload += "\"temperature\":" + String(temperature, 1) + ",";
-    jsonPayload += "\"humidity\":" + String(humidity, 1);
+    jsonPayload += "\"humidity\":" + String(humidity, 1) + ",";
+    jsonPayload += "\"ph\":" + String(sim_ph, 2) + ",";
+    jsonPayload += "\"ec\":" + String(sim_ec, 2) + ",";
+    jsonPayload += "\"water_level\":" + String(sim_water_level, 1) + ",";
+    jsonPayload += "\"light_level\":" + String(sim_light_level, 1);
     jsonPayload += "}";
 
     Serial.print("Sending data: ");
