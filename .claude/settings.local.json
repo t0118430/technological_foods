@@ -7,7 +7,8 @@
       "Bash(python:*)",
       "Bash(chmod:*)",
       "Bash(./find_conversation.sh:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(git mv:*)"
     ]
   }
 }

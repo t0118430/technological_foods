@@ -80,7 +80,7 @@ jobs:
           pytest test_*.py -v --cov=. --cov-report=term-missing --cov-report=xml --cov-report=html -n auto
 
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage-report
@@ -137,6 +137,21 @@ jobs:
           timeout 30 bash -c 'until curl -s http://localhost:8086/health | grep -q "pass"; do sleep 2; done'
           echo "✅ InfluxDB is ready!"
 
+      - name: Start API server for integration tests
+        env:
+          INFLUXDB_URL: http://localhost:8086
+          INFLUXDB_TOKEN: test-token-for-ci
+          INFLUXDB_ORG: agritech
+          INFLUXDB_BUCKET: hydroponics
+        run: |
+          cd backend/api
+          echo "🚀 Starting API server for integration tests..."
+          python server.py &
+          SERVER_PID=$!
+          echo $SERVER_PID > server.pid
+          sleep 5  # Wait for server to start
+          echo "✅ Server started (PID: $SERVER_PID)"
+
       - name: Run integration tests
         env:
           INFLUXDB_URL: http://localhost:8086
@@ -146,7 +161,23 @@ jobs:
         run: |
           cd backend/api
           echo "🔗 Running integration tests..."
-          pytest test_integration.py -v || echo "⚠️ Some integration tests failed (may need live sensors)"
+          pytest test_integration.py -v --junit-xml=integration-results.xml
+          # ^^^ REMOVED || echo - tests now BLOCK on failure!
+
+      - name: Stop API server
+        if: always()
+        run: |
+          if [ -f backend/api/server.pid ]; then
+            kill $(cat backend/api/server.pid) || true
+            rm backend/api/server.pid
+          fi
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: backend/api/integration-results.xml
 
   docker-build:
     name: Docker Build Test
