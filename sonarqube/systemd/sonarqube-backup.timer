@@ -1,0 +1,18 @@
+[Unit]
+Description=Daily SonarQube Database Backup Timer
+Documentation=https://docs.sonarqube.org/
+Requires=sonarqube.service
+
+[Timer]
+# Run daily at 2:00 AM
+OnCalendar=daily
+OnCalendar=*-*-* 02:00:00
+
+# Run 5 minutes after boot if missed
+Persistent=true
+
+# Randomize start time by up to 15 minutes to avoid conflicts
+RandomizedDelaySec=15min
+
+[Install]
+WantedBy=timers.target

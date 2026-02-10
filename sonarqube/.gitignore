@@ -1,0 +1,16 @@
+# SonarQube local environment
+.env
+
+# Backups and archives
+backups/
+*.sql
+*.sql.gz
+
+# Docker volumes (managed by Docker)
+data/
+logs/
+
+# Temporary files
+*.tmp
+*.log
+.DS_Store

@@ -1,0 +1,28 @@
+[Unit]
+Description=SonarQube Cold Storage Archival Service
+Documentation=https://docs.sonarqube.org/
+Requires=sonarqube.service
+After=sonarqube.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/sonarqube
+EnvironmentFile=/opt/sonarqube/.env
+
+# Run cold storage archival script
+ExecStart=/usr/bin/docker-compose run --rm sonarqube-backup /scripts/cold-storage-archival.sh
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sonarqube-cold-storage
+
+# Security
+PrivateTmp=yes
+NoNewPrivileges=yes
+
+# Timeout (can take a while)
+TimeoutStartSec=1800
+
+[Install]
+WantedBy=multi-user.target

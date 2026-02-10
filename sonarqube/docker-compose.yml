@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database for SonarQube
+  sonarqube-db:
+    image: postgres:15-alpine
+    container_name: sonarqube-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: ${SONAR_DB_PASSWORD:-sonar_password_change_me}
+      POSTGRES_DB: sonarqube
+    volumes:
+      - sonarqube_db_data:/var/lib/postgresql/data
+    networks:
+      - sonarqube-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sonar"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # SonarQube Community Edition (ARM64 optimized)
+  sonarqube:
+    image: sonarqube:10.3-community
+    container_name: sonarqube-server
+    restart: unless-stopped
+    depends_on:
+      sonarqube-db:
+        condition: service_healthy
+    environment:
+      # Database connection
+      SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonarqube
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: ${SONAR_DB_PASSWORD:-sonar_password_change_me}
+
+      # Performance tuning for Raspberry Pi
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: 'true'
+      SONAR_WEB_JAVAOPTS: -Xmx512m -Xms128m
+      SONAR_CE_JAVAOPTS: -Xmx512m -Xms128m
+      SONAR_SEARCH_JAVAOPTS: -Xmx512m -Xms512m
+
+      # Data retention settings
+      SONAR_DBCLEANER_DAYSBEFOREDELETINGCLOSEDISSUES: 180
+      SONAR_DBCLEANER_DAYSBEFOREDELETINGINACTIVEPROJECTS: 365
+      SONAR_DBCLEANER_WEEKSBEFOREDELETINGSNAPSHOTS: 26  # ~6 months
+
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_temp:/opt/sonarqube/temp
+    networks:
+      - sonarqube-network
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:9000/api/system/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  # Backup container (runs periodically)
+  sonarqube-backup:
+    image: postgres:15-alpine
+    container_name: sonarqube-backup
+    restart: "no"
+    depends_on:
+      - sonarqube-db
+    environment:
+      PGHOST: sonarqube-db
+      PGUSER: sonar
+      PGPASSWORD: ${SONAR_DB_PASSWORD:-sonar_password_change_me}
+      PGDATABASE: sonarqube
+    volumes:
+      - ./backups:/backups
+      - ./scripts:/scripts:ro
+    networks:
+      - sonarqube-network
+    command: ["/bin/sh", "-c", "echo 'Backup container ready. Run manually with: docker-compose run sonarqube-backup /scripts/backup-db.sh'"]
+
+networks:
+  sonarqube-network:
+    driver: bridge
+
+volumes:
+  sonarqube_db_data:
+    driver: local
+  sonarqube_data:
+    driver: local
+  sonarqube_extensions:
+    driver: local
+  sonarqube_logs:
+    driver: local
+  sonarqube_temp:
+    driver: local

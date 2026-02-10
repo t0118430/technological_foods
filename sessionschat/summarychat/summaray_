@@ -1,0 +1,44 @@
+Here's a summary of everything done in this conversation:
+
+Summary
+1. API Security — Credentials & Authentication
+Problem: WiFi credentials and server IP were hardcoded in the Arduino sketch. No authentication on any API endpoint.
+
+Done:
+
+Created config.h.example — template with WIFI_SSID, WIFI_PASS, API_HOST, API_PORT, API_KEY
+Updated .ino sketch — uses #include "config.h", sends X-API-Key header on every request
+Updated server.py — validates X-API-Key on all endpoints (except /api/health)
+Updated .gitignore — config.h never reaches the repo
+2. Notification Service — Channel-Agnostic Alerts
+Problem: No way to get alerted when sensor values go out of range.
+
+Done:
+
+Created notification_service.py — NotificationChannel ABC interface with 4 concrete channels (Console, WhatsApp stub, SMS stub, Email stub)
+NotificationService orchestrator with per-rule cooldown (15 min default) to prevent spam
+New action type "notify" in the rule engine alongside "ac" and "arduino"
+Two new endpoints: POST /api/notifications/test and GET /api/notifications
+3. Hydroponic Alert Rules
+Done: Added 9 production-relevant rules to rules_config.json:
+
+Sensor	Low threshold	High threshold
+Temperature	< 15°C	> 30°C
+Humidity	< 40%	> 80%
+pH	< 5.5	> 7.0
+EC	< 0.8 mS/cm	> 2.5 mS/cm
+Water level	< 20%	—
+4. Postman Collection
+Updated AgriTech_API.postman_collection.json with all endpoints, X-API-Key auth at collection level, and ready-to-use requests to trigger alerts and change thresholds.
+
+5. Tests & README
+Created test_notification_service.py — 21 tests (channels, cooldown, history, rule integration)
+All 46 tests pass (25 existing + 21 new)
+Updated README.md with auth, notification, and hydroponic alert documentation
+Actions still needed from you
+Create your config.h — copy config.h.example, fill in your real WiFi credentials and API key
+Add API_KEY to your backend/.env — must match the key in config.h
+Flash the updated sketch to your Arduino UNO R4 WiFi
+Import the updated Postman collection and test with "Send Sensor Data (trigger alerts)"
+When ready for real alerts — fill in Twilio or SMTP credentials in .env, the channels auto-activate
+I also see you've since evolved the codebase significantly (ntfy channel, escalation manager, growth stages, drift detection, business dashboard, Swagger UI). Those were done outside this conversation but are already integrated.

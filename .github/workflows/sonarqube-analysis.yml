@@ -1,0 +1,85 @@
+name: SonarQube Code Analysis
+
+on:
+  push:
+    branches:
+      - master
+      - feature/**
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.10'
+
+jobs:
+  sonarqube-scan:
+    name: SonarQube Code Quality Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd backend/api
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pylint bandit
+
+      - name: Run tests with coverage
+        run: |
+          cd backend/api
+          pytest test_*.py -v --cov=. --cov-report=xml --cov-report=term
+        continue-on-error: true
+
+      - name: Run Pylint
+        run: |
+          cd backend/api
+          pylint *.py --output-format=text > ../../pylint-report.txt || true
+        continue-on-error: true
+
+      - name: Run Bandit security scan
+        run: |
+          cd backend/api
+          bandit -r . -f json -o ../../bandit-report.json || true
+        continue-on-error: true
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=technological-foods
+            -Dsonar.sources=backend,arduino
+            -Dsonar.python.coverage.reportPaths=backend/api/coverage.xml
+            -Dsonar.python.pylint.reportPaths=pylint-report.txt
+            -Dsonar.python.bandit.reportPaths=bandit-report.json
+
+      - name: Quality Gate Check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        continue-on-error: true
+
+      - name: Upload analysis artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: sonarqube-reports
+          path: |
+            backend/api/coverage.xml
+            pylint-report.txt
+            bandit-report.json

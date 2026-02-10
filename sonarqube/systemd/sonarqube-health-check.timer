@@ -1,0 +1,15 @@
+[Unit]
+Description=SonarQube Health Check Timer (Every 15 minutes)
+Documentation=https://docs.sonarqube.org/
+Requires=sonarqube.service
+
+[Timer]
+# Check health every 15 minutes
+OnBootSec=5min
+OnUnitActiveSec=15min
+
+# Don't accumulate missed runs
+Persistent=false
+
+[Install]
+WantedBy=timers.target

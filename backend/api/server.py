@@ -18,6 +18,10 @@ from notification_service import notifier
 from alert_escalation import escalation_manager
 from growth_stage_manager import growth_manager
 from database import db
+from business_dashboard import dashboard as business_dashboard
+from drift_detection_service import drift_detector
+from multi_channel_notifier import multi_notifier, AlertLevel, ChannelType
+from client_manager import client_manager
 
 # Load .env from backend directory
 env_path = Path(__file__).resolve().parent.parent / '.env'
@@ -263,9 +267,44 @@ class RequestHandler(BaseHTTPRequestHandler):
             analytics = growth_manager.get_harvest_analytics()
             self._send_json(200, analytics)
 
+        # ── Business Intelligence Dashboard (Complete) ────
+        elif path == "/api/business/dashboard":
+            try:
+                data = business_dashboard.get_complete_dashboard()
+                self._send_json(200, data)
+            except Exception as e:
+                logger.error(f"Business dashboard error: {e}")
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/business":
+            # Serve HTML business dashboard
+            try:
+                dashboard_path = Path(__file__).resolve().parent.parent / "dashboard.html"
+                if dashboard_path.exists():
+                    html_content = dashboard_path.read_text(encoding="utf-8")
+                    self._send_html(200, html_content)
+                else:
+                    self._send_html(404, "<h1>Dashboard not found</h1><p>dashboard.html is missing</p>")
+            except Exception as e:
+                logger.error(f"Dashboard HTML error: {e}")
+                self._send_html(500, f"<h1>Error</h1><p>{str(e)}</p>")
+
         elif path == "/api/calibrations/due":
             due = db.get_due_calibrations()
             self._send_json(200, {"calibrations_due": due})
+
+        # ── Drift Detection Status ────────────────────────
+        elif path == "/api/sensors/drift/status":
+            status = drift_detector.get_status()
+            self._send_json(200, status)
+
+        elif path.startswith("/api/sensors/drift/"):
+            sensor_id = path.split("/api/sensors/drift/")[1]
+            trend = drift_detector.get_drift_trend(sensor_id)
+            self._send_json(200, {
+                "sensor_id": sensor_id,
+                "trend": trend
+            })
 
         # ── Config Server: Arduino Command Polling ────────
         elif path == "/api/commands":
@@ -375,6 +414,99 @@ class RequestHandler(BaseHTTPRequestHandler):
                 logger.error(f"Error saving data: {e}")
                 self._send_json(500, {"error": str(e)})
 
+        # ── Dual Sensor System: Drift Detection ───────────
+        elif path == "/api/sensors/dual":
+            try:
+                data = self._read_body()
+
+                # Extract data
+                sensor_id = data.get("sensor_id", "unknown")
+                primary = data.get("primary", {})
+                secondary = data.get("secondary", {})
+                drift_data = data.get("drift", {})
+
+                # Analyze drift
+                analysis = drift_detector.analyze_dual_reading(
+                    sensor_id=sensor_id,
+                    primary=primary,
+                    secondary=secondary,
+                    sensor_tier="medium"  # Can be configured per client
+                )
+
+                # Calculate revenue risk
+                revenue_risk = drift_detector.calculate_revenue_risk(analysis)
+
+                # Get drift trend
+                trend = drift_detector.get_drift_trend(sensor_id)
+
+                # Check if alert should be sent
+                if drift_detector.should_send_alert(sensor_id, analysis):
+                    # Determine client (if sensor linked to client)
+                    # For now, use sensor_id as client name
+                    client_name = sensor_id.replace("_", " ").title()
+
+                    # Format business alert
+                    alert = drift_detector.format_business_alert(
+                        sensor_id, client_name, analysis, revenue_risk
+                    )
+
+                    # Determine alert level
+                    if analysis.status == "failing":
+                        alert_level = AlertLevel.AGGRESSIVE
+                    elif analysis.status == "degraded":
+                        alert_level = AlertLevel.MEDIUM
+                    else:
+                        alert_level = AlertLevel.OPTIMIST
+
+                    # Send to business private channel
+                    multi_notifier.send(
+                        channel=ChannelType.BUSINESS_PRIVATE,
+                        level=alert_level,
+                        title=alert["title"],
+                        body=alert["body"]
+                    )
+
+                    # Update client health score (if client linked)
+                    # client_manager.update_health_score(
+                    #     client_id=client_id,
+                    #     delta=-10 if analysis.status == "degraded" else -20,
+                    #     reason=f"Sensor drift detected: {analysis.status}"
+                    # )
+
+                    logger.info(f"[Drift Alert] {sensor_id}: {analysis.status} - Alert sent")
+
+                # Write to InfluxDB (both sensors + drift metrics)
+                write_to_influx({
+                    "temperature": primary.get("temperature"),
+                    "humidity": primary.get("humidity"),
+                    "temperature_secondary": secondary.get("temperature"),
+                    "humidity_secondary": secondary.get("humidity"),
+                    "temp_drift": analysis.temp_diff,
+                    "humidity_drift": analysis.humidity_diff,
+                    "drift_status": analysis.status,
+                }, sensor_id)
+
+                self._send_json(201, {
+                    "status": "analyzed",
+                    "sensor_id": sensor_id,
+                    "analysis": {
+                        "status": analysis.status,
+                        "temp_diff": analysis.temp_diff,
+                        "humidity_diff": analysis.humidity_diff,
+                        "needs_calibration": analysis.needs_calibration,
+                        "days_until_failure": analysis.estimated_days_until_failure,
+                    },
+                    "revenue_risk": revenue_risk,
+                    "trend": trend,
+                    "alert_sent": drift_detector.should_send_alert(sensor_id, analysis),
+                })
+
+            except json.JSONDecodeError:
+                self._send_json(400, {"error": "Invalid JSON"})
+            except Exception as e:
+                logger.error(f"Drift detection error: {e}")
+                self._send_json(500, {"error": str(e)})
+
         elif path == "/api/ac":
             try:
                 data = self._read_body()
@@ -419,6 +551,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         # ── Notifications: Test Alert with Real Data ──────
         elif path == "/api/notifications/test-real":
             try:
+                data = self._read_body() if int(self.headers.get("Content-Length", 0)) > 0 else {}
+                crop_id = data.get('crop_id')
+
                 # Get latest real data from InfluxDB
                 latest = query_latest()
 
@@ -428,13 +563,41 @@ class RequestHandler(BaseHTTPRequestHandler):
                     })
                     return
 
-                # Send notification with real data
-                results = notifier.test_alert(sensor_data=latest)
-                self._send_json(200, {
+                response = {
                     "status": "test_sent_with_real_data",
                     "sensor_data": latest,
-                    "channels": results,
-                })
+                }
+
+                # If crop_id provided, include production context
+                if crop_id is not None:
+                    crop_id = int(crop_id)
+                    conditions = growth_manager.get_current_conditions(crop_id)
+                    if not conditions:
+                        # Return available crops so user can pick
+                        crops = db.get_active_crops()
+                        self._send_json(404, {
+                            "error": f"Crop {crop_id} not found",
+                            "available_crops": crops,
+                        })
+                        return
+
+                    response["crop"] = {
+                        "crop_id": crop_id,
+                        "variety": conditions["variety"],
+                        "current_stage": conditions["current_stage"],
+                        "days_in_stage": conditions["days_in_stage"],
+                        "optimal_conditions": conditions["conditions"],
+                    }
+                else:
+                    # No crop selected — list available productions
+                    crops = db.get_active_crops()
+                    response["available_crops"] = crops
+
+                # Send notification with real data
+                results = notifier.test_alert(sensor_data=latest)
+                response["channels"] = results
+
+                self._send_json(200, response)
             except Exception as e:
                 logger.error(f"Test alert error: {e}")
                 self._send_json(500, {"error": str(e)})

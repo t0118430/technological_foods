@@ -1,0 +1,25 @@
+[Unit]
+Description=SonarQube Database Backup Service
+Documentation=https://docs.sonarqube.org/
+Requires=sonarqube.service
+After=sonarqube.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/sonarqube
+EnvironmentFile=/opt/sonarqube/.env
+
+# Run backup script
+ExecStart=/usr/bin/docker-compose run --rm sonarqube-backup /scripts/backup-db.sh
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sonarqube-backup
+
+# Security
+PrivateTmp=yes
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target

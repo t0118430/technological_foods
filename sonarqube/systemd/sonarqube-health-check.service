@@ -1,0 +1,38 @@
+[Unit]
+Description=SonarQube Health Check and Auto-Recovery
+Documentation=https://docs.sonarqube.org/
+Requires=sonarqube.service
+After=sonarqube.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/sonarqube
+
+# Health check script
+ExecStart=/bin/bash -c '\
+    STATUS=$(curl -sf http://localhost:9000/api/system/status | grep -o "\"status\":\"[A-Z]*\"" | cut -d"\"" -f4); \
+    if [ "$STATUS" = "UP" ]; then \
+        echo "✅ SonarQube is healthy (Status: $STATUS)"; \
+        exit 0; \
+    else \
+        echo "⚠️ SonarQube is unhealthy (Status: $STATUS)"; \
+        echo "Attempting restart..."; \
+        /usr/bin/docker-compose restart sonarqube; \
+        sleep 30; \
+        STATUS_NEW=$(curl -sf http://localhost:9000/api/system/status | grep -o "\"status\":\"[A-Z]*\"" | cut -d"\"" -f4); \
+        if [ "$STATUS_NEW" = "UP" ]; then \
+            echo "✅ Recovery successful"; \
+            exit 0; \
+        else \
+            echo "❌ Recovery failed - manual intervention required"; \
+            exit 1; \
+        fi \
+    fi'
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sonarqube-health
+
+[Install]
+WantedBy=multi-user.target
