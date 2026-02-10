@@ -1,177 +1,130 @@
-# 🚀 AgriTech CI/CD Pipeline
+# AgriTech CI/CD Pipeline
 
 ## Overview
 
-Complete CI/CD pipeline for the AgriTech Hydroponics SaaS Platform with automated testing, deployment, and monitoring.
+PR-gated, hardware-targeted CI/CD pipeline for the AgriTech Hydroponics Platform. All changes to `master` require a pull request with passing checks before merge. Deployments are selective — only changed components deploy to their respective hardware targets.
 
 ## Workflows
 
-### 1. **test-hello-world.yml** - Pipeline Verification
-- **Purpose**: Quick test to verify GitHub Actions is working
-- **Triggers**: Push to `feature/ci-cd-pipeline` or `master`
-- **What it does**:
-  - Prints environment info
-  - Validates basic GitHub Actions functionality
-  - Shows project structure
-  - Checks Python and Docker availability
+### 1. `pr-checks.yml` — PR Gate (required before merge)
 
-### 2. **test-backend.yml** - Comprehensive Testing
-- **Purpose**: Full backend test suite with quality checks
-- **Triggers**: Push to feature branches or `master`, PRs affecting backend
-- **Jobs**:
-  - **Lint & Validate**: JSON configs, Python syntax, OpenAPI spec
-  - **Unit Tests**: All pytest tests with coverage reporting
-  - **Integration Tests**: Tests with live InfluxDB service
-  - **Docker Build**: Validates docker-compose configuration
-  - **Security Scan**: Checks for vulnerabilities (safety, bandit)
-  - **Test Summary**: Overall results
+**Trigger**: Pull request to `master`
 
-### 3. **deploy-server-pi.yml** - Server Deployment
-- **Purpose**: Deploy backend to Raspberry Pi server with health checks and rollback
-- **Triggers**: Push to `master` affecting `backend/**`, manual dispatch
-- **What it deploys**: Backend API, Docker services, configs, database
+Detects which directories changed and runs only the relevant checks:
 
-### 4. **deploy-arduino-ota.yml** - Arduino OTA Deployment
-- **Purpose**: Deploy firmware to Arduino R4 WiFi over WiFi (no USB needed!)
-- **Triggers**: Push to `master` affecting `arduino/**`, manual dispatch
-- **What it deploys**: Compiled firmware binary to IoT device
-- **Jobs**:
-  - **Test**: Run all tests before deployment
-  - **Deploy**:
-    - Create backup
-    - Deploy code via rsync
-    - Restart services (Docker + systemd)
-    - Health check
-    - Rollback on failure
-    - Send notifications
+| Job | Runs when | What it does |
+|-----|-----------|-------------|
+| `detect-changes` | Always | Uses `dorny/paths-filter` to detect `backend/**`, `arduino/**`, `infra/**` changes |
+| `deployment-preview` | Always | Comments on the PR showing what will deploy where |
+| `lint-and-validate` | `backend/**` changed | JSON config validation, Python syntax, OpenAPI spec |
+| `unit-tests` | `backend/**` changed | pytest with coverage |
+| `integration-tests` | `backend/**` changed | Tests with live InfluxDB service container |
+| `docker-build` | `backend/**` changed | Validates docker-compose config |
+| `security-scan` | `backend/**` changed | safety + bandit vulnerability checks |
+| `arduino-build` | `arduino/**` changed | Compiles sketch to validate firmware builds |
+| `check-summary` | Always | Aggregates results, fails if any relevant check failed |
+
+### 2. `deploy.yml` — Deployment (after PR merge)
+
+**Trigger**: Push to `master` (only happens via approved PR merge)
+
+```
+detect-changes
+    |
+    +-- deploy-backend  (if backend/** or infra/** changed)
+    |       SSH backup -> selective rsync -> restart services -> health check -> rollback on failure
+    |
+    +-- deploy-arduino  (if arduino/** changed)
+    |       Build firmware -> OTA deploy -> verify -> GitHub release
+    |
+    +-- notify  (always)
+            Summary of what deployed and status
+```
+
+Key improvement: **rsync is now targeted** — only `backend/` and `infra/` are synced to the Pi, not the entire repo.
+
+### 3. `sonarqube-analysis.yml` — Code Quality (unchanged)
+
+**Trigger**: Push to `master` or `feature/**`, PRs to `master`
+
+Runs SonarQube analysis with coverage, pylint, and bandit reports.
+
+### 4. `test-hello-world.yml` — Pipeline Verification (unchanged)
+
+**Trigger**: Push to `feature/ci-cd-pipeline` or `master`
+
+Quick sanity check that GitHub Actions is working.
+
+## Pipeline Flow
+
+```
+feature branch
+    |
+    v
+Open PR to master
+    |
+    v
+pr-checks.yml runs  ─────────────────────────>  Deployment preview
+    |                                             comment on PR
+    +-- backend checks (if backend changed)
+    +-- arduino build (if arduino changed)
+    +-- check-summary (must pass)
+    |
+    v
+Reviewer approves PR
+    |
+    v
+Merge to master
+    |
+    v
+deploy.yml runs
+    |
+    +-- deploy-backend (selective rsync to Pi)
+    +-- deploy-arduino (OTA to Arduino)
+    +-- notify (ntfy summary)
+```
+
+## Deployment Preview
+
+When a PR is opened, a comment is automatically posted:
+
+```
+## Deployment Preview
+This PR will deploy to:
+- [x] Raspberry Pi (backend)
+- [ ] Raspberry Pi (infra) -- no changes
+- [ ] Arduino (firmware) -- no changes
+```
+
+This comment updates on each push to the PR branch.
 
 ## GitHub Secrets Required
 
-Set these in your repository settings (Settings → Secrets and variables → Actions):
+### Raspberry Pi
+| Secret | Description | Example |
+|--------|-------------|---------|
+| `PI_SSH_KEY` | SSH private key | ed25519 key |
+| `PI_HOST` | Pi hostname/IP | `192.168.1.10` |
+| `PI_USER` | SSH username | `pi` |
+| `PI_PROJECT_PATH` | Project path on Pi | `/home/pi/technological_foods` |
 
-### Raspberry Pi Server Access
-- `PI_SSH_KEY` - SSH private key for Pi access
-- `PI_HOST` - Raspberry Pi hostname or IP (e.g., `192.168.1.10`)
-- `PI_USER` - SSH username (e.g., `pi`)
-- `PI_PROJECT_PATH` - Project path on Pi (e.g., `/home/pi/technological_foods`)
-
-### Arduino IoT Device Access
-- `ARDUINO_IP` - Arduino IP address (e.g., `192.168.1.100`)
-- `ARDUINO_OTA_PASSWORD` - OTA password (optional but recommended)
+### Arduino
+| Secret | Description | Example |
+|--------|-------------|---------|
+| `ARDUINO_IP` | Arduino IP address | `192.168.1.100` |
+| `ARDUINO_OTA_PASSWORD` | OTA password | (optional) |
 
 ### Notifications
-- `NTFY_TOPIC_URL` - ntfy.sh topic URL (e.g., `https://ntfy.sh/techfoods`)
+| Secret | Description | Example |
+|--------|-------------|---------|
+| `NTFY_TOPIC_URL` | ntfy topic URL | `https://ntfy.sh/techfoods` |
 
-## Deployment Flows
+## Rollback
 
-### Server Deployment (Pi)
-```
-Backend code push to master
-    ↓
-Run Tests (all must pass)
-    ↓
-Create Backup on Pi
-    ↓
-Deploy Code via rsync
-    ↓
-Restart Services (Docker + systemd)
-    ↓
-Health Check
-    ↓
-✅ Success → Notification
-❌ Failure → Rollback + notify
-```
+### Automatic
+If the health check fails after backend deployment, the pipeline automatically restores from the pre-deploy backup and restarts services.
 
-### Arduino Deployment (OTA)
-```
-Arduino code push to master
-    ↓
-Build Firmware (.bin)
-    ↓
-Upload Artifact
-    ↓
-Deploy via OTA (WiFi)
-    ↓
-Arduino Reboots
-    ↓
-Verify New Version
-    ↓
-✅ Success → Create Release
-❌ Failure → Notify (manual USB flash)
-```
-
-**Note**: These run **independently** - changing backend doesn't redeploy Arduino and vice versa!
-
-## Local Testing
-
-### Test GitHub Actions Locally (using act)
-
-```bash
-# Install act (GitHub Actions local runner)
-# Windows: choco install act-cli
-# macOS: brew install act
-# Linux: curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
-
-# Run hello-world workflow
-act -W .github/workflows/test-hello-world.yml
-
-# Run backend tests
-act -W .github/workflows/test-backend.yml
-
-# Run specific job
-act -j unit-tests
-```
-
-### Manual Deployment
-
-```bash
-# SSH to Raspberry Pi
-ssh pi@<pi-ip>
-
-# Navigate to project
-cd /path/to/technological_foods
-
-# Pull latest code
-git pull origin master
-
-# Run deployment manually
-./deploy/backup.sh pre-manual-deploy
-sudo systemctl restart agritech-api.service
-cd backend && docker-compose up -d
-./deploy/health-check.sh
-```
-
-## Health Checks
-
-### Basic Health Check
-```bash
-./deploy/health-check.sh
-```
-Checks:
-- Docker services (InfluxDB, Grafana, Node-RED)
-- API endpoint availability
-- Disk space usage
-
-### SaaS Platform Health Check
-```bash
-./deploy/health-check-saas.sh
-```
-Checks:
-- All basic checks
-- SaaS business endpoints
-- Memory usage
-- Database status
-- Resource usage
-
-## Rollback Procedure
-
-### Automatic Rollback
-If health check fails after deployment, the pipeline automatically:
-1. Restores from backup
-2. Restarts services
-3. Sends failure notification
-
-### Manual Rollback
+### Manual
 ```bash
 ssh pi@<pi-ip>
 cd /path/to/technological_foods
@@ -180,116 +133,24 @@ sudo systemctl restart agritech-api.service
 cd backend && docker-compose restart
 ```
 
-## Monitoring
+## Local Testing with `act`
 
-### GitHub Actions Dashboard
-- View workflow runs: Repository → Actions
-- Check logs for failed jobs
-- Re-run failed workflows
-
-### Real-time Notifications
-All deployments send notifications via ntfy:
-- ✅ Success: Default priority
-- ❌ Failure: High priority with alert
-
-Subscribe to notifications:
 ```bash
-# Mobile app or browser
-https://ntfy.sh/techfoods
+# Run PR checks
+act pull_request -W .github/workflows/pr-checks.yml
+
+# Run deploy (simulated)
+act push -W .github/workflows/deploy.yml
 ```
 
-## CI/CD Best Practices
+## Related Documentation
 
-### Branch Strategy
-- `master` - Production, deploys automatically
-- `feature/*` - Feature branches, runs tests only
-- `hotfix/*` - Urgent fixes, runs tests then deploy
-
-### Pre-commit Checks
-Run locally before pushing:
-```bash
-# Run all tests
-cd backend/api
-pytest test_*.py -v
-
-# Validate configs
-python -m json.tool backend/api/rules_config.json
-python -m json.tool backend/config/base_hydroponics.json
-
-# Check Python syntax
-python -m py_compile backend/api/*.py
-```
-
-### Deployment Schedule
-- **Push to master**: Immediate deployment (automated)
-- **Off-hours**: Manual dispatch preferred for major changes
-- **Backup verification**: Weekly (automated)
-
-## Troubleshooting
-
-### Pipeline Fails at Test Stage
-1. Check test logs in GitHub Actions
-2. Run tests locally: `cd backend/api && pytest -v`
-3. Fix issues and push again
-
-### Deployment Fails
-1. Check deployment logs
-2. SSH to Pi and check service status:
-   ```bash
-   systemctl status agritech-api.service
-   docker-compose ps
-   ```
-3. Check health-check.sh output
-4. Review backup files in `/tmp/agritech-backups/`
-
-### Health Check Fails
-1. Check individual service status
-2. Review API logs: `journalctl -u agritech-api.service -f`
-3. Check Docker logs: `docker-compose logs -f`
-4. Verify network connectivity
-
-### Rollback Issues
-1. List available backups: `ls -lh /tmp/agritech-backups/`
-2. Restore specific backup: `./deploy/restore.sh <backup-name>`
-3. Verify services: `./deploy/health-check.sh`
-
-## Performance Metrics
-
-### Build Times (approximate)
-- Hello World Test: ~30 seconds
-- Backend Tests: ~3-5 minutes
-- Full Deployment: ~5-8 minutes
-
-### Success Criteria
-- All tests pass: ✅
-- Coverage >80%: ✅
-- Security scan clean: ✅
-- Health check passes: ✅
-
-## Future Enhancements
-
-### Planned
-- [ ] Staging environment deployment
-- [ ] Blue-green deployment strategy
-- [ ] Automated database migrations
-- [ ] Performance benchmarking
-- [ ] Load testing
-
-### Consideration
-- [ ] Multi-region deployment
-- [ ] Kubernetes orchestration
-- [ ] Infrastructure as Code (Terraform)
-- [ ] Automated scaling
-
-## Links
-
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [Docker Documentation](https://docs.docker.com/)
-- [pytest Documentation](https://docs.pytest.org/)
-- [InfluxDB Documentation](https://docs.influxdata.com/)
+- [CI/CD Current Pipeline](../../docs/devops/cicd/CURRENT_PIPELINE.md) — Detailed breakdown of what's implemented
+- [CI/CD Improvements Roadmap](../../docs/devops/cicd/IMPROVEMENTS_ROADMAP.md) — Strategy for pipeline improvements
+- [Branch Protection Setup](../../docs/devops/cicd/BRANCH_PROTECTION_SETUP.md) — How to configure GitHub branch rules
+- [Deployment Strategy](./DEPLOYMENT_STRATEGY.md) — Two-tier hardware deployment architecture
+- [DevOps Deployment Guide](../../docs/devops/DEVOPS_DEPLOYMENT_GUIDE.md) — Full Pi setup and operations guide
 
 ---
 
-**Status**: ✅ Production Ready
-**Last Updated**: 2026-02-08
-**Maintained by**: AgriTech DevOps Team
+**Last Updated**: 2026-02-10
