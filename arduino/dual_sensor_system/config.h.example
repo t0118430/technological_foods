@@ -11,7 +11,7 @@
 // ── API Server Configuration ──────────────────────────────────
 #define API_HOST "192.168.1.100"  // Your Raspberry Pi IP
 #define API_PORT 3001
-#define API_KEY "agritech-secret-key-2026"
+#define API_KEY "your-api-key-here"
 
 // ── Sensor Configuration ──────────────────────────────────────
 #define SENSOR_ID "arduino_dual_1"  // Unique identifier for this Arduino
