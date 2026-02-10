@@ -1,0 +1,362 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.10'
+
+jobs:
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      arduino: ${{ steps.filter.outputs.arduino }}
+      infra: ${{ steps.filter.outputs.infra }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            arduino:
+              - 'arduino/**'
+            infra:
+              - 'infra/**'
+
+  deployment-preview:
+    name: Deployment Preview
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Comment deployment preview on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const backend = '${{ needs.detect-changes.outputs.backend }}' === 'true';
+            const arduino = '${{ needs.detect-changes.outputs.arduino }}' === 'true';
+            const infra = '${{ needs.detect-changes.outputs.infra }}' === 'true';
+
+            let body = '## Deployment Preview\n\n';
+            body += 'This PR will deploy to:\n\n';
+            body += `- [${backend ? 'x' : ' '}] **Raspberry Pi** (backend) ${backend ? '' : '-- no changes'}\n`;
+            body += `- [${infra ? 'x' : ' '}] **Raspberry Pi** (infra) ${infra ? '' : '-- no changes'}\n`;
+            body += `- [${arduino ? 'x' : ' '}] **Arduino** (firmware) ${arduino ? '' : '-- no changes'}\n`;
+
+            if (!backend && !arduino && !infra) {
+              body += '\n> No deployment targets affected by this PR.\n';
+            }
+
+            // Find and update existing comment or create new one
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const marker = '## Deployment Preview';
+            const existing = comments.find(c => c.body.startsWith(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body,
+              });
+            }
+
+  lint-and-validate:
+    name: Lint & Validate Configs
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install validation tools
+        run: pip install pylint flake8 jsonschema
+
+      - name: Validate JSON configs
+        run: |
+          echo "Validating JSON configuration files..."
+          python -m json.tool backend/api/rules_config.json > /dev/null
+          python -m json.tool backend/config/base_hydroponics.json > /dev/null
+          python -m json.tool backend/config/variety_rosso_premium.json > /dev/null
+          python -m json.tool backend/config/variety_curly_green.json > /dev/null
+          python -m json.tool backend/AgriTech_API.postman_collection.json > /dev/null
+
+      - name: Check Python syntax
+        run: python -m py_compile backend/api/*.py
+
+      - name: Validate OpenAPI spec
+        run: python -m json.tool backend/api/openapi.json > /dev/null
+
+  unit-tests:
+    name: Unit Tests
+    needs: [detect-changes, lint-and-validate]
+    if: needs.detect-changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd backend/api
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-xdist
+
+      - name: Run unit tests with coverage
+        run: |
+          cd backend/api
+          pytest test_*.py -v --cov=. --cov-report=term-missing --cov-report=xml --cov-report=html -n auto
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: backend/api/htmlcov/
+
+  integration-tests:
+    name: Integration Tests
+    needs: [detect-changes, unit-tests]
+    if: needs.detect-changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+
+    services:
+      influxdb:
+        image: influxdb:2.7
+        env:
+          DOCKER_INFLUXDB_INIT_MODE: setup
+          DOCKER_INFLUXDB_INIT_USERNAME: admin
+          DOCKER_INFLUXDB_INIT_PASSWORD: adminpassword
+          DOCKER_INFLUXDB_INIT_ORG: agritech
+          DOCKER_INFLUXDB_INIT_BUCKET: hydroponics
+          DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: test-token-for-ci
+        ports:
+          - 8086:8086
+        options: >-
+          --health-cmd "influx ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd backend/api
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Wait for InfluxDB
+        run: |
+          timeout 30 bash -c 'until curl -s http://localhost:8086/health | grep -q "pass"; do sleep 2; done'
+
+      - name: Start API server
+        env:
+          INFLUXDB_URL: http://localhost:8086
+          INFLUXDB_TOKEN: test-token-for-ci
+          INFLUXDB_ORG: agritech
+          INFLUXDB_BUCKET: hydroponics
+        run: |
+          cd backend/api
+          python server.py &
+          echo $! > server.pid
+          sleep 5
+
+      - name: Run integration tests
+        env:
+          INFLUXDB_URL: http://localhost:8086
+          INFLUXDB_TOKEN: test-token-for-ci
+          INFLUXDB_ORG: agritech
+          INFLUXDB_BUCKET: hydroponics
+        run: |
+          cd backend/api
+          pytest test_integration.py -v --junit-xml=integration-results.xml
+
+      - name: Stop API server
+        if: always()
+        run: |
+          if [ -f backend/api/server.pid ]; then
+            kill $(cat backend/api/server.pid) || true
+            rm backend/api/server.pid
+          fi
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: backend/api/integration-results.xml
+
+  docker-build:
+    name: Docker Build Test
+    needs: [detect-changes, lint-and-validate]
+    if: needs.detect-changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate docker-compose
+        run: |
+          cd backend
+          docker-compose config > /dev/null
+
+      - name: List docker-compose services
+        run: |
+          cd backend
+          docker-compose config --services
+
+  security-scan:
+    name: Security Scan
+    needs: [detect-changes, lint-and-validate]
+    if: needs.detect-changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install security tools
+        run: pip install safety bandit
+
+      - name: Check for known vulnerabilities
+        run: |
+          cd backend/api
+          safety check --file requirements.txt || echo "Some vulnerabilities found"
+
+      - name: Run Bandit security scan
+        run: |
+          cd backend/api
+          bandit -r . -f txt || echo "Some security issues found"
+
+  arduino-build:
+    name: Arduino Build Check
+    needs: detect-changes
+    if: needs.detect-changes.outputs.arduino == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Arduino CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          echo "$HOME/bin" >> $GITHUB_PATH
+
+      - name: Install Arduino R4 WiFi core
+        run: |
+          arduino-cli config init
+          arduino-cli core update-index
+          arduino-cli core install arduino:renesas_uno
+
+      - name: Install required libraries
+        run: |
+          arduino-cli lib install "DHT sensor library"
+          arduino-cli lib install "Adafruit Unified Sensor"
+          arduino-cli lib install "ArduinoHttpClient"
+          arduino-cli lib install "WiFiS3"
+          arduino-cli lib install "ArduinoJson"
+
+      - name: Compile sketch (validation only)
+        run: |
+          cd arduino/temp_hum_light_sending_api
+          arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi --warnings all
+
+  check-summary:
+    name: PR Check Summary
+    needs: [detect-changes, lint-and-validate, unit-tests, integration-tests, docker-build, security-scan, arduino-build]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print summary
+        run: |
+          echo "========================================"
+          echo "  PR Checks Complete"
+          echo "========================================"
+          echo ""
+          echo "Changes detected:"
+          echo "  Backend:  ${{ needs.detect-changes.outputs.backend }}"
+          echo "  Arduino:  ${{ needs.detect-changes.outputs.arduino }}"
+          echo "  Infra:    ${{ needs.detect-changes.outputs.infra }}"
+          echo ""
+          echo "Results:"
+          echo "  Lint & Validation:  ${{ needs.lint-and-validate.result }}"
+          echo "  Unit Tests:         ${{ needs.unit-tests.result }}"
+          echo "  Integration Tests:  ${{ needs.integration-tests.result }}"
+          echo "  Docker Build:       ${{ needs.docker-build.result }}"
+          echo "  Security Scan:      ${{ needs.security-scan.result }}"
+          echo "  Arduino Build:      ${{ needs.arduino-build.result }}"
+
+      - name: Fail if any required check failed
+        run: |
+          BACKEND="${{ needs.detect-changes.outputs.backend }}"
+          ARDUINO="${{ needs.detect-changes.outputs.arduino }}"
+
+          if [ "$BACKEND" == "true" ]; then
+            if [ "${{ needs.unit-tests.result }}" == "failure" ] || \
+               [ "${{ needs.integration-tests.result }}" == "failure" ] || \
+               [ "${{ needs.lint-and-validate.result }}" == "failure" ]; then
+              echo "Backend checks failed!"
+              exit 1
+            fi
+          fi
+
+          if [ "$ARDUINO" == "true" ]; then
+            if [ "${{ needs.arduino-build.result }}" == "failure" ]; then
+              echo "Arduino build check failed!"
+              exit 1
+            fi
+          fi
+
+          echo "All relevant checks passed!"
