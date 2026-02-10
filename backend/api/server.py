@@ -23,6 +23,18 @@ from drift_detection_service import drift_detector
 from multi_channel_notifier import multi_notifier, AlertLevel, ChannelType
 from client_manager import client_manager
 
+# Redis cache for latest readings (optional)
+_redis_cache = None
+try:
+    from pg_database import RedisCache
+    _redis_cache = RedisCache()
+    if _redis_cache.available:
+        logging.getLogger('http-server').info("Redis cache enabled for latest readings")
+    else:
+        _redis_cache = None
+except ImportError:
+    pass
+
 # Load .env from backend directory
 env_path = Path(__file__).resolve().parent.parent / '.env'
 load_dotenv(env_path)
@@ -52,7 +64,7 @@ rule_engine = RuleEngine()
 
 
 def write_to_influx(data: Dict[str, Any], sensor_id: str = "arduino_1"):
-    """Write sensor data to InfluxDB"""
+    """Write sensor data to InfluxDB and update Redis cache."""
     point = Point("sensor_reading")
     point = point.tag("sensor_id", sensor_id)
     point = point.tag("source", "http_api")
@@ -68,11 +80,24 @@ def write_to_influx(data: Dict[str, Any], sensor_id: str = "arduino_1"):
             point = point.field(key, str(value))
 
     write_api.write(bucket=INFLUXDB_BUCKET, record=point)
+
+    # Update Redis cache with latest reading (TTL 30s)
+    if _redis_cache:
+        _redis_cache.set_latest_reading(sensor_id, data, ttl=30)
+
     logger.info(f"Stored in InfluxDB: {data}")
 
 
-def query_latest():
-    """Query latest sensor readings from InfluxDB"""
+def query_latest(sensor_id: str = "arduino_1"):
+    """Query latest sensor readings. Tries Redis cache first, falls back to InfluxDB."""
+    # Try Redis cache first (sub-millisecond)
+    if _redis_cache:
+        cached = _redis_cache.get_latest_reading(sensor_id)
+        if cached:
+            cached['_source'] = 'redis_cache'
+            return cached
+
+    # Fallback to InfluxDB query
     query = f'''
     from(bucket: "{INFLUXDB_BUCKET}")
         |> range(start: -1h)
@@ -85,6 +110,7 @@ def query_latest():
         for record in table.records:
             result[record.get_field()] = record.get_value()
             result['timestamp'] = str(record.get_time())
+    result['_source'] = 'influxdb'
     return result
 
 

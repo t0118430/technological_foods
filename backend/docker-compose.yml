@@ -56,6 +56,41 @@ services:
     networks:
       - agritech-network
 
+  # PostgreSQL - Relational database for crop lifecycle, business, and BI
+  postgres:
+    image: postgres:15-alpine
+    container_name: agritech-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=agritech
+      - POSTGRES_USER=${PG_USER:-agritech}
+      - POSTGRES_PASSWORD=${PG_PASSWORD:-CHANGE_ME}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agritech"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agritech-network
+
+  # Redis - Cache layer for latest readings, dashboard refresh, rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: agritech-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - agritech-network
+
 networks:
   agritech-network:
     driver: bridge
@@ -65,3 +100,5 @@ volumes:
   influxdb-config:
   grafana-data:
   nodered-data:
+  postgres-data:
+  redis-data:
