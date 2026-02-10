@@ -652,8 +652,8 @@
     },
     "/api/notifications/test": {
       "post": {
-        "summary": "Send test alert",
-        "description": "Fires a test alert through all available channels. Bypasses cooldown. Uses sample sensor data to simulate a real alert.",
+        "summary": "Send test alert (sample data)",
+        "description": "Fires a test alert through all available channels. Bypasses cooldown. Uses hardcoded sample sensor data.",
         "operationId": "testNotification",
         "tags": ["Notifications"],
         "responses": {
@@ -671,6 +671,136 @@
           },
           "500": {
             "description": "Error sending test",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/notifications/test-real": {
+      "post": {
+        "summary": "Snapshot notification (real sensor data)",
+        "description": "Takes a snapshot of the latest real sensor readings from InfluxDB and fires a notification.\n\n- **Without `crop_id`**: returns sensor data + list of available crops so you can pick one.\n- **With `crop_id`**: returns sensor data + production context (variety, growth stage, optimal conditions vs actual readings).\n\nUseful for verifying the full pipeline and comparing real values against stage-specific thresholds.",
+        "operationId": "testNotificationReal",
+        "tags": ["Notifications"],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "crop_id": {
+                    "type": "integer",
+                    "description": "Crop/production ID to scope the snapshot. Omit to list all available crops.",
+                    "example": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Snapshot sent. Includes production context when crop_id is provided, or available_crops list when omitted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "test_sent_with_real_data" },
+                    "sensor_data": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "description": "Latest sensor readings from InfluxDB",
+                      "example": {
+                        "temperature": 24.3,
+                        "humidity": 58.2,
+                        "ph": 6.15,
+                        "ec": 1.48,
+                        "water_level": 72.5,
+                        "light_level": 430.0,
+                        "timestamp": "2026-02-10T14:30:00Z"
+                      }
+                    },
+                    "crop": {
+                      "type": "object",
+                      "description": "Production context (only when crop_id is provided)",
+                      "properties": {
+                        "crop_id": { "type": "integer", "example": 1 },
+                        "variety": { "type": "string", "example": "rosso_premium" },
+                        "current_stage": { "type": "string", "example": "vegetative" },
+                        "days_in_stage": { "type": "integer", "example": 12 },
+                        "optimal_conditions": {
+                          "type": "object",
+                          "additionalProperties": true,
+                          "description": "Stage-specific optimal ranges for comparison with actual sensor_data"
+                        }
+                      }
+                    },
+                    "available_crops": {
+                      "type": "array",
+                      "description": "List of active crops (only when crop_id is omitted)",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "variety": { "type": "string" },
+                          "current_stage": { "type": "string" },
+                          "zone": { "type": "string" }
+                        }
+                      }
+                    },
+                    "channels": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "channel": { "type": "string" },
+                          "available": { "type": "boolean" },
+                          "sent": { "type": "boolean" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "404": {
+            "description": "No sensor data available, or crop_id not found (returns available_crops list)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/escalation": {
+      "get": {
+        "summary": "Alert escalation status",
+        "description": "Returns active alerts and their escalation levels (preventive → warning → critical → urgent).",
+        "operationId": "getEscalation",
+        "tags": ["Notifications"],
+        "responses": {
+          "200": {
+            "description": "Current escalation state and active alerts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
           }
         }

@@ -1,0 +1,22 @@
+Summary
+What we did:
+
+Added ntfy notification channel to notification_service.py — a fully working channel (not a stub like WhatsApp/SMS/Email) that POSTs to ntfy.sh using only stdlib urllib.request
+
+Dashboard body format — replaced the plain key: value sensor dump with a visual panel showing each metric with emoji, current value, status (Normal/Alto/Baixo), ideal range, and a gauge bar
+
+ntfy-specific headers — Markdown enabled, priority mapped from severity (critical=5, warning=4), emoji tags (rotating_light, warning, etc.), and optional auth token
+
+You extended it further with escalation system (send_with_priority), preventive alerts, recommended_action in the body, warning_margin in rules, and test_alert() accepting real sensor data
+
+Confirmed ntfy works — you curled ntfy.sh/techfoods and got back a valid response
+
+Action items
+Subscribe on your phone — open the ntfy app and subscribe to the techfoods topic
+Set NTFY_TOPIC=techfoods in your actual .env (not just .env.example)
+Start the server and send a test alert to see the full dashboard on your phone:
+
+curl -X POST http://localhost:3001/api/notifications/test -H "X-API-Key: agritech-secret-key-2026"
+Run the full test suite to make sure all the changes you made (escalation, preventive alerts, pipeline tests) pass together:
+
+cd backend/api && python -m pytest test_notification_service.py -v

@@ -3,7 +3,7 @@
 #include <DHT20.h>
 #include "config.h"
 
-#define LED_PIN 2
+#define LED_PIN 2  // Seeed sensor kit LED on port D2
 #define LIGHT_SENSOR_PIN A0  // Analog pin for LDR/light sensor (if connected)
 
 // API paths
@@ -19,9 +19,9 @@ unsigned long lastBlink = 0;
 const unsigned long SENSOR_INTERVAL = 2000;
 const unsigned long BLINK_INTERVAL = 300;
 
-// LED state (controlled by server)
+// LED state – driven by API response
 bool ledState = false;
-bool shouldBlink = false;
+bool shouldBlink = false;  // true = error (blink), false + ledOn = success (solid)
 bool ledOn = false;
 
 // ── Simulated sensor state ────────────────────────────────────
@@ -92,17 +92,53 @@ void sendToAPI(float temp, float humidity, float ph, float ec,
     client.println();
     client.println(json);
 
+    // Read response and extract HTTP status code
+    String statusLine = "";
+    bool gotStatus = false;
     unsigned long timeout = millis();
     while (client.connected() && millis() - timeout < 3000) {
       if (client.available()) {
         char c = client.read();
         Serial.print(c);
+        // Capture first line (e.g. "HTTP/1.0 201 Created")
+        if (!gotStatus) {
+          if (c == '\n') {
+            gotStatus = true;
+          } else if (c != '\r') {
+            statusLine += c;
+          }
+        }
       }
     }
     client.stop();
     Serial.println("\nData sent!");
+
+    // Parse status code from "HTTP/1.x NNN ..."
+    int httpCode = 0;
+    int spaceIdx = statusLine.indexOf(' ');
+    if (spaceIdx > 0) {
+      httpCode = statusLine.substring(spaceIdx + 1, spaceIdx + 4).toInt();
+    }
+
+    if (httpCode >= 200 && httpCode < 300) {
+      // Success → solid LED
+      shouldBlink = false;
+      ledOn = true;
+      Serial.println(">> OK - LED solid ON");
+    } else {
+      // Error → blink LED
+      shouldBlink = true;
+      ledOn = false;
+      Serial.print(">> ERROR ");
+      Serial.print(httpCode);
+      Serial.println(" - LED blinking");
+    }
+
   } else {
     Serial.println("Connection failed");
+    // Can't connect → blink LED
+    shouldBlink = true;
+    ledOn = false;
   }
 }
 
@@ -132,12 +168,9 @@ void pollCommands() {
     if (bodyStart < 0) return;
     String body = response.substring(bodyStart + 4);
 
+    // Server commands can still override LED if explicitly sent
     int ledIdx = body.indexOf("\"led\"");
-    if (ledIdx < 0) {
-      shouldBlink = false;
-      ledOn = false;
-      return;
-    }
+    if (ledIdx < 0) return;  // No LED command — keep current state from sendToAPI
 
     int valStart = body.indexOf("\"", ledIdx + 5) + 1;
     int valEnd = body.indexOf("\"", valStart);
@@ -153,7 +186,7 @@ void pollCommands() {
     } else if (ledCmd == "on") {
       shouldBlink = false;
       ledOn = true;
-    } else {
+    } else if (ledCmd == "off") {
       shouldBlink = false;
       ledOn = false;
     }

@@ -551,6 +551,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         # ── Notifications: Test Alert with Real Data ──────
         elif path == "/api/notifications/test-real":
             try:
+                data = self._read_body() if int(self.headers.get("Content-Length", 0)) > 0 else {}
+                crop_id = data.get('crop_id')
+
                 # Get latest real data from InfluxDB
                 latest = query_latest()
 
@@ -560,13 +563,41 @@ class RequestHandler(BaseHTTPRequestHandler):
                     })
                     return
 
-                # Send notification with real data
-                results = notifier.test_alert(sensor_data=latest)
-                self._send_json(200, {
+                response = {
                     "status": "test_sent_with_real_data",
                     "sensor_data": latest,
-                    "channels": results,
-                })
+                }
+
+                # If crop_id provided, include production context
+                if crop_id is not None:
+                    crop_id = int(crop_id)
+                    conditions = growth_manager.get_current_conditions(crop_id)
+                    if not conditions:
+                        # Return available crops so user can pick
+                        crops = db.get_active_crops()
+                        self._send_json(404, {
+                            "error": f"Crop {crop_id} not found",
+                            "available_crops": crops,
+                        })
+                        return
+
+                    response["crop"] = {
+                        "crop_id": crop_id,
+                        "variety": conditions["variety"],
+                        "current_stage": conditions["current_stage"],
+                        "days_in_stage": conditions["days_in_stage"],
+                        "optimal_conditions": conditions["conditions"],
+                    }
+                else:
+                    # No crop selected — list available productions
+                    crops = db.get_active_crops()
+                    response["available_crops"] = crops
+
+                # Send notification with real data
+                results = notifier.test_alert(sensor_data=latest)
+                response["channels"] = results
+
+                self._send_json(200, response)
             except Exception as e:
                 logger.error(f"Test alert error: {e}")
                 self._send_json(500, {"error": str(e)})

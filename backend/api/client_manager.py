@@ -5,10 +5,13 @@ Tracks B2B clients, sensor health, and service revenue opportunities
 
 import sqlite3
 import logging
+from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 from enum import Enum
+
+_DEFAULT_DB = Path(__file__).resolve().parent.parent / 'data' / 'agritech.db'
 
 logger = logging.getLogger('client-manager')
 
@@ -70,7 +73,7 @@ class ServiceVisit:
 class ClientManager:
     """Manages B2B clients and calibration tracking"""
 
-    def __init__(self, db_path: str = "backend/data/agritech.db"):
+    def __init__(self, db_path: str = _DEFAULT_DB):
         self.db_path = db_path
         self._init_database()
 

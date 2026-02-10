@@ -1,0 +1,34 @@
+Session Summary
+What was done
+Swagger/OpenAPI integration for the AgriTech Hydroponics API:
+
+Created openapi.json — Full OpenAPI 3.0 spec covering all endpoints, grouped by tags (Health, Sensor Data, AC Control, Rule Engine, Arduino Commands, Notifications). Includes request/response schemas, examples, and X-API-Key security scheme.
+
+Added Swagger UI to server.py — Two new public endpoints:
+
+GET /api/docs — Swagger UI loaded from CDN (no pip dependencies)
+GET /api/openapi.json — Raw spec with CORS header
+Updated README.md — New "Swagger / API Docs" section with links and usage instructions.
+
+You then expanded the project significantly (outside this session's scope), adding:
+
+/api/notifications/test-real — snapshot with real InfluxDB data + optional crop context
+/api/escalation — alert escalation status (preventive/warning/critical/urgent)
+Growth stage management (/api/crops, /api/dashboard, /api/harvest/analytics)
+Sensor calibration endpoints
+Dual sensor drift detection (/api/sensors/dual, /api/sensors/drift/status)
+Business dashboard (/api/business/dashboard, /business)
+NtfyChannel in notification service
+Escalation manager, growth manager, database, drift detection, multi-channel notifier, client manager integrations
+Action Points
+Update openapi.json with the new endpoints — The spec currently covers the original 14 endpoints but is missing ~15+ endpoints you added (crops, dashboard, harvest, calibrations, drift, business, etc.). The file was partially updated (test-real, escalation added) but still missing growth/calibration/drift/business endpoints.
+
+Update the startup print block — Already partially done, but verify it matches all current routes.
+
+Update README endpoints table — The table should reflect all the new Growth Stage, Calibration, Drift Detection, and Business Dashboard endpoints.
+
+Test Swagger UI — Start the server and open http://localhost:3001/api/docs to verify everything renders and the Authorize button works.
+
+Consider adding CORS for OPTIONS — If you plan to call the API from a browser frontend, the server currently doesn't handle OPTIONS preflight requests (only Access-Control-Allow-Origin on the spec endpoint).
+
+Want me to tackle any of these action points now?
