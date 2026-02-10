@@ -1,0 +1,170 @@
+{
+  "_comment": "Curly Green Lettuce (Lollo Bionda / Green Leaf) - Lactuca sativa var. crispa",
+  "_extends": "base_hydroponics.json",
+  "_scientific_name": "Lactuca sativa 'Lollo Bionda'",
+  "_type": "Curly Green Leaf Lettuce",
+  "_maturity_days": "40-50",
+  "_source": "Optimized for fast growth and tender, crispy leaves",
+
+  "variety": {
+    "name": "Curly Green",
+    "display_name": "Alface Crespa Verde",
+    "color": "bright_green",
+    "characteristics": [
+      "Bright green curly leaves",
+      "Mild, sweet flavor",
+      "Very crispy texture",
+      "Fast growing",
+      "Lower light requirements"
+    ],
+    "market_value": "standard",
+    "difficulty": "easy"
+  },
+
+  "growth_stages": {
+    "seedling": {
+      "days": "0-12",
+      "ec_range": "0.6-1.0",
+      "light_hours": 16,
+      "notes": "Fast germination, delicate roots"
+    },
+    "vegetative": {
+      "days": "12-30",
+      "ec_range": "1.2-1.6",
+      "light_hours": 14,
+      "notes": "Rapid leaf curling and expansion"
+    },
+    "maturity": {
+      "days": "30-50",
+      "ec_range": "1.4-1.8",
+      "light_hours": 12,
+      "notes": "Peak crispness and flavor"
+    }
+  },
+
+  "optimal_ranges": {
+    "temperature": {
+      "critical_min": 14.0,
+      "optimal_min": 18.0,
+      "optimal_max": 22.0,
+      "critical_max": 26.0,
+      "warning_margin": 2.0,
+      "notes": "Cooler temps preferred, 18-22°C ideal for crispness and sweetness"
+    },
+    "humidity": {
+      "critical_min": 45.0,
+      "optimal_min": 55.0,
+      "optimal_max": 70.0,
+      "critical_max": 80.0,
+      "warning_margin": 5.0,
+      "notes": "Moderate-high humidity for tender leaves"
+    },
+    "ph": {
+      "critical_min": 5.5,
+      "optimal_min": 6.0,
+      "optimal_max": 6.5,
+      "critical_max": 7.0,
+      "warning_margin": 0.3,
+      "notes": "Slightly higher pH than red varieties, optimal nutrient uptake"
+    },
+    "ec": {
+      "critical_min": 0.8,
+      "optimal_min": 1.2,
+      "optimal_max": 1.8,
+      "critical_max": 2.2,
+      "warning_margin": 0.3,
+      "notes": "Lower EC than red varieties, prevents bitterness"
+    },
+    "light": {
+      "critical_min": 200.0,
+      "optimal_min": 300.0,
+      "optimal_max": 500.0,
+      "critical_max": 700.0,
+      "warning_margin": 100.0,
+      "notes": "Moderate light, excessive light causes bolting and bitterness"
+    }
+  },
+
+  "nutrient_formula": {
+    "name": "Curly Green Mix",
+    "base": "Standard lettuce formula",
+    "adjustments": {
+      "nitrogen": "standard",
+      "potassium": "standard",
+      "calcium": "increased",
+      "magnesium": "standard",
+      "notes": "Balanced formula with extra calcium for crisp texture"
+    },
+    "npk_ratio": "10-5-7",
+    "micronutrients": {
+      "iron": "2.5 ppm (chelated Fe-EDTA)",
+      "manganese": "0.5 ppm",
+      "zinc": "0.05 ppm",
+      "copper": "0.02 ppm",
+      "boron": "0.3 ppm",
+      "molybdenum": "0.05 ppm",
+      "calcium": "150-200 ppm (extra for crispness)"
+    }
+  },
+
+  "preventive_actions": {
+    "high_temperature": "URGENT: Curly lettuce sensitive to heat! Increase ventilation, add shade cloth, run AC if available, mist canopy",
+    "low_temperature": "Increase heating gradually, avoid shocking plants, maintain 18°C minimum",
+    "high_humidity": "Increase air circulation immediately, run dehumidifier, check for mold/disease",
+    "low_humidity": "Add humidifier, reduce air exchange temporarily, group plants for microclimate",
+    "high_ph": "Add pH down (phosphoric acid) - 0.5ml per 10L, retest in 30min, curly lettuce sensitive to high pH",
+    "low_ph": "Add pH up (potassium hydroxide) - 0.3ml per 10L, retest in 30min",
+    "high_ec": "Dilute immediately! Drain 30% and refill with fresh water, target 1.4-1.6 mS/cm",
+    "low_ec": "Add nutrient concentrate slowly, target 1.4 mS/cm for vegetative stage",
+    "low_light": "Check timer and fixtures, but don't over-compensate - too much light causes bolting"
+  },
+
+  "common_issues": {
+    "yellowing_leaves": {
+      "causes": ["Nitrogen deficiency", "Root problems", "Low temperature"],
+      "solutions": ["Increase EC to 1.6", "Check root health and oxygen", "Warm to 20°C"]
+    },
+    "bitter_taste": {
+      "causes": ["High temperature", "High EC", "Too much light", "Old age"],
+      "solutions": ["Cool to <22°C", "Reduce EC to 1.4", "Reduce light intensity", "Harvest immediately"]
+    },
+    "limp_leaves": {
+      "causes": ["Low calcium", "High temperature", "Water stress"],
+      "solutions": ["Add calcium supplement", "Cool system", "Check water flow"]
+    },
+    "bolting_flowering": {
+      "causes": ["High temperature >24°C", "Long photoperiod >16h", "Plant stress"],
+      "solutions": ["Cool immediately", "Reduce to 12h light", "Harvest before seeds form"]
+    },
+    "brown_edges": {
+      "causes": ["High EC", "Calcium deficiency", "Low humidity"],
+      "solutions": ["Reduce EC to 1.4", "Add calcium", "Increase humidity to 60%"]
+    }
+  },
+
+  "harvest": {
+    "maturity_indicators": [
+      "Bright green, curly leaves",
+      "Leaves 12-18cm long",
+      "Crisp texture when squeezed gently",
+      "Full, rosette formation"
+    ],
+    "best_harvest_time": "Early morning, cool temperature",
+    "post_harvest": "Immediately rinse in ice water, spin dry, refrigerate at 2-4°C, use within 5 days"
+  },
+
+  "quality_indicators": {
+    "premium_grade": {
+      "color": "Vibrant bright green",
+      "texture": "Extremely crispy",
+      "size": "12-18cm diameter",
+      "no_defects": true
+    },
+    "standard_grade": {
+      "color": "Light to medium green",
+      "texture": "Crisp",
+      "size": "10-15cm diameter",
+      "minor_defects": "Acceptable"
+    }
+  }
+}

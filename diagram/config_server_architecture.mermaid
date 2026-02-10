@@ -1,0 +1,82 @@
+graph TB
+    subgraph "Zona de Cultivo"
+        subgraph "Arduino UNO R4 WiFi"
+            ARD[Arduino UNO R4 WiFi<br/>Renesas RA4M1]
+            DHT[Sensor DHT11<br/>Temp + Humidade]
+            LED[LED Pin 2<br/>Indicador Visual]
+
+            DHT -->|Leitura| ARD
+            ARD -->|Controlo| LED
+        end
+    end
+
+    subgraph "Servidor Central"
+        subgraph "API Server :3001"
+            API[server.py<br/>HTTP Request Handler]
+
+            subgraph "Config Server / Motor de Regras"
+                RE[rule_engine.py<br/>Avaliador de Regras]
+                RULES[(rules_config.json<br/>Regras Persistidas)]
+                QUEUE[Fila de Comandos<br/>por sensor_id]
+
+                RE -->|Carrega/Guarda| RULES
+                RE -->|Arduino actions| QUEUE
+            end
+
+            API -->|POST /api/data| RE
+            API -->|GET /api/commands| QUEUE
+        end
+
+        subgraph "AC Control"
+            AC_CTRL[ac_controller.py<br/>Haier hOn API]
+            RE -->|AC actions| AC_CTRL
+        end
+    end
+
+    subgraph "Docker Stack"
+        INFLUX[(InfluxDB :8086<br/>Bucket: hydroponics)]
+        GRAFANA[Grafana :3000<br/>Dashboards]
+        NODERED[Node-RED :1880<br/>Flow Automation]
+
+        INFLUX --> GRAFANA
+    end
+
+    subgraph "Dispositivos Externos"
+        HAIER[Haier AC Unit<br/>WiFi / hOn Cloud]
+    end
+
+    %% Fluxo de dados Arduino → Servidor
+    ARD -->|"POST /api/data<br/>{temp, humidity}"| API
+    API -->|"GET /api/commands<br/>{led: blink/on/off}"| ARD
+
+    %% Servidor → InfluxDB
+    API -->|Write sensor data| INFLUX
+
+    %% AC Control
+    AC_CTRL -->|hOn API<br/>WiFi Cloud| HAIER
+
+    %% CRUD de Regras (utilizador)
+    USER((Utilizador / Admin))
+    USER -->|"GET/POST/PUT/DELETE<br/>/api/rules"| API
+    USER -->|Visualizar| GRAFANA
+
+    %% Estilos
+    classDef arduino fill:#00979D,stroke:#005C5C,color:white,stroke-width:2px
+    classDef sensor fill:#87CEEB,stroke:#4682B4,stroke-width:1px
+    classDef actuator fill:#FFB347,stroke:#FF8C00,stroke-width:1px
+    classDef server fill:#98FB98,stroke:#228B22,stroke-width:2px
+    classDef configserver fill:#FFD700,stroke:#DAA520,stroke-width:2px
+    classDef database fill:#B0C4DE,stroke:#4169E1,stroke-width:2px
+    classDef dashboard fill:#FFA07A,stroke:#FF4500,stroke-width:2px
+    classDef external fill:#E6E6FA,stroke:#9370DB,stroke-width:1px
+    classDef user fill:#DDA0DD,stroke:#8B008B,stroke-width:2px
+
+    class ARD arduino
+    class DHT sensor
+    class LED actuator
+    class API server
+    class RE,RULES,QUEUE configserver
+    class INFLUX database
+    class GRAFANA,NODERED dashboard
+    class AC_CTRL,HAIER external
+    class USER user

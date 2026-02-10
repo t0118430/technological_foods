@@ -1,0 +1,27 @@
+[Unit]
+Description=AgriTech Daily Backup Service
+Documentation=https://github.com/yourusername/technological_foods
+After=agritech-api.service agritech-docker.service
+
+[Service]
+Type=oneshot
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/agritech
+
+# Run backup script
+ExecStart=/home/pi/agritech/deploy/backup.sh daily
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=agritech-backup
+
+# Timeout: Backup can take time with InfluxDB export
+TimeoutStartSec=1800s
+
+# On failure, send notification
+ExecStartPost=/bin/bash -c 'if [ $EXIT_STATUS -ne 0 ]; then curl -H "Title: AgriTech Backup Failed" -H "Tags: warning" -H "Priority: high" -d "Daily backup failed. Check logs: journalctl -u agritech-backup" ${NTFY_TOPIC_URL}; fi'
+
+[Install]
+WantedBy=multi-user.target

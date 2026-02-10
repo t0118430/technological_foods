@@ -1,0 +1,116 @@
+@startuml Config_Server_Architecture
+
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+title Sistema Config Server - Fase 1\nMotor de Regras com Decisao Central
+
+' Arduino
+rectangle "Zona de Cultivo" #LightYellow {
+    component "Arduino UNO R4 WiFi" as arduino #LightBlue {
+        component "DHT11\nTemp + Humidade" as sensor #PaleTurquoise
+        component "LED Pin 2\nIndicador" as led #Orange
+        component "sendToAPI()" as send
+        component "pollCommands()" as poll
+    }
+}
+
+' Servidor Central
+rectangle "Servidor Central (Python :3001)" #LightGreen {
+    component "server.py\nHTTP Request Handler" as server #PaleGreen {
+        component "POST /api/data" as ep_data
+        component "GET /api/commands" as ep_cmd
+        component "CRUD /api/rules" as ep_rules
+        component "POST /api/ac" as ep_ac
+    }
+
+    rectangle "Config Server" #Gold {
+        component "rule_engine.py\nMotor de Regras" as engine #Khaki
+        database "rules_config.json\nRegras Persistidas" as rules_file #Wheat
+        collections "Fila de Comandos\n(por sensor_id)" as queue #Moccasin
+    }
+
+    component "ac_controller.py\nHaier hOn Controller" as ac_ctrl #Plum
+}
+
+' Docker
+rectangle "Docker Stack" #LightCyan {
+    database "InfluxDB :8086\nBucket: hydroponics" as influx #LightSteelBlue
+    component "Grafana :3000\nDashboards" as grafana #Salmon
+    component "Node-RED :1880\nFlow Automation" as nodered #LightCoral
+}
+
+' Externo
+cloud "Internet" #AliceBlue {
+    component "Haier hOn Cloud\nAPI" as hon #Lavender
+    component "Haier AC Unit" as ac_unit #Lavender
+}
+
+' Actor
+actor "Admin/Utilizador" as admin
+
+' Fluxo Arduino → Servidor
+sensor -down-> send : Leitura\nsensores
+send -down-> ep_data : HTTP POST\n{"temp", "humidity"}
+
+' Servidor processa dados
+ep_data -right-> influx : Write\nsensor data
+ep_data -down-> engine : evaluate(data)
+
+' Motor de regras
+engine -down-> rules_file : Carregar/Guardar\nregras
+engine -right-> queue : Arduino actions\n{led: "blink"}
+engine -left-> ac_ctrl : AC actions\n{command: "cool"}
+
+' AC
+ac_ctrl -down-> hon : hOn API\nWiFi Cloud
+hon -down-> ac_unit : Comando\nremoto
+
+' Arduino busca comandos
+ep_cmd -left-> queue : get_pending_commands()
+poll -down-> ep_cmd : HTTP GET\n/api/commands
+poll -up-> led : Executa:\nled on/off/blink
+
+' Admin gere regras
+admin -down-> ep_rules : GET/POST/PUT/DELETE\n/api/rules
+admin -down-> grafana : Visualizar\ndashboards
+
+' Grafana lê InfluxDB
+influx -right-> grafana : Query\nsensor data
+
+' Notas
+note right of engine
+  **Exemplo de Regra:**
+  {
+    "id": "ac_cooling",
+    "sensor": "temperature",
+    "condition": "above",
+    "threshold": 28.0,
+    "action": {
+      "type": "ac",
+      "command": "cool",
+      "target_temp": 24
+    }
+  }
+
+  **Alteravel em runtime via API**
+  Sem necessidade de redeploy
+end note
+
+note bottom of queue
+  **Fila limpa apos leitura**
+  Arduino faz poll a cada 2s
+  Se nenhuma regra LED dispara,
+  default: {"led": "off"}
+end note
+
+note left of rules_file
+  **4 Regras Default:**
+  - ac_cooling (temp > 28)
+  - ac_shutoff (temp < 18)
+  - led_high_temp (temp > 16)
+  - led_high_humidity (hum > 60)
+end note
+
+@enduml

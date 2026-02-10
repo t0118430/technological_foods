@@ -1,0 +1,688 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "AgriTech Hydroponics API",
+    "description": "Backend API for the AgriTech NFT Hydroponics automation system.\n\nControls sensor data ingestion, AC automation (Haier hOn), rule engine (config server), Arduino command polling, and multi-channel notifications.",
+    "version": "2.0.0",
+    "contact": {
+      "name": "AgriTech"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Local development server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API key set in `.env` as `API_KEY`. If not configured, authentication is disabled."
+      }
+    },
+    "schemas": {
+      "SensorData": {
+        "type": "object",
+        "properties": {
+          "temperature": { "type": "number", "example": 25.5, "description": "Temperature in Celsius" },
+          "humidity": { "type": "number", "example": 60.0, "description": "Relative humidity (%)" },
+          "ph": { "type": "number", "example": 6.2, "description": "pH level" },
+          "ec": { "type": "number", "example": 1.5, "description": "Electrical conductivity (mS/cm)" },
+          "water_temp": { "type": "number", "example": 22.0, "description": "Water temperature (°C)" },
+          "water_level": { "type": "number", "example": 80.0, "description": "Water level (%)" },
+          "sensor_id": { "type": "string", "default": "arduino_1", "description": "Device identifier" }
+        },
+        "required": ["temperature", "humidity"]
+      },
+      "SensorDataResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "example": "saved" },
+          "data": {
+            "type": "object",
+            "additionalProperties": true,
+            "example": { "temperature": 25.5, "humidity": 60.0 }
+          },
+          "triggered_rules": {
+            "type": "array",
+            "items": { "type": "string" },
+            "example": ["led_high_temp", "notify_high_temp"]
+          }
+        }
+      },
+      "LatestReading": {
+        "type": "object",
+        "properties": {
+          "latest": {
+            "type": "object",
+            "additionalProperties": true,
+            "example": {
+              "temperature": 25.5,
+              "humidity": 55.0,
+              "timestamp": "2026-02-08T18:30:00Z"
+            }
+          }
+        }
+      },
+      "ACState": {
+        "type": "object",
+        "properties": {
+          "available": { "type": "boolean", "example": true },
+          "power": { "type": "boolean", "example": true },
+          "target_temp": { "type": "integer", "example": 24 },
+          "current_temp": { "type": "number", "example": 26.5 },
+          "mode": { "type": "string", "enum": ["auto", "cool", "heat", "fan", "dry"], "example": "cool" },
+          "fan_speed": { "type": "string", "example": "auto" },
+          "last_update": { "type": "number", "example": 1707417000.5 }
+        }
+      },
+      "ACControl": {
+        "type": "object",
+        "properties": {
+          "power": { "type": "boolean", "description": "Turn AC on/off" },
+          "temperature": { "type": "integer", "minimum": 16, "maximum": 30, "description": "Target temperature (°C)" },
+          "mode": { "type": "string", "enum": ["auto", "cool", "heat", "fan", "dry"], "description": "AC operating mode" }
+        }
+      },
+      "ACControlResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "example": "ok" },
+          "results": {
+            "type": "object",
+            "additionalProperties": { "type": "string" },
+            "example": { "power": "ok", "temperature": "ok", "mode": "ok" }
+          },
+          "state": { "$ref": "#/components/schemas/ACState" }
+        }
+      },
+      "RuleAction": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "enum": ["ac", "notify", "arduino"], "description": "Action type" },
+          "command": { "type": "string", "description": "Command for ac/arduino actions (cool, heat, off, led_on, led_off, led_blink)" },
+          "target_temp": { "type": "integer", "description": "Target temperature for AC actions" },
+          "severity": { "type": "string", "enum": ["warning", "critical"], "description": "Alert severity for notify actions" },
+          "message": { "type": "string", "description": "Alert message for notify actions" }
+        },
+        "required": ["type"]
+      },
+      "Rule": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "ac_cooling" },
+          "name": { "type": "string", "example": "AC Auto Cooling" },
+          "enabled": { "type": "boolean", "example": true },
+          "sensor": { "type": "string", "example": "temperature", "description": "Sensor field to evaluate" },
+          "condition": { "type": "string", "enum": ["above", "below"], "example": "above" },
+          "threshold": { "type": "number", "example": 28.0 },
+          "action": { "$ref": "#/components/schemas/RuleAction" }
+        },
+        "required": ["id", "sensor", "condition", "threshold", "action"]
+      },
+      "CreateRule": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "notify_water_temp" },
+          "name": { "type": "string", "example": "Alert: Water Temperature High" },
+          "enabled": { "type": "boolean", "default": true },
+          "sensor": { "type": "string", "example": "water_temp" },
+          "condition": { "type": "string", "enum": ["above", "below"], "example": "above" },
+          "threshold": { "type": "number", "example": 28.0 },
+          "action": { "$ref": "#/components/schemas/RuleAction" }
+        },
+        "required": ["id", "sensor", "condition", "threshold", "action"]
+      },
+      "UpdateRule": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "enabled": { "type": "boolean" },
+          "sensor": { "type": "string" },
+          "condition": { "type": "string", "enum": ["above", "below"] },
+          "threshold": { "type": "number" },
+          "action": { "$ref": "#/components/schemas/RuleAction" }
+        }
+      },
+      "Commands": {
+        "type": "object",
+        "properties": {
+          "commands": {
+            "type": "object",
+            "properties": {
+              "led": { "type": "string", "enum": ["on", "off", "blink"], "example": "blink" }
+            }
+          }
+        }
+      },
+      "NotificationChannel": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "example": "console" },
+          "available": { "type": "boolean", "example": true }
+        }
+      },
+      "NotificationStatus": {
+        "type": "object",
+        "properties": {
+          "channels": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/NotificationChannel" }
+          },
+          "cooldown_seconds": { "type": "integer", "example": 900 },
+          "recent_alerts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "timestamp": { "type": "string", "example": "2026-02-08T15:30:00" },
+                "rule_id": { "type": "string", "example": "notify_high_temp" },
+                "severity": { "type": "string", "example": "critical" },
+                "message": { "type": "string", "example": "Temperature too high for hydroponics" },
+                "sensor_data": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "example": { "temperature": 33.0, "humidity": 85.0 }
+                },
+                "channels": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "channel": { "type": "string" },
+                      "available": { "type": "boolean" },
+                      "sent": { "type": "boolean" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "TestAlertResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "example": "test_sent" },
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "channel": { "type": "string" },
+                "available": { "type": "boolean" },
+                "sent": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" }
+        }
+      }
+    }
+  },
+  "security": [
+    { "ApiKeyAuth": [] }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "API welcome",
+        "operationId": "getRoot",
+        "tags": ["Health"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Welcome message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "AgriTech Hydroponics API" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Health check",
+        "operationId": "getHealth",
+        "tags": ["Health"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service health status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "healthy" },
+                    "influxdb": { "type": "string", "example": "http://localhost:8086" },
+                    "version": { "type": "string", "example": "2.0.0" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/data": {
+      "post": {
+        "summary": "Submit sensor readings",
+        "description": "Save Arduino sensor data to InfluxDB and evaluate all rules from the config server. Triggered rules may control the AC, queue Arduino commands, or send notifications.",
+        "operationId": "postSensorData",
+        "tags": ["Sensor Data"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SensorData" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Data saved and rules evaluated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SensorDataResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/data/latest": {
+      "get": {
+        "summary": "Get latest sensor readings",
+        "description": "Query the most recent sensor data from InfluxDB (last 1 hour).",
+        "operationId": "getLatestData",
+        "tags": ["Sensor Data"],
+        "responses": {
+          "200": {
+            "description": "Latest readings",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LatestReading" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Query error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/ac": {
+      "get": {
+        "summary": "Get AC status",
+        "description": "Returns the current state of the Haier AC unit (power, temperature, mode, fan speed).",
+        "operationId": "getACStatus",
+        "tags": ["AC Control"],
+        "responses": {
+          "200": {
+            "description": "Current AC state",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ACState" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      },
+      "post": {
+        "summary": "Control AC",
+        "description": "Set AC power, target temperature, and mode. Only send the fields you want to change. Requires `HON_EMAIL` and `HON_PASSWORD` configured.",
+        "operationId": "controlAC",
+        "tags": ["AC Control"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ACControl" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "AC command results and updated state",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ACControlResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "AC control error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/rules": {
+      "get": {
+        "summary": "List all rules",
+        "description": "Returns all rules from the config server (`rules_config.json`).",
+        "operationId": "listRules",
+        "tags": ["Rule Engine"],
+        "responses": {
+          "200": {
+            "description": "List of all rules",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rules": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Rule" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a rule",
+        "description": "Create a new rule in the config server. The rule is immediately active and persisted to `rules_config.json`.",
+        "operationId": "createRule",
+        "tags": ["Rule Engine"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateRule" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Rule created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "created" },
+                    "rule": { "$ref": "#/components/schemas/Rule" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/rules/{id}": {
+      "get": {
+        "summary": "Get a rule by ID",
+        "operationId": "getRule",
+        "tags": ["Rule Engine"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "ac_cooling"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rule details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Rule" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "404": {
+            "description": "Rule not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a rule",
+        "description": "Partial update — send only the fields you want to change. The rule ID cannot be changed.",
+        "operationId": "updateRule",
+        "tags": ["Rule Engine"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "ac_cooling"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateRule" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rule updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "updated" },
+                    "rule": { "$ref": "#/components/schemas/Rule" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "404": {
+            "description": "Rule not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a rule",
+        "operationId": "deleteRule",
+        "tags": ["Rule Engine"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "led_high_temp"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rule deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "deleted" },
+                    "id": { "type": "string", "example": "led_high_temp" }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "404": {
+            "description": "Rule not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/commands": {
+      "get": {
+        "summary": "Poll Arduino commands",
+        "description": "Arduino polls this endpoint to retrieve pending LED commands. Commands are consumed after retrieval (one-time read). If no rules have fired, returns `led: off` by default.",
+        "operationId": "getCommands",
+        "tags": ["Arduino Commands"],
+        "parameters": [
+          {
+            "name": "sensor_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "arduino_1" },
+            "description": "Device identifier for independent command queues"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pending commands",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Commands" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/notifications": {
+      "get": {
+        "summary": "Notification status and history",
+        "description": "Returns available notification channels, cooldown configuration, and the 10 most recent alerts.",
+        "operationId": "getNotifications",
+        "tags": ["Notifications"],
+        "responses": {
+          "200": {
+            "description": "Notification status",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NotificationStatus" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/notifications/test": {
+      "post": {
+        "summary": "Send test alert",
+        "description": "Fires a test alert through all available channels. Bypasses cooldown. Uses sample sensor data to simulate a real alert.",
+        "operationId": "testNotification",
+        "tags": ["Notifications"],
+        "responses": {
+          "200": {
+            "description": "Test alert results",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TestAlertResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Error sending test",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "Health", "description": "Server health and status" },
+    { "name": "Sensor Data", "description": "Ingest and query sensor readings from Arduino" },
+    { "name": "AC Control", "description": "Haier AC unit control via hOn API" },
+    { "name": "Rule Engine", "description": "Config server — CRUD for automation rules" },
+    { "name": "Arduino Commands", "description": "Command polling for Arduino devices" },
+    { "name": "Notifications", "description": "Multi-channel alert system (console, WhatsApp, SMS, email)" }
+  ]
+}

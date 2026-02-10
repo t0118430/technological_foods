@@ -1,0 +1,29 @@
+[Unit]
+Description=AgriTech Health Monitoring Service
+Documentation=https://github.com/yourusername/technological_foods
+After=agritech-api.service agritech-docker.service
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/agritech
+
+# Run health check every 5 minutes
+ExecStart=/bin/bash -c 'while true; do /home/pi/agritech/deploy/health-check.sh; sleep 300; done'
+
+# Restart if monitoring script crashes
+Restart=always
+RestartSec=60s
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=agritech-monitor
+
+# Resource limits (monitoring should be lightweight)
+MemoryLimit=128M
+CPUQuota=10%
+
+[Install]
+WantedBy=multi-user.target

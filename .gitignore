@@ -2,6 +2,10 @@
 .env
 !.env.example
 
+# Arduino secrets (WiFi credentials, API key)
+config.h
+!config.h.example
+
 # Python
 __pycache__/
 *.py[cod]
@@ -27,9 +31,17 @@ Thumbs.db
 # Docker volumes (local data)
 backend/mqtt/data/
 backend/mqtt/log/
+backend/data/
+
+# Backup files
+*.backup
+*.db.backup
+*.db.bak
+backups/
 
 # Logs
 *.log
+logs/
 
 # Windows artifacts
 nul

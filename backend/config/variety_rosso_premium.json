@@ -1,0 +1,150 @@
+{
+  "_comment": "Rosso Premium Lettuce (Red/Purple Leaf) - Lactuca sativa var. crispa",
+  "_extends": "base_hydroponics.json",
+  "_scientific_name": "Lactuca sativa 'Rosso'",
+  "_type": "Red Leaf Lettuce",
+  "_maturity_days": "45-55",
+  "_source": "Optimized for red pigment development and tender leaves",
+
+  "variety": {
+    "name": "Rosso Premium",
+    "display_name": "Alface Rosso Premium",
+    "color": "red",
+    "characteristics": [
+      "Deep red/purple leaves",
+      "Slightly bitter taste",
+      "High anthocyanin content",
+      "Heat tolerant",
+      "Requires more light for color development"
+    ],
+    "market_value": "premium",
+    "difficulty": "medium"
+  },
+
+  "growth_stages": {
+    "seedling": {
+      "days": "0-14",
+      "ec_range": "0.8-1.2",
+      "light_hours": 16,
+      "notes": "Gentle conditions for establishment"
+    },
+    "vegetative": {
+      "days": "14-35",
+      "ec_range": "1.4-1.8",
+      "light_hours": 14,
+      "notes": "Rapid leaf development, color intensifies"
+    },
+    "maturity": {
+      "days": "35-55",
+      "ec_range": "1.6-2.0",
+      "light_hours": 12,
+      "notes": "Peak anthocyanin production"
+    }
+  },
+
+  "optimal_ranges": {
+    "temperature": {
+      "critical_min": 16.0,
+      "optimal_min": 20.0,
+      "optimal_max": 24.0,
+      "critical_max": 28.0,
+      "warning_margin": 2.0,
+      "notes": "Rosso tolerates slightly warmer temps, prefers 20-24°C for color development"
+    },
+    "humidity": {
+      "critical_min": 45.0,
+      "optimal_min": 50.0,
+      "optimal_max": 65.0,
+      "critical_max": 75.0,
+      "warning_margin": 5.0,
+      "notes": "Lower humidity than green varieties, reduces disease risk"
+    },
+    "ph": {
+      "critical_min": 5.5,
+      "optimal_min": 5.8,
+      "optimal_max": 6.3,
+      "critical_max": 6.8,
+      "warning_margin": 0.3,
+      "notes": "Slightly acidic for anthocyanin production"
+    },
+    "ec": {
+      "critical_min": 1.0,
+      "optimal_min": 1.4,
+      "optimal_max": 2.0,
+      "critical_max": 2.4,
+      "warning_margin": 0.3,
+      "notes": "Higher EC for intense color and flavor"
+    },
+    "light": {
+      "critical_min": 300.0,
+      "optimal_min": 400.0,
+      "optimal_max": 700.0,
+      "critical_max": 900.0,
+      "warning_margin": 100.0,
+      "notes": "Higher light intensity for red pigment development (anthocyanins)"
+    }
+  },
+
+  "nutrient_formula": {
+    "name": "Rosso Premium Mix",
+    "base": "Standard lettuce formula",
+    "adjustments": {
+      "nitrogen": "slightly_increased",
+      "potassium": "increased",
+      "iron": "increased",
+      "magnesium": "standard",
+      "notes": "Higher K and Fe for color development"
+    },
+    "npk_ratio": "12-4-8",
+    "micronutrients": {
+      "iron": "3.0 ppm (chelated Fe-EDTA)",
+      "manganese": "0.5 ppm",
+      "zinc": "0.05 ppm",
+      "copper": "0.02 ppm",
+      "boron": "0.3 ppm",
+      "molybdenum": "0.05 ppm"
+    }
+  },
+
+  "preventive_actions": {
+    "high_temperature": "Increase ventilation, reduce light intensity if >26°C, mist canopy in afternoon",
+    "low_temperature": "Reduce ventilation, increase heating, avoid cold water in morning",
+    "high_humidity": "Increase air circulation, run dehumidifier, space plants wider",
+    "low_humidity": "Reduce ventilation rate, add humidifier, mist lightly",
+    "high_ph": "Add pH down (phosphoric acid) slowly - 1ml per 10L, retest in 30min",
+    "low_ph": "Add pH up (potassium hydroxide) slowly - 0.5ml per 10L, retest in 30min",
+    "high_ec": "Dilute with fresh water, drain 25% and refill with lower EC solution",
+    "low_ec": "Add nutrient concentrate gradually, target 1.6-1.8 mS/cm for mature plants",
+    "low_light": "Check timer, clean fixtures, verify LED functionality, reduce canopy density"
+  },
+
+  "common_issues": {
+    "pale_leaves": {
+      "causes": ["Low light", "Nitrogen deficiency", "Low temperature"],
+      "solutions": ["Increase light intensity", "Boost EC to 1.8", "Increase temperature to 22°C"]
+    },
+    "green_instead_of_red": {
+      "causes": ["Insufficient light", "Low temperature", "Over-fertilization"],
+      "solutions": ["Increase light to 500+ lux", "Maintain 22-24°C", "Reduce EC below 2.0"]
+    },
+    "tip_burn": {
+      "causes": ["High EC", "Low calcium", "Poor air circulation"],
+      "solutions": ["Reduce EC to 1.6", "Add calcium", "Increase fans"]
+    },
+    "bolting": {
+      "causes": ["High temperature >28°C", "Too much light >16h"],
+      "solutions": ["Cool system", "Reduce photoperiod to 12-14h", "Harvest immediately"]
+    }
+  },
+
+  "harvest": {
+    "maturity_indicators": [
+      "Deep burgundy-red color",
+      "Leaves 15-20cm long",
+      "Firm, crisp texture",
+      "Loose head formation"
+    ],
+    "best_harvest_time": "Early morning after lights on",
+    "post_harvest": "Rinse in cold water, dry gently, refrigerate at 4°C"
+  }
+}

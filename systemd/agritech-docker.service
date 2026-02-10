@@ -1,0 +1,38 @@
+[Unit]
+Description=AgriTech Docker Compose Services
+Documentation=https://github.com/yourusername/technological_foods
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/agritech/backend
+
+# Load environment variables
+EnvironmentFile=/home/pi/agritech/backend/.env
+
+# Start all Docker Compose services
+ExecStart=/usr/bin/docker-compose up -d --remove-orphans
+
+# Stop all Docker Compose services
+ExecStop=/usr/bin/docker-compose down
+
+# Restart policy
+Restart=on-failure
+RestartSec=30s
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=agritech-docker
+
+# Timeout for service startup (Docker pulls can be slow)
+TimeoutStartSec=600s
+TimeoutStopSec=120s
+
+[Install]
+WantedBy=multi-user.target

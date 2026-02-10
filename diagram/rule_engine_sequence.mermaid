@@ -1,0 +1,62 @@
+sequenceDiagram
+    participant A as Arduino UNO R4 WiFi
+    participant S as server.py :3001
+    participant RE as rule_engine.py
+    participant Q as Command Queue
+    participant DB as InfluxDB
+    participant AC as ac_controller.py
+    participant HON as Haier hOn Cloud
+
+    Note over A,HON: Ciclo a cada 2 segundos
+
+    rect rgb(230, 245, 255)
+        Note over A,DB: 1. Envio de Dados do Sensor
+        A->>+S: POST /api/data<br/>{"temperature": 30.0, "humidity": 55.0}
+        S->>DB: write_to_influx(data)
+        DB-->>S: OK
+    end
+
+    rect rgb(255, 248, 220)
+        Note over S,HON: 2. Avaliacao de Regras (Config Server)
+        S->>+RE: evaluate(data, sensor_id)
+
+        RE->>RE: Regra "ac_cooling"<br/>temp 30.0 > 28.0 ?<br/>SIM - dispara
+
+        RE->>RE: Regra "led_high_temp"<br/>temp 30.0 > 16.0 ?<br/>SIM - dispara
+
+        RE->>Q: Queue: {"led": "blink"}
+        RE-->>-S: triggered: [ac_cooling, led_high_temp]
+    end
+
+    rect rgb(255, 230, 230)
+        Note over S,HON: 3. Execucao de Acoes AC
+        S->>+AC: _execute_ac_action({command: "cool", target_temp: 24})
+        AC->>HON: set_power(True)
+        AC->>HON: set_temperature(24)
+        AC->>HON: set_mode("cool")
+        HON-->>AC: OK
+        AC-->>-S: AC ligado em modo cool
+    end
+
+    S-->>-A: 201 {"status": "saved",<br/>"triggered_rules": ["ac_cooling", "led_high_temp"]}
+
+    rect rgb(220, 255, 220)
+        Note over A,Q: 4. Arduino Busca Comandos
+        A->>+S: GET /api/commands?sensor_id=arduino_1
+        S->>+Q: get_pending_commands("arduino_1")
+        Q-->>-S: {"led": "blink"}
+        Note over Q: Fila limpa apos leitura
+        S-->>-A: 200 {"commands": {"led": "blink"}}
+    end
+
+    Note over A: Arduino executa:<br/>LED pisca (blink)
+
+    rect rgb(245, 240, 255)
+        Note over A,RE: 5. Admin Altera Regra (sem redeploy Arduino)
+        actor U as Admin
+        U->>+S: PUT /api/rules/led_high_temp<br/>{"threshold": 25.0}
+        S->>RE: update_rule("led_high_temp", {threshold: 25.0})
+        RE->>RE: Guardar em rules_config.json
+        S-->>-U: 200 {"status": "updated"}
+        Note over RE: Proximo ciclo usa<br/>novo threshold 25.0
+    end

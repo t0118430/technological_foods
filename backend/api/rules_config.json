@@ -1,0 +1,153 @@
+{
+  "rules": [
+    {
+      "id": "ac_cooling",
+      "name": "AC Auto Cooling",
+      "enabled": true,
+      "sensor": "temperature",
+      "condition": "above",
+      "threshold": 28.0,
+      "action": {"type": "ac", "command": "cool", "target_temp": 24}
+    },
+    {
+      "id": "ac_shutoff",
+      "name": "AC Auto Shutoff",
+      "enabled": true,
+      "sensor": "temperature",
+      "condition": "below",
+      "threshold": 18.0,
+      "action": {"type": "ac", "command": "off"}
+    },
+    {
+      "id": "led_high_temp",
+      "name": "LED Blink on High Temp",
+      "enabled": true,
+      "sensor": "temperature",
+      "condition": "above",
+      "threshold": 16.0,
+      "action": {"type": "arduino", "command": "led_blink"}
+    },
+    {
+      "id": "led_high_humidity",
+      "name": "LED Blink on High Humidity",
+      "enabled": true,
+      "sensor": "humidity",
+      "condition": "above",
+      "threshold": 60.0,
+      "action": {"type": "arduino", "command": "led_blink"}
+    },
+    {
+      "id": "notify_high_temp",
+      "name": "Alert: Temperature Too High",
+      "enabled": true,
+      "sensor": "temperature",
+      "condition": "above",
+      "threshold": 30.0,
+      "warning_margin": 2.0,
+      "action": {
+        "type": "notify",
+        "severity": "critical",
+        "message": "Temperature too high for hydroponics",
+        "recommended_action": "1) Increase ventilation/air circulation. 2) Check AC/cooling system. 3) Add shade or reduce light intensity. 4) Check water temperature."
+      },
+      "preventive_message": "Temperature approaching maximum threshold",
+      "preventive_action": "Increase air circulation. Verify AC is working. Consider adding fans or reducing light intensity."
+    },
+    {
+      "id": "notify_low_temp",
+      "name": "Alert: Temperature Too Low",
+      "enabled": true,
+      "sensor": "temperature",
+      "condition": "below",
+      "threshold": 15.0,
+      "warning_margin": 2.0,
+      "action": {
+        "type": "notify",
+        "severity": "critical",
+        "message": "Temperature too low for hydroponics",
+        "recommended_action": "1) Check heating system. 2) Insulate grow area. 3) Move plants to warmer location if possible."
+      },
+      "preventive_message": "Temperature approaching minimum threshold",
+      "preventive_action": "Monitor heating system. Prepare backup heat source. Check for drafts or cold spots."
+    },
+    {
+      "id": "notify_high_humidity",
+      "name": "Alert: Humidity Too High",
+      "enabled": true,
+      "sensor": "humidity",
+      "condition": "above",
+      "threshold": 80.0,
+      "warning_margin": 5.0,
+      "action": {
+        "type": "notify",
+        "severity": "warning",
+        "message": "Humidity too high — risk of mold",
+        "recommended_action": "1) Increase ventilation/exhaust. 2) Run dehumidifier. 3) Check for water leaks. 4) Space plants further apart for airflow."
+      },
+      "preventive_message": "Humidity rising - approaching high threshold",
+      "preventive_action": "Turn on exhaust fans. Check dehumidifier. Ensure good air circulation between plants."
+    },
+    {
+      "id": "notify_low_humidity",
+      "name": "Alert: Humidity Too Low",
+      "enabled": true,
+      "sensor": "humidity",
+      "condition": "below",
+      "threshold": 40.0,
+      "warning_margin": 5.0,
+      "action": {
+        "type": "notify",
+        "severity": "warning",
+        "message": "Humidity too low — plants may dehydrate",
+        "recommended_action": "1) Add humidifier or misting system. 2) Reduce ventilation temporarily. 3) Place water trays near plants. 4) Check for air leaks."
+      },
+      "preventive_message": "Humidity dropping - approaching low threshold",
+      "preventive_action": "Prepare humidifier. Reduce air exchange rate. Monitor plant transpiration closely."
+    },
+    {
+      "id": "notify_high_ph",
+      "name": "Alert: pH Too Alkaline",
+      "enabled": true,
+      "sensor": "ph",
+      "condition": "above",
+      "threshold": 7.0,
+      "action": {"type": "notify", "severity": "critical", "message": "pH too alkaline — nutrient lockout risk"}
+    },
+    {
+      "id": "notify_low_ph",
+      "name": "Alert: pH Too Acidic",
+      "enabled": true,
+      "sensor": "ph",
+      "condition": "below",
+      "threshold": 5.5,
+      "action": {"type": "notify", "severity": "critical", "message": "pH too acidic — root damage risk"}
+    },
+    {
+      "id": "notify_high_ec",
+      "name": "Alert: EC Too High",
+      "enabled": true,
+      "sensor": "ec",
+      "condition": "above",
+      "threshold": 2.5,
+      "action": {"type": "notify", "severity": "warning", "message": "EC too high — nutrient burn risk"}
+    },
+    {
+      "id": "notify_low_ec",
+      "name": "Alert: EC Too Low",
+      "enabled": true,
+      "sensor": "ec",
+      "condition": "below",
+      "threshold": 0.8,
+      "action": {"type": "notify", "severity": "warning", "message": "EC too low — nutrient deficiency"}
+    },
+    {
+      "id": "notify_low_water",
+      "name": "Alert: Water Level Low",
+      "enabled": true,
+      "sensor": "water_level",
+      "condition": "below",
+      "threshold": 20.0,
+      "action": {"type": "notify", "severity": "critical", "message": "Water level critically low — refill needed"}
+    }
+  ]
+}

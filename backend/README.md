@@ -1,3 +1,4 @@
+
 # AgriTech Hydroponics Backend - Phase 1
 
 Backend infrastructure for the AgriTech NFT Hydroponics automation system.
@@ -5,14 +6,27 @@ Backend infrastructure for the AgriTech NFT Hydroponics automation system.
 ## Architecture
 
 ```
-Arduino UNO R4 WiFi --HTTP POST--> API Server (server.py) ---> InfluxDB
-                                                                   |
-                                                                   v
-                                                               Grafana
-                                                            (dashboards)
-
-Node-RED (flow automation) ---> InfluxDB
+Arduino UNO R4 WiFi
+    │
+    ├── POST /api/data ──────► API Server (server.py :3001)
+    │   (X-API-Key header)          │
+    │                               ├── Write to InfluxDB ──► Grafana
+    │                               │
+    │                               └── Rule Engine (config server)
+    │                                       │
+    │                                       ├── Evaluate rules
+    │                                       ├── Queue Arduino commands
+    │                                       ├── Trigger AC actions ──► Haier hOn API
+    │                                       └── Trigger notifications ──► Notification Service
+    │                                                                        ├── Console
+    │                                                                        ├── WhatsApp (Twilio)
+    │                                                                        ├── SMS (Twilio)
+    │                                                                        └── Email (SMTP)
+    │
+    └── GET /api/commands ◄──── Pending commands (led, pump, etc.)
 ```
+
+The **Config Server** (rule engine) is the central decision-maker. All thresholds, conditions, and actions are configurable at runtime via API — no Arduino redeployment needed.
 
 ## Services
 
@@ -21,7 +35,7 @@ Node-RED (flow automation) ---> InfluxDB
 | InfluxDB | 8086 | Time-series database |
 | Grafana | 3000 | Dashboard visualization |
 | Node-RED | 1880 | Visual flow programming |
-| API Server | 3001 | HTTP API (runs outside Docker) |
+| API Server | 3001 | HTTP API + Config Server (runs outside Docker) |
 
 ## Quick Start
 
@@ -38,7 +52,12 @@ Node-RED (flow automation) ---> InfluxDB
 cp .env.example .env
 ```
 
-2. Install API dependencies:
+2. Copy `arduino/temp_hum_light_sending_api/config.h.example` to `config.h` and fill in your WiFi credentials and API key:
+```bash
+cp arduino/temp_hum_light_sending_api/config.h.example arduino/temp_hum_light_sending_api/config.h
+```
+
+3. Install API dependencies:
 ```bash
 pip install -r api/requirements.txt
 ```
@@ -60,14 +79,22 @@ python server.py
 You should see:
 ```
 Server running at http://0.0.0.0:3001
+Swagger UI:  http://localhost:3001/api/docs
 Endpoints:
-  GET  /api/health      - Health check
-  GET  /api/data/latest - Get latest reading from InfluxDB
-  POST /api/data        - Save Arduino data to InfluxDB
-  GET  /api/ac          - Get AC status
-  POST /api/ac          - Control AC (power, temperature, mode)
-  GET  /api/ac/auto     - Get auto control settings
-  POST /api/ac/auto     - Set auto control settings
+  GET    /api/docs                - Swagger UI
+  GET    /api/openapi.json        - OpenAPI spec
+  GET    /api/health              - Health check
+  GET    /api/data/latest         - Get latest reading from InfluxDB
+  POST   /api/data                - Save Arduino data + evaluate rules
+  GET    /api/ac                  - Get AC status
+  POST   /api/ac                  - Control AC (power, temperature, mode)
+  GET    /api/rules               - List all rules (config server)
+  POST   /api/rules               - Create a rule
+  PUT    /api/rules/{id}          - Update a rule
+  DELETE /api/rules/{id}          - Delete a rule
+  GET    /api/commands            - Arduino polls for commands
+  GET    /api/notifications       - Notification status & history
+  POST   /api/notifications/test  - Send test alert
 ```
 
 ### Check Status
@@ -103,31 +130,80 @@ docker-compose down -v
 | InfluxDB | http://localhost:8086 | See `.env` (INFLUXDB_USERNAME / INFLUXDB_PASSWORD) |
 | Node-RED | http://localhost:1880 | (no auth by default) |
 
+## Authentication
+
+All API endpoints (except `/api/health`) require an `X-API-Key` header. Set `API_KEY` in your `.env` file and use the same key in the Arduino `config.h`.
+
+```bash
+# Example request with API key
+curl -H "X-API-Key: agritech-secret-key-2026" http://localhost:3001/api/rules
+```
+
+If `API_KEY` is empty or not set in `.env`, authentication is disabled (backwards compatible).
+
+### Arduino Config (`config.h`)
+
+WiFi credentials, server IP, and the API key are stored in `config.h` (gitignored). Copy from the example:
+
+```bash
+cp arduino/temp_hum_light_sending_api/config.h.example arduino/temp_hum_light_sending_api/config.h
+```
+
+```c
+#define WIFI_SSID "your-wifi-ssid"
+#define WIFI_PASS "your-wifi-password"
+#define API_HOST  "192.168.1.130"
+#define API_PORT  3001
+#define API_KEY   "your-api-key-here"
+```
+
+### Postman Collection
+
+Import `AgriTech_API.postman_collection.json` into Postman. Set the `api_key` and `base_url` collection variables before testing.
+
+## Swagger / API Docs
+
+Interactive API documentation is served directly from the API server — no extra tools needed.
+
+| URL | Description |
+|-----|-------------|
+| [http://localhost:3001/api/docs](http://localhost:3001/api/docs) | Swagger UI — browse and test all endpoints |
+| [http://localhost:3001/api/openapi.json](http://localhost:3001/api/openapi.json) | OpenAPI 3.0 spec (JSON) |
+
+Both endpoints are **public** (no API key required). Open `/api/docs` in your browser after starting the server.
+
+To authenticate in Swagger UI, click the **Authorize** button (lock icon) and enter your `API_KEY` value.
+
 ## HTTP API (REST)
 
 ### Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/data` | Submit sensor readings |
-| GET | `/api/data/latest` | Get latest readings |
-| GET | `/api/health` | Health check |
-| GET | `/api/ac` | Get AC status |
-| POST | `/api/ac` | Control AC (power, temp, mode) |
-| GET | `/api/ac/auto` | Get auto control settings |
-| POST | `/api/ac/auto` | Set auto control settings |
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/docs` | No | Swagger UI |
+| GET | `/api/openapi.json` | No | OpenAPI 3.0 spec |
+| GET | `/api/health` | No | Health check |
+| POST | `/api/data` | Yes | Submit sensor readings + evaluate rules |
+| GET | `/api/data/latest` | Yes | Get latest readings from InfluxDB |
+| GET | `/api/ac` | Yes | Get AC status |
+| POST | `/api/ac` | Yes | Control AC (power, temp, mode) |
+| GET | `/api/rules` | Yes | List all rules (config server) |
+| POST | `/api/rules` | Yes | Create a new rule |
+| PUT | `/api/rules/{id}` | Yes | Update a rule |
+| DELETE | `/api/rules/{id}` | Yes | Delete a rule |
+| GET | `/api/commands` | Yes | Arduino polls for pending commands |
+| GET | `/api/notifications` | Yes | Notification channel status & alert history |
+| POST | `/api/notifications/test` | Yes | Fire a test alert through all channels |
 
 ### POST /api/data
 
-Submit sensor data from Arduino.
+Submit sensor data from Arduino. The server stores the data in InfluxDB and evaluates all rules from the config server.
 
 **Request:**
 
 ```http
 POST /api/data HTTP/1.1
-Host: your-server.com
 Content-Type: application/json
-Content-Length: 42
 
 {"temperature": 25.5, "humidity": 60.0}
 ```
@@ -139,7 +215,6 @@ Content-Length: 42
 | `temperature` | float | Yes | Temperature in Celsius |
 | `humidity` | float | Yes | Relative humidity (%) |
 | `sensor_id` | string | No | Device identifier (default: "arduino_1") |
-| `timestamp` | string | No | ISO 8601 timestamp (default: server time) |
 
 **Extended Payload (optional fields):**
 
@@ -148,7 +223,6 @@ Content-Length: 42
     "temperature": 25.5,
     "humidity": 60.0,
     "sensor_id": "greenhouse_1",
-    "timestamp": "2026-02-07T10:30:00Z",
     "ph": 6.2,
     "ec": 1.5,
     "water_temp": 22.0,
@@ -156,24 +230,17 @@ Content-Length: 42
 }
 ```
 
-**Response (Success - 201 Created):**
+**Response (201 Created):**
 
 ```json
 {
-    "status": "ok",
-    "message": "Data received",
-    "id": "abc123"
+    "status": "saved",
+    "data": {"temperature": 25.5, "humidity": 60.0},
+    "triggered_rules": ["led_high_temp"]
 }
 ```
 
-**Response (Error - 400 Bad Request):**
-
-```json
-{
-    "status": "error",
-    "message": "Missing required field: temperature"
-}
-```
+The `triggered_rules` field shows which rules fired based on the sensor data.
 
 ### AC Control Endpoints (Haier hOn)
 
@@ -214,33 +281,249 @@ HON_PASSWORD=your-password
 | `temperature` | int | Target temperature (16-30) |
 | `mode` | string | `auto`, `cool`, `heat`, `fan`, `dry` |
 
-#### GET /api/ac/auto - Get Auto Control Settings
+## Config Server (Rule Engine)
+
+The config server centralizes all decision logic. Instead of hardcoding thresholds in the Arduino sketch or the server, all rules are stored in `rules_config.json` and are editable via API at runtime.
+
+### How It Works
+
+1. Arduino sends sensor data via `POST /api/data`
+2. The rule engine evaluates all enabled rules against the data
+3. For **arduino** actions: commands are queued and the Arduino picks them up via `GET /api/commands`
+4. For **ac** actions: the server calls the Haier hOn API directly
+
+### Rule Structure
 
 ```json
 {
-    "enabled": false,
-    "max_temp": 28.0,
-    "min_temp": 18.0,
-    "target_temp": 24
-}
-```
-
-#### POST /api/ac/auto - Set Auto Control
-
-Enable automatic AC control based on sensor readings:
-
-```json
-{
+    "id": "ac_cooling",
+    "name": "AC Auto Cooling",
     "enabled": true,
-    "max_temp": 28.0,
-    "min_temp": 20.0,
-    "target_temp": 24
+    "sensor": "temperature",
+    "condition": "above",
+    "threshold": 28.0,
+    "action": {"type": "ac", "command": "cool", "target_temp": 24}
 }
 ```
 
-When enabled:
-- AC turns **ON** (cooling mode) when temperature exceeds `max_temp`
-- AC turns **OFF** when temperature drops below `min_temp`
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique identifier |
+| `name` | string | Human-readable name |
+| `enabled` | bool | Whether the rule is active |
+| `sensor` | string | Which sensor field to evaluate (`temperature`, `humidity`, `ph`, etc.) |
+| `condition` | string | `above` or `below` |
+| `threshold` | float | The threshold value |
+| `action` | object | What to do when the rule fires |
+
+### Action Types
+
+**Arduino actions** — queued for polling:
+```json
+{"type": "arduino", "command": "led_blink"}
+{"type": "arduino", "command": "led_on"}
+{"type": "arduino", "command": "led_off"}
+```
+
+**AC actions** — executed immediately:
+```json
+{"type": "ac", "command": "cool", "target_temp": 24}
+{"type": "ac", "command": "heat", "target_temp": 22}
+{"type": "ac", "command": "off"}
+```
+
+**Notification actions** — sent through all available channels:
+```json
+{"type": "notify", "severity": "critical", "message": "Temperature too high"}
+{"type": "notify", "severity": "warning", "message": "Humidity too low"}
+```
+
+### Default Rules
+
+The system ships with 13 rules in `rules_config.json`:
+
+**AC & LED rules:**
+
+| Rule | Condition | Action |
+|------|-----------|--------|
+| `ac_cooling` | temperature > 28°C | AC on, cool mode, 24°C |
+| `ac_shutoff` | temperature < 18°C | AC off |
+| `led_high_temp` | temperature > 16°C | LED blink |
+| `led_high_humidity` | humidity > 60% | LED blink |
+
+**Hydroponic notification alerts:**
+
+| Rule | Condition | Severity | Alert |
+|------|-----------|----------|-------|
+| `notify_high_temp` | temperature > 30°C | critical | Temperature too high |
+| `notify_low_temp` | temperature < 15°C | warning | Temperature too low |
+| `notify_high_humidity` | humidity > 80% | warning | Humidity too high — risk of mold |
+| `notify_low_humidity` | humidity < 40% | warning | Humidity too low |
+| `notify_high_ph` | pH > 7.0 | critical | pH too alkaline — nutrient lockout risk |
+| `notify_low_ph` | pH < 5.5 | critical | pH too acidic — root damage risk |
+| `notify_high_ec` | EC > 2.5 mS/cm | warning | EC too high — nutrient burn risk |
+| `notify_low_ec` | EC < 0.8 mS/cm | warning | EC too low — nutrient deficiency |
+| `notify_low_water` | water_level < 20% | critical | Water level critically low |
+
+### API Examples
+
+**List all rules:**
+```bash
+curl -H "X-API-Key: $API_KEY" http://localhost:3001/api/rules
+```
+
+**Get a specific rule:**
+```bash
+curl -H "X-API-Key: $API_KEY" http://localhost:3001/api/rules/ac_cooling
+```
+
+**Update a threshold (no Arduino redeploy needed):**
+```bash
+curl -X PUT http://localhost:3001/api/rules/notify_high_temp \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"threshold": 28.0}'
+```
+
+**Create a new rule:**
+```bash
+curl -X POST http://localhost:3001/api/rules \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "notify_water_temp",
+    "name": "Alert: Water Temperature High",
+    "sensor": "water_temp",
+    "condition": "above",
+    "threshold": 28.0,
+    "action": {"type": "notify", "severity": "warning", "message": "Water temperature too high for roots"}
+  }'
+```
+
+**Delete a rule:**
+```bash
+curl -X DELETE -H "X-API-Key: $API_KEY" http://localhost:3001/api/rules/notify_water_temp
+```
+
+**Arduino polls for commands:**
+```bash
+curl -H "X-API-Key: $API_KEY" http://localhost:3001/api/commands?sensor_id=arduino_1
+# Response: {"commands": {"led": "blink"}}
+```
+
+### Testing the Rule Engine
+
+Run the test suite:
+```bash
+cd backend/api
+pip install pytest
+pytest test_rule_engine.py test_notification_service.py -v
+```
+
+The test suite (46 tests) covers:
+- Rule evaluation (above/below thresholds, boundary values)
+- Disabled rules are skipped
+- Arduino command queue (queuing, clearing after poll, default LED off)
+- Independent command queues per sensor_id
+- CRUD operations (create, update, delete, validation)
+- Persistence (rules survive server restart)
+- Notification channels (console, stubs for WhatsApp/SMS/email)
+- Cooldown logic (prevents alert spam)
+- Alert history tracking
+- Rule engine integration with notify actions
+
+## Notification Service
+
+The notification service sends alerts when sensor data breaches rule thresholds. It uses a **channel-agnostic architecture** — add new channels without changing any existing code.
+
+### How It Works
+
+1. Rule engine detects a threshold breach (e.g. `temperature > 30`)
+2. If the rule's action type is `"notify"`, the notification service is called
+3. The service sends the alert through **all available channels**
+4. A per-rule **cooldown** (default: 15 minutes) prevents repeated alerts
+
+### Available Channels
+
+| Channel | Status | Configuration |
+|---------|--------|---------------|
+| Console | Active | Always available — prints alerts to server log |
+| WhatsApp | Stub | Set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM/TO` in `.env` |
+| SMS | Stub | Set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_SMS_FROM/TO` in `.env` |
+| Email | Stub | Set `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `ALERT_EMAIL_TO` in `.env` |
+
+Channels become available automatically when their credentials are configured — no code changes needed.
+
+### Endpoints
+
+**Fire a test alert** (bypasses cooldown):
+```bash
+curl -X POST -H "X-API-Key: $API_KEY" http://localhost:3001/api/notifications/test
+```
+
+**Check notification status and recent alerts:**
+```bash
+curl -H "X-API-Key: $API_KEY" http://localhost:3001/api/notifications
+```
+
+Response:
+```json
+{
+  "channels": [
+    {"name": "console", "available": true},
+    {"name": "whatsapp", "available": false},
+    {"name": "sms", "available": false},
+    {"name": "email", "available": false}
+  ],
+  "cooldown_seconds": 900,
+  "recent_alerts": [
+    {
+      "timestamp": "2026-02-08T15:30:00",
+      "rule_id": "notify_high_temp",
+      "severity": "critical",
+      "message": "Temperature too high for hydroponics",
+      "sensor_data": {"temperature": 33.0, "humidity": 85.0}
+    }
+  ]
+}
+```
+
+### Quick Test with Postman
+
+1. Import `AgriTech_API.postman_collection.json`
+2. Set `api_key` and `base_url` in collection variables
+3. Run **"Send Sensor Data (trigger alerts)"** — sends critical values that breach multiple thresholds
+4. Run **"Test Alert (all channels)"** — fires a test directly
+5. Run **"Get Notification Status & History"** — verify alerts were recorded
+
+### Cooldown
+
+To prevent alert spam (Arduino sends data every 2 seconds), each rule has a cooldown period. After an alert fires, the same rule won't alert again until the cooldown expires.
+
+Configure via `.env`:
+```
+NOTIFICATION_COOLDOWN=900  # seconds (default: 15 minutes)
+```
+
+### Adding a New Channel
+
+Create a class that implements `NotificationChannel` in `notification_service.py`:
+
+```python
+class SlackChannel(NotificationChannel):
+    @property
+    def name(self) -> str:
+        return "slack"
+
+    def send(self, subject: str, body: str) -> bool:
+        # Your Slack webhook logic here
+        return True
+
+    def is_available(self) -> bool:
+        return bool(os.getenv('SLACK_WEBHOOK_URL'))
+```
+
+Then add it to the `NotificationService` default channels list.
 
 ## Step-by-Step: Arduino Data to Database
 
@@ -286,16 +569,13 @@ Upload the sketch from `arduino/temp_hum_light_sending_api/temp_hum_light_sendin
 Make sure:
 - Board: **Arduino UNO R4 WiFi**
 - Port: The correct COM port for your board
-- WiFi credentials are set in the sketch
-- `API_HOST` points to your server IP
-- `API_PORT` is `3001`
+- `config.h` exists with your WiFi credentials, server IP, and API key (copy from `config.h.example`)
 
 ### Step 4: Verify Data Flow
 
 Check the API server console — you should see:
 ```
-[Arduino] Received: {'temperature': 25.5, 'humidity': 60.0}
-Stored in InfluxDB: {'temperature': 25.5, 'humidity': 60.0}
+[Arduino] Received: {'temperature': 25.5, 'humidity': 60.0} | Rules triggered: 1
 ```
 
 ### Step 5: Query Data in InfluxDB
@@ -474,4 +754,5 @@ For Phase 2 with Siemens LOGO! PLC, you'll add:
 - Modbus TCP integration
 - Industrial sensor support (4-20mA)
 - Node-RED automation flows
-- Alerting via email/SMS
+- Real notification channels (WhatsApp via Twilio, Email via SMTP)
+- Additional sensors (pH probe, EC meter, water level sensor)

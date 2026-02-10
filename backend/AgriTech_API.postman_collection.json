@@ -1,0 +1,271 @@
+{
+  "info": {
+    "name": "AgriTech Hydroponics API",
+    "description": "API collection for the AgriTech hydroponics automation system.\n\nSet the `base_url` and `api_key` variables before use.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      { "key": "key", "value": "X-API-Key", "type": "string" },
+      { "key": "value", "value": "{{api_key}}", "type": "string" },
+      { "key": "in", "value": "header", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://192.168.1.130:3001" },
+    { "key": "api_key", "value": "agritech-secret-key-2026" }
+  ],
+  "item": [
+    {
+      "name": "Health & Status",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/health",
+            "auth": { "type": "noauth" },
+            "description": "Public endpoint — no API key required."
+          }
+        },
+        {
+          "name": "Get Latest Sensor Data",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/data/latest",
+            "description": "Query the latest sensor reading from InfluxDB."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Arduino Data & Commands",
+      "item": [
+        {
+          "name": "Send Sensor Data (normal)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/data",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temperature\": 25.5,\n  \"humidity\": 55.0\n}"
+            },
+            "description": "Simulates Arduino sending normal sensor data. No alert rules should trigger."
+          }
+        },
+        {
+          "name": "Send Sensor Data (trigger alerts)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/data",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temperature\": 33.0,\n  \"humidity\": 85.0,\n  \"ph\": 7.5,\n  \"ec\": 3.0,\n  \"water_level\": 10.0\n}"
+            },
+            "description": "Simulates critical sensor data that should trigger multiple notification alerts (high temp, high humidity, high pH, high EC, low water)."
+          }
+        },
+        {
+          "name": "Poll Arduino Commands",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/commands?sensor_id=arduino_1",
+            "description": "Arduino polls this endpoint to receive LED commands queued by the rule engine."
+          }
+        }
+      ]
+    },
+    {
+      "name": "AC Control",
+      "item": [
+        {
+          "name": "Get AC Status",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/ac",
+            "description": "Returns the current AC state (power, temperature, mode)."
+          }
+        },
+        {
+          "name": "Control AC (Power + Temp + Mode)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/ac",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"power\": true,\n  \"temperature\": 24,\n  \"mode\": \"cool\"\n}"
+            },
+            "description": "Directly control the Haier AC: set power, target temperature (16-30), and mode (auto/cool/heat/fan/dry)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "description": "Alert system endpoints. Notifications are triggered automatically when sensor data breaches rule thresholds. Use the test endpoint to verify channels are working.",
+      "item": [
+        {
+          "name": "Test Alert (all channels)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/notifications/test",
+            "description": "Fire a test alert through all available notification channels. Bypasses cooldown. Use this to verify the alert system is working."
+          }
+        },
+        {
+          "name": "Get Notification Status & History",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/notifications",
+            "description": "Returns available channels, cooldown settings, and the last 10 alerts."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rules (Config Server)",
+      "description": "CRUD endpoints for the rule engine. Use these to remotely change temperature/humidity/pH thresholds and ambient conditions without reprogramming the Arduino.",
+      "item": [
+        {
+          "name": "List All Rules",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/rules",
+            "description": "Returns all configured rules with their thresholds and actions."
+          }
+        },
+        {
+          "name": "Get Rule by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/rules/ac_cooling",
+            "description": "Get a single rule by its ID."
+          }
+        },
+        {
+          "name": "Create New Rule",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/rules",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"notify_water_temp\",\n  \"name\": \"Alert: Water Temperature High\",\n  \"sensor\": \"water_temp\",\n  \"condition\": \"above\",\n  \"threshold\": 28.0,\n  \"action\": { \"type\": \"notify\", \"severity\": \"warning\", \"message\": \"Water temperature too high for roots\" }\n}"
+            },
+            "description": "Create a new notification rule. Required fields: id, sensor, condition (above/below), threshold, action."
+          }
+        },
+        {
+          "name": "Change Temperature Alert Threshold",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/rules/notify_high_temp",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"threshold\": 28.0,\n  \"action\": { \"type\": \"notify\", \"severity\": \"critical\", \"message\": \"Temperature exceeds 28°C\" }\n}"
+            },
+            "description": "Change when the high temperature alert fires. Example: alert at 28°C instead of 30°C."
+          }
+        },
+        {
+          "name": "Change pH Alert Threshold",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/rules/notify_high_ph",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"threshold\": 6.8\n}"
+            },
+            "description": "Lower the pH alert threshold. Example: alert at 6.8 instead of 7.0."
+          }
+        },
+        {
+          "name": "Change Humidity Alert Threshold",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/rules/notify_high_humidity",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"threshold\": 75.0\n}"
+            },
+            "description": "Change the humidity alert threshold. Example: alert at 75% instead of 80%."
+          }
+        },
+        {
+          "name": "Change AC Cooling Threshold",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/rules/ac_cooling",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"threshold\": 26.0,\n  \"action\": { \"type\": \"ac\", \"command\": \"cool\", \"target_temp\": 22 }\n}"
+            },
+            "description": "Change when the AC starts cooling. Example: trigger at 26°C instead of 28°C."
+          }
+        },
+        {
+          "name": "Disable a Rule",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/rules/notify_high_temp",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": false\n}"
+            },
+            "description": "Temporarily disable a rule without deleting it."
+          }
+        },
+        {
+          "name": "Enable a Rule",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/rules/notify_high_temp",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true\n}"
+            },
+            "description": "Re-enable a previously disabled rule."
+          }
+        },
+        {
+          "name": "Delete Rule",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/rules/led_high_temp",
+            "description": "Permanently remove a rule by ID."
+          }
+        }
+      ]
+    }
+  ]
+}

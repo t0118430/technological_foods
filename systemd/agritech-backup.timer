@@ -1,0 +1,19 @@
+[Unit]
+Description=AgriTech Daily Backup Timer
+Documentation=https://github.com/yourusername/technological_foods
+Requires=agritech-backup.service
+
+[Timer]
+# Run daily at 2:00 AM (low activity time)
+OnCalendar=daily
+OnCalendar=02:00
+Persistent=true
+
+# If system was off at scheduled time, run on next boot
+Persistent=true
+
+# Randomize start time by up to 15 minutes to avoid exact time patterns
+RandomizedDelaySec=15min
+
+[Install]
+WantedBy=timers.target

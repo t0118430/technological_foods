@@ -1,7 +1,7 @@
 import os
 import asyncio
 import logging
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 
 logger = logging.getLogger('ac-controller')
 
@@ -18,14 +18,6 @@ ac_state = {
     "mode": "auto",  # auto, cool, heat, fan, dry
     "fan_speed": "auto",
     "last_update": None
-}
-
-# Temperature thresholds for auto control
-AUTO_CONTROL = {
-    "enabled": False,
-    "max_temp": 28.0,  # Turn AC on (cooling) above this
-    "min_temp": 18.0,  # Turn AC off below this
-    "target_temp": 24   # Target temperature for AC
 }
 
 
@@ -152,50 +144,3 @@ class HaierACController:
 controller = HaierACController()
 
 
-def check_auto_control(current_temp: float) -> Optional[str]:
-    """
-    Check if AC should be automatically controlled based on temperature.
-    Returns action taken: 'turned_on', 'turned_off', or None
-    """
-    if not AUTO_CONTROL["enabled"]:
-        return None
-
-    if not controller._initialized:
-        return None
-
-    action = None
-
-    if current_temp > AUTO_CONTROL["max_temp"] and not ac_state["power"]:
-        # Too hot - turn on AC
-        asyncio.create_task(controller.set_power(True))
-        asyncio.create_task(controller.set_temperature(AUTO_CONTROL["target_temp"]))
-        asyncio.create_task(controller.set_mode("cool"))
-        action = "turned_on"
-        logger.info(f"Auto control: Turning AC ON (temp: {current_temp}°C > {AUTO_CONTROL['max_temp']}°C)")
-
-    elif current_temp < AUTO_CONTROL["min_temp"] and ac_state["power"]:
-        # Cool enough - turn off AC
-        asyncio.create_task(controller.set_power(False))
-        action = "turned_off"
-        logger.info(f"Auto control: Turning AC OFF (temp: {current_temp}°C < {AUTO_CONTROL['min_temp']}°C)")
-
-    return action
-
-
-def get_auto_control_settings() -> Dict[str, Any]:
-    """Get auto control settings"""
-    return AUTO_CONTROL.copy()
-
-
-def set_auto_control_settings(settings: Dict[str, Any]) -> Dict[str, Any]:
-    """Update auto control settings"""
-    if "enabled" in settings:
-        AUTO_CONTROL["enabled"] = bool(settings["enabled"])
-    if "max_temp" in settings:
-        AUTO_CONTROL["max_temp"] = float(settings["max_temp"])
-    if "min_temp" in settings:
-        AUTO_CONTROL["min_temp"] = float(settings["min_temp"])
-    if "target_temp" in settings:
-        AUTO_CONTROL["target_temp"] = int(settings["target_temp"])
-
-    return AUTO_CONTROL.copy()
