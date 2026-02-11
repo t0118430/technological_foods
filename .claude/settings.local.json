@@ -16,7 +16,6 @@
       "Bash(wc:*)",
       "Bash(grep:*)",
       "Bash(git rm:*)",
-<<<<<<< HEAD
       "Bash(git -C C:/git/technological_foods branch -a)",
       "Bash(git -C C:/git/technological_foods fetch origin master)",
       "Bash(git -C C:/git/technological_foods diff --stat origin/master..ai-improvements)",
@@ -25,15 +24,22 @@
       "Bash(git -C C:/git/technological_foods diff origin/master..ai-improvements -- backend/api/server.py)",
       "Bash(git -C C:/git/technological_foods diff origin/master..ai-improvements -- docs/architecture/ --stat)",
       "Bash(git -C C:/git/technological_foods diff origin/master..ai-improvements --numstat)",
-      "Bash(git -C C:/git/technological_foods diff --numstat origin/master ai-improvements)"
-=======
+      "Bash(git -C C:/git/technological_foods diff --numstat origin/master ai-improvements)",
       "Bash(git commit:*)",
       "Bash(where:*)",
       "Bash(curl:*)",
       "Bash(git push:*)",
       "Bash(docker compose exec:*)",
-      "Bash(find:*)"
->>>>>>> origin/master
+      "Bash(find:*)",
+      "Bash(ls -la \"C:\\\\git\\\\technological_foods\\\\diagram\"\" && ls -la \"C:gittechnological_foodsdocsarchitecture\"\")",
+      "Bash(for f in backend/grafana/dashboards/business/*.json backend/grafana/dashboards/production/*.json backend/grafana/dashboards/devops/*.json)",
+      "Bash(do python -c \"import json; json.load\\(open\\(''$f''\\)\\)\")",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(gh pr create:*)",
+      "Bash(where.exe:*)",
+      "Bash(cmd /c \"where gh\")",
+      "Bash(powershell:*)"
     ]
   }
 }
