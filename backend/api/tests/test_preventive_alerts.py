@@ -1,8 +1,8 @@
 import json
 import pytest
 from pathlib import Path
-from rule_engine import RuleEngine
-from notification_service import NotificationService
+from rules.rule_engine import RuleEngine
+from notifications.notification_service import NotificationService
 
 
 class FakeChannel:
@@ -256,14 +256,14 @@ class TestPreventiveAlertFormatting:
 
     def test_preventive_severity_in_ntfy_priority(self):
         """Preventive alerts should use priority 3 in ntfy."""
-        from notification_service import NtfyChannel
+        from notifications.notification_service import NtfyChannel
         ch = NtfyChannel()
         assert ch._PRIORITY_MAP.get('preventive') == '3'
         assert ch._TAG_MAP.get('preventive') == 'eyes'
 
     def test_body_includes_recommended_action_section(self):
         """Notification body should include recommended action section."""
-        from notification_service import NotificationService
+        from notifications.notification_service import NotificationService
         channel = FakeChannel()
         svc = NotificationService(channels=[channel], cooldown_seconds=0)
 

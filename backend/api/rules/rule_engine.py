@@ -85,7 +85,51 @@ class RuleEngine:
 
     # ── Evaluation ───────────────────────────────────────────
 
-    def evaluate(self, sensor_data: Dict[str, Any], sensor_id: str = "arduino_1") -> List[Dict[str, Any]]:
+    @staticmethod
+    def _get_nested(data: Dict[str, Any], dotted_key: str) -> Any:
+        """Access nested dict values using dot notation, e.g. 'weather.temperature'."""
+        keys = dotted_key.split('.')
+        current = data
+        for key in keys:
+            if isinstance(current, dict) and key in current:
+                current = current[key]
+            else:
+                return None
+        return current
+
+    def _check_external_condition(self, ext_cond: Dict[str, Any],
+                                  external_data: Dict[str, Any]) -> bool:
+        """Evaluate an external_condition block against external_data."""
+        if not ext_cond:
+            return True  # No external condition = pass
+        if not external_data:
+            return False  # Has condition but no data = fail
+
+        field = ext_cond.get('source_field', '')
+        value = self._get_nested(external_data, field)
+        if value is None:
+            return False  # Missing data = condition not met
+
+        condition = ext_cond.get('condition', 'equals')
+        threshold = ext_cond.get('threshold')
+
+        if condition == 'equals':
+            return value == threshold
+        elif condition == 'not_equals':
+            return value != threshold
+        elif condition == 'above':
+            return float(value) > float(threshold)
+        elif condition == 'below':
+            return float(value) < float(threshold)
+        elif condition == 'gte':
+            return float(value) >= float(threshold)
+        elif condition == 'lte':
+            return float(value) <= float(threshold)
+
+        return False
+
+    def evaluate(self, sensor_data: Dict[str, Any], sensor_id: str = "arduino_1",
+                 external_data: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         """
         Evaluate all enabled rules against incoming sensor data.
         Returns list of triggered actions.
@@ -94,6 +138,10 @@ class RuleEngine:
         Supports preventive alerts with warning_margin:
         - If warning_margin is set, triggers preventive alert before reaching threshold
         - Preventive alerts use severity="preventive" by default
+
+        Supports compound rules with external_condition:
+        - If external_condition is set, sensor condition AND external condition must both be true
+        - 100% backward compatible: existing rules work unchanged when external_data is None
         """
         triggered = []
 
@@ -109,6 +157,11 @@ class RuleEngine:
             threshold = float(rule['threshold'])
             condition = rule['condition']
             warning_margin = rule.get('warning_margin', 0)
+
+            # Check external condition (AND gate with sensor condition)
+            ext_cond = rule.get('external_condition')
+            if ext_cond and not self._check_external_condition(ext_cond, external_data):
+                continue  # External condition not met — skip this rule
 
             # Check critical threshold
             critical_fired = (
@@ -135,7 +188,8 @@ class RuleEngine:
                     'rule_id': rule['id'],
                     'rule_name': rule.get('name', rule['id']),
                     'action': action,
-                    'alert_type': 'critical'
+                    'alert_type': 'critical',
+                    'sensor': sensor_key,
                 })
 
                 if action.get('type') == 'arduino':

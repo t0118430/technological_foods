@@ -16,7 +16,7 @@ from copy import deepcopy
 
 logger = logging.getLogger('config-loader')
 
-CONFIG_DIR = Path(__file__).resolve().parent.parent / 'config'
+CONFIG_DIR = Path(__file__).resolve().parent.parent.parent / 'config'
 BASE_CONFIG_FILE = CONFIG_DIR / 'base_hydroponics.json'
 
 

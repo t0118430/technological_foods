@@ -1,5 +1,5 @@
 import pytest
-from config_loader import ConfigLoader
+from crops.config_loader import ConfigLoader
 
 
 class TestConfigLoader:

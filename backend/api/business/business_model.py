@@ -22,7 +22,7 @@ from contextlib import contextmanager
 
 logger = logging.getLogger('business-model')
 
-DB_PATH = Path(__file__).resolve().parent.parent / 'data' / 'agritech_business.db'
+DB_PATH = Path(__file__).resolve().parent.parent.parent / 'data' / 'agritech_business.db'
 DB_PATH.parent.mkdir(exist_ok=True)
 
 

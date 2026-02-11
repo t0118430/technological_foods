@@ -12,8 +12,8 @@ import logging
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-from database import db
-from config_loader import config_loader
+from db import db
+from .config_loader import config_loader
 
 logger = logging.getLogger('growth-stage-manager')
 

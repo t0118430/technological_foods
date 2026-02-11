@@ -27,7 +27,7 @@ logger = logging.getLogger('database')
 DB_BACKEND = os.getenv('DB_BACKEND', 'sqlite').lower()
 
 # Database path (SQLite)
-DB_PATH = Path(__file__).resolve().parent.parent / 'data' / 'agritech.db'
+DB_PATH = Path(__file__).resolve().parent.parent.parent / 'data' / 'agritech.db'
 DB_PATH.parent.mkdir(exist_ok=True)
 
 
@@ -308,7 +308,7 @@ class Database:
             days_in_stage = (datetime.now() - stage_started).days
 
             # Load variety config to get expected stage duration
-            from config_loader import config_loader
+            from crops.config_loader import config_loader
             config = config_loader.load_variety(variety)
             stages = config.get('growth_stages', {})
 
@@ -417,7 +417,7 @@ class Database:
 # Global instance - switches based on DB_BACKEND env var
 if DB_BACKEND == 'postgres':
     try:
-        from pg_database import get_pg_database
+        from .pg_database import get_pg_database
         db = get_pg_database()
         logger.info("Using PostgreSQL database backend")
     except Exception as e:
