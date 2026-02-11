@@ -196,9 +196,20 @@ SWAGGER_HTML = """<!DOCTYPE html>
 
 
 class RequestHandler(BaseHTTPRequestHandler):
+    def _cors_headers(self):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-API-Key")
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self._cors_headers()
+        self.end_headers()
+
     def _send_json(self, code, data):
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
+        self._cors_headers()
         self.end_headers()
         self.wfile.write(json.dumps(data).encode())
 
