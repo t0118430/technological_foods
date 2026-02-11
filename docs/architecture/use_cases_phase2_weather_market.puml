@@ -1,0 +1,67 @@
+@startuml Phase 2 - Weather & Market Data Use Cases
+
+title Phase 2 - Weather & Market Data
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #E3F2FD
+skinparam packageBackgroundColor #FAFAFA
+
+actor "Grower" as grower #green
+actor "Open-Meteo\nAPI" as meteo #skyblue
+actor "Arduino\nSensor" as sensor #orange
+
+package "Weather Service" {
+    usecase "View Current Weather\n--\nGET /api/weather/current\n...\nOutdoor temp, humidity, VPD,\nprecipitation, wind, cloud cover\nAlgarve region (Faro)" as UC_WEATHER
+
+    usecase "View Forecast\n--\nGET /api/weather/forecast?days=3\n...\nHourly forecast: temp, humidity,\nprecipitation, ET0, solar radiation,\nsoil temp, VPD (1-7 days)" as UC_FORECAST
+
+    usecase "View Solar Data\n--\nGET /api/weather/solar\n...\nSunrise/sunset, daylight hours,\nsolar radiation, UV index,\nlighting advisory" as UC_SOLAR
+
+    usecase "Compare Indoor vs Outdoor\n--\nGET /api/weather/correlation\n...\nTemp differential, humidity delta,\nHVAC load estimation,\nefficiency metrics" as UC_CORR
+
+    usecase "Get Growing Advisory\n--\nGET /api/weather/advisory\n...\nHeat wave / cold snap detection,\nEC/watering adjustments,\nvariety-specific advice" as UC_ADVISORY
+}
+
+package "Market Data Service" {
+    usecase "View Market Prices\n--\nGET /api/market/prices\n...\nAlgarve produce prices\nwith seasonal adjustment\n(Rosso, Curly, Basil, etc.)" as UC_PRICES
+
+    usecase "Update Market Prices\n--\nPOST /api/market/prices\n...\nManual price update\nPersisted to JSON file" as UC_UPDATE
+
+    usecase "View Seasonal Demand\n--\nGET /api/market/demand\n...\nMonthly demand multipliers\nTourist-driven (peak Jul/Aug 3.0x,\nlow Jan/Feb 0.8x)" as UC_DEMAND
+}
+
+note right of UC_WEATHER
+  15-minute cache TTL
+  to avoid API rate limits.
+  Location: 37.0194, -7.9304
+end note
+
+note right of UC_PRICES
+  Products tracked:
+  - Rosso Premium: ~10 EUR/kg
+  - Curly Green: ~6 EUR/kg
+  - Basil: ~20 EUR/kg
+  - Mint: ~15 EUR/kg
+  - Arugula: ~8 EUR/kg
+  - Cherry Tomatoes: ~5 EUR/kg
+end note
+
+grower --> UC_WEATHER
+grower --> UC_FORECAST
+grower --> UC_SOLAR
+grower --> UC_CORR
+grower --> UC_ADVISORY
+grower --> UC_PRICES
+grower --> UC_UPDATE
+grower --> UC_DEMAND
+
+UC_WEATHER --> meteo
+UC_FORECAST --> meteo
+UC_SOLAR --> meteo
+UC_CORR --> meteo
+UC_ADVISORY --> meteo
+
+UC_CORR <-- sensor : indoor\nreadings
+
+@enduml

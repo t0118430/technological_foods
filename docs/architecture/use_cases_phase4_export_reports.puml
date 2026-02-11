@@ -1,0 +1,51 @@
+@startuml Phase 4 - Data Export & Reports Use Cases
+
+title Phase 4 - Data Export & Reports
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F3E5F5
+skinparam packageBackgroundColor #FAFAFA
+
+actor "Grower" as grower #green
+actor "InfluxDB" as influx #purple
+actor "SQLite\nDatabase" as sqlite #gray
+
+package "Data Export & Reports" {
+    usecase "Export Sensor CSV\n--\nGET /api/export/sensor-csv\n  ?sensor_id=...&start=...&end=...\n  &fields=...&aggregation=...\n...\nDownloads CSV file with:\ntemperature, humidity, ph,\nec, water_level, light_level\nOptional hourly/daily/15m aggregation" as UC_CSV
+
+    usecase "Get Crop Lifecycle Report\n--\nGET /api/export/crop-report/{id}\n...\nFull lifecycle report:\n- Conditions per growth stage\n- Optimal range comparison\n- Harvest outcomes\n- Stage-by-stage performance" as UC_CROP
+
+    usecase "Generate Weekly Summary\n--\nGET /api/reports/weekly\n  ?sensor_id=...\n...\n7-day report:\n- Daily averages\n- VPD & DLI tracking\n- Trend analysis\n- Weather context\n- Auto-generated recommendations" as UC_WEEKLY
+
+    usecase "Generate Monthly Summary\n--\nGET /api/reports/monthly\n  ?sensor_id=...\n...\n30-day report:\n- Weekly breakdowns\n- Harvest outcomes\n- Yield trends over time\n- Market context & revenue" as UC_MONTHLY
+}
+
+note right of UC_CSV
+  Redundant with Grafana +
+  InfluxDB direct access.
+  Consider removing.
+end note
+
+note right of UC_WEEKLY
+  Auto-recommendations based on:
+  - Temperature trending up/down
+  - pH stability issues
+  - EC drift patterns
+end note
+
+grower --> UC_CSV
+grower --> UC_CROP
+grower --> UC_WEEKLY
+grower --> UC_MONTHLY
+
+UC_CSV --> influx
+UC_WEEKLY --> influx
+UC_MONTHLY --> influx
+
+UC_CROP --> sqlite : crop data\nharvest results
+UC_MONTHLY --> sqlite : harvest outcomes
+
+UC_WEEKLY ..> UC_CSV : <<extends>>\ndata source
+
+@enduml

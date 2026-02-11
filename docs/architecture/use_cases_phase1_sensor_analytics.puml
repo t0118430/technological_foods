@@ -1,0 +1,64 @@
+@startuml Phase 1 - Sensor Analytics Use Cases
+
+title Phase 1 - Sensor Analytics
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #E8F5E9
+skinparam packageBackgroundColor #FAFAFA
+
+actor "Grower" as grower #green
+actor "Arduino\nSensor" as sensor #orange
+actor "InfluxDB" as influx #purple
+
+package "Sensor Analytics Engine" {
+    usecase "View Analytics Summary\n--\nGET /api/analytics/summary\n...\nFull snapshot: VPD, DLI,\ntrends, anomalies, averages" as UC_SUMMARY
+
+    usecase "Check VPD\n--\nGET /api/analytics/vpd\n...\nVapor Pressure Deficit\nwith classification:\nlow/optimal/high/critical\n(lettuce optimal: 0.8-1.2 kPa)" as UC_VPD
+
+    usecase "Check DLI\n--\nGET /api/analytics/dli\n...\nDaily Light Integral\nprogress + projected total\n(lettuce optimal: 12-20 mol/m2/day)" as UC_DLI
+
+    usecase "View Trends\n--\nGET /api/analytics/trends\n...\nLinear regression slope\nper field: rising/falling/stable\nConfigurable window (default 60)" as UC_TRENDS
+
+    usecase "Detect Anomalies\n--\nGET /api/analytics/anomalies\n...\nZ-score spikes (>2.5 sigma)\nFlatlines (60+ identical)\nSudden jumps (>10% change)" as UC_ANOMALIES
+
+    usecase "Query Historical Data\n--\nGET /api/analytics/history\n...\nField, time range, aggregation\nvia InfluxDB Flux queries" as UC_HISTORY
+
+    usecase "Ingest Reading\n--\nPOST /api/data (hook)\n...\nFeeds rolling buffer (~30 min)\nDerives real-time metrics\nUpdates moving averages" as UC_INGEST
+}
+
+note right of UC_INGEST
+  Triggered automatically
+  on every sensor POST.
+  Returns derived metrics
+  in the response body.
+end note
+
+note right of UC_ANOMALIES
+  Three detection methods:
+  1. Z-score spike (statistical)
+  2. Flatline (stuck sensor)
+  3. Sudden jump (calibration drift)
+end note
+
+grower --> UC_SUMMARY
+grower --> UC_VPD
+grower --> UC_DLI
+grower --> UC_TRENDS
+grower --> UC_ANOMALIES
+grower --> UC_HISTORY
+
+sensor --> UC_INGEST
+
+UC_INGEST ..> UC_VPD : <<triggers>>
+UC_INGEST ..> UC_DLI : <<triggers>>
+UC_INGEST ..> UC_TRENDS : <<updates>>
+UC_INGEST ..> UC_ANOMALIES : <<updates>>
+
+UC_HISTORY --> influx
+UC_SUMMARY ..> UC_VPD : <<include>>
+UC_SUMMARY ..> UC_DLI : <<include>>
+UC_SUMMARY ..> UC_TRENDS : <<include>>
+UC_SUMMARY ..> UC_ANOMALIES : <<include>>
+
+@enduml
