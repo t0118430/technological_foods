@@ -132,6 +132,26 @@ class Database:
                 )
             ''')
 
+            # Crop condition snapshots - daily averages for correlation analysis
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS crop_condition_snapshots (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    crop_id INTEGER NOT NULL,
+                    snapshot_date DATE NOT NULL,
+                    avg_temperature REAL,
+                    avg_humidity REAL,
+                    avg_ph REAL,
+                    avg_ec REAL,
+                    avg_vpd REAL,
+                    avg_dli REAL,
+                    time_in_optimal_pct REAL,
+                    readings_count INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (crop_id) REFERENCES crops(id),
+                    UNIQUE(crop_id, snapshot_date)
+                )
+            ''')
+
             # System events log
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS events (
@@ -149,6 +169,8 @@ class Database:
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_crops_variety ON crops(variety)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_stages_crop ON growth_stages(crop_id)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_snapshots_crop ON crop_condition_snapshots(crop_id)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_snapshots_date ON crop_condition_snapshots(snapshot_date)')
 
             conn.commit()
             logger.info("Database initialized successfully")
@@ -396,6 +418,52 @@ class Database:
                 ORDER BY next_due_date
             ''')
 
+            return [dict(row) for row in cursor.fetchall()]
+
+    def save_condition_snapshot(self, crop_id: int, snapshot_date: str,
+                               avg_temperature: float = None, avg_humidity: float = None,
+                               avg_ph: float = None, avg_ec: float = None,
+                               avg_vpd: float = None, avg_dli: float = None,
+                               time_in_optimal_pct: float = None,
+                               readings_count: int = 0) -> int:
+        """Save or update a daily condition snapshot for a crop."""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO crop_condition_snapshots
+                    (crop_id, snapshot_date, avg_temperature, avg_humidity,
+                     avg_ph, avg_ec, avg_vpd, avg_dli, time_in_optimal_pct, readings_count)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(crop_id, snapshot_date) DO UPDATE SET
+                    avg_temperature = excluded.avg_temperature,
+                    avg_humidity = excluded.avg_humidity,
+                    avg_ph = excluded.avg_ph,
+                    avg_ec = excluded.avg_ec,
+                    avg_vpd = excluded.avg_vpd,
+                    avg_dli = excluded.avg_dli,
+                    time_in_optimal_pct = excluded.time_in_optimal_pct,
+                    readings_count = excluded.readings_count
+            ''', (crop_id, snapshot_date, avg_temperature, avg_humidity,
+                  avg_ph, avg_ec, avg_vpd, avg_dli, time_in_optimal_pct, readings_count))
+            conn.commit()
+            logger.info(f"Condition snapshot saved for crop {crop_id} on {snapshot_date}")
+            return cursor.lastrowid
+
+    def get_condition_snapshots(self, crop_id: int, start_date: str = None,
+                                end_date: str = None) -> List[Dict[str, Any]]:
+        """Get condition snapshots for a crop, optionally filtered by date range."""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            query = 'SELECT * FROM crop_condition_snapshots WHERE crop_id = ?'
+            params = [crop_id]
+            if start_date:
+                query += ' AND snapshot_date >= ?'
+                params.append(start_date)
+            if end_date:
+                query += ' AND snapshot_date <= ?'
+                params.append(end_date)
+            query += ' ORDER BY snapshot_date'
+            cursor.execute(query, params)
             return [dict(row) for row in cursor.fetchall()]
 
     def log_event(self, event_type: str, message: str, severity: str = 'info',

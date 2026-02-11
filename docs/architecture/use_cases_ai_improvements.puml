@@ -1,0 +1,106 @@
+@startuml AI Improvements - Use Case Overview
+
+title Technological Foods - AI Improvements Use Cases
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F0F8FF
+skinparam packageBackgroundColor #FAFAFA
+skinparam arrowColor #555555
+
+' ── Actors ──────────────────────────────────────────
+actor "Grower" as grower #green
+actor "Arduino\nSensor" as sensor #orange
+actor "Open-Meteo\nAPI" as meteo #skyblue
+actor "InfluxDB" as influx #purple
+actor "SQLite" as sqlite #gray
+
+' ── Phase 1: Sensor Analytics ──────────────────────
+package "Phase 1 - Sensor Analytics" {
+    usecase "View Analytics Summary" as UC1
+    usecase "Check VPD\n(Vapor Pressure Deficit)" as UC2
+    usecase "Check DLI\n(Daily Light Integral)" as UC3
+    usecase "View Sensor Trends" as UC4
+    usecase "Detect Anomalies\n(spikes, flatlines, jumps)" as UC5
+    usecase "Query Historical\nAnalytics" as UC6
+    usecase "Ingest Sensor Reading" as UC7
+}
+
+' ── Phase 2: Weather & Market ──────────────────────
+package "Phase 2 - Weather & Market Data" {
+    usecase "View Current Weather" as UC8
+    usecase "View Weather Forecast" as UC9
+    usecase "View Solar Data\n(sunrise/sunset, radiation)" as UC10
+    usecase "Compare Indoor vs\nOutdoor Conditions" as UC11
+    usecase "Get Growing\nConditions Advisory" as UC12
+    usecase "View Market Prices" as UC13
+    usecase "Update Market Prices" as UC14
+    usecase "View Seasonal Demand" as UC15
+}
+
+' ── Phase 3: Crop Intelligence ─────────────────────
+package "Phase 3 - Crop Intelligence" {
+    usecase "View Condition-Harvest\nCorrelations" as UC16
+    usecase "Get Growth Optimization\nRecommendations" as UC17
+    usecase "Predict Yield" as UC18
+    usecase "Check Crop\nHealth Score" as UC19
+}
+
+' ── Phase 4: Data Export & Reports ─────────────────
+package "Phase 4 - Data Export & Reports" {
+    usecase "Export Sensor CSV" as UC20
+    usecase "Get Crop Lifecycle\nReport" as UC21
+    usecase "Generate Weekly\nSummary" as UC22
+    usecase "Generate Monthly\nSummary" as UC23
+}
+
+' ── Grower interactions ────────────────────────────
+grower --> UC1
+grower --> UC2
+grower --> UC3
+grower --> UC4
+grower --> UC5
+grower --> UC6
+grower --> UC8
+grower --> UC9
+grower --> UC10
+grower --> UC11
+grower --> UC12
+grower --> UC13
+grower --> UC14
+grower --> UC15
+grower --> UC16
+grower --> UC17
+grower --> UC18
+grower --> UC19
+grower --> UC20
+grower --> UC21
+grower --> UC22
+grower --> UC23
+
+' ── Sensor interactions ────────────────────────────
+sensor --> UC7
+UC7 ..> UC2 : <<include>>
+UC7 ..> UC3 : <<include>>
+UC7 ..> UC4 : <<include>>
+UC7 ..> UC5 : <<include>>
+
+' ── External system interactions ───────────────────
+UC8 --> meteo
+UC9 --> meteo
+UC10 --> meteo
+UC11 --> meteo
+UC12 --> meteo
+
+UC6 --> influx
+UC20 --> influx
+UC22 --> influx
+UC23 --> influx
+
+UC16 --> sqlite
+UC17 --> sqlite
+UC18 --> sqlite
+UC19 --> sqlite
+UC21 --> sqlite
+
+@enduml

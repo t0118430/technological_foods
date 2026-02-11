@@ -16,12 +16,24 @@
       "Bash(wc:*)",
       "Bash(grep:*)",
       "Bash(git rm:*)",
+<<<<<<< HEAD
+      "Bash(git -C C:/git/technological_foods branch -a)",
+      "Bash(git -C C:/git/technological_foods fetch origin master)",
+      "Bash(git -C C:/git/technological_foods diff --stat origin/master..ai-improvements)",
+      "Bash(git -C C:/git/technological_foods diff --stat origin/master..ai-improvements -- '*.py' '*.json' '*.yml')",
+      "Bash(git -C C:/git/technological_foods diff origin/master..ai-improvements -- backend/api/crop_intelligence.py backend/api/sensor_analytics.py backend/api/weather_service.py backend/api/market_data_service.py backend/api/data_export.py --stat)",
+      "Bash(git -C C:/git/technological_foods diff origin/master..ai-improvements -- backend/api/server.py)",
+      "Bash(git -C C:/git/technological_foods diff origin/master..ai-improvements -- docs/architecture/ --stat)",
+      "Bash(git -C C:/git/technological_foods diff origin/master..ai-improvements --numstat)",
+      "Bash(git -C C:/git/technological_foods diff --numstat origin/master ai-improvements)"
+=======
       "Bash(git commit:*)",
       "Bash(where:*)",
       "Bash(curl:*)",
       "Bash(git push:*)",
       "Bash(docker compose exec:*)",
       "Bash(find:*)"
+>>>>>>> origin/master
     ]
   }
 }

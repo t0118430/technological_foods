@@ -42,6 +42,11 @@ try:
         _redis_cache = None
 except ImportError:
     pass
+from sensor_analytics import sensor_analytics
+from weather_service import weather_service
+from market_data_service import market_data_service
+from crop_intelligence import crop_intelligence
+from data_export import data_export_service
 
 # Load .env from backend directory
 env_path = Path(__file__).resolve().parent.parent / '.env'
@@ -361,6 +366,208 @@ class RequestHandler(BaseHTTPRequestHandler):
             commands = rule_engine.get_pending_commands(sensor_id)
             self._send_json(200, {"commands": commands})
 
+        # ── Sensor Analytics (Phase 1) ──────────────────────
+        elif path == "/api/analytics/summary":
+            try:
+                sensor_id = query.get("sensor_id", ["arduino_1"])[0]
+                summary = sensor_analytics.get_sensor_summary(sensor_id)
+                self._send_json(200, summary)
+            except Exception as e:
+                logger.error(f"Analytics summary error: {e}")
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/analytics/vpd":
+            try:
+                sensor_id = query.get("sensor_id", ["arduino_1"])[0]
+                latest = query_latest()
+                temp = latest.get('temperature')
+                humidity = latest.get('humidity')
+                if temp is not None and humidity is not None:
+                    vpd = sensor_analytics.calculate_vpd(float(temp), float(humidity))
+                    self._send_json(200, vpd)
+                else:
+                    self._send_json(404, {"error": "No temperature/humidity data available"})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/analytics/dli":
+            try:
+                sensor_id = query.get("sensor_id", ["arduino_1"])[0]
+                dli = sensor_analytics.calculate_dli(sensor_id)
+                self._send_json(200, dli)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/analytics/trends":
+            try:
+                sensor_id = query.get("sensor_id", ["arduino_1"])[0]
+                window = int(query.get("window", ["60"])[0])
+                trends = sensor_analytics.detect_trends(sensor_id, window)
+                self._send_json(200, {"sensor_id": sensor_id, "trends": trends})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/analytics/anomalies":
+            try:
+                sensor_id = query.get("sensor_id", ["arduino_1"])[0]
+                latest = query_latest()
+                anomalies = sensor_analytics.detect_anomalies(latest, sensor_id)
+                self._send_json(200, {"sensor_id": sensor_id, "anomalies": anomalies})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/analytics/history":
+            try:
+                sensor_id = query.get("sensor_id", ["arduino_1"])[0]
+                field = query.get("field", ["temperature"])[0]
+                start = query.get("start", ["-7d"])[0]
+                end = query.get("end", ["now()"])[0]
+                aggregation = query.get("aggregation", ["1h"])[0]
+                result = sensor_analytics.query_historical_analytics(
+                    sensor_id, field, start, end, aggregation
+                )
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        # ── Weather Service (Phase 2) ───────────────────────
+        elif path == "/api/weather/current":
+            try:
+                result = weather_service.get_current_weather()
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/weather/forecast":
+            try:
+                days = int(query.get("days", ["3"])[0])
+                result = weather_service.get_forecast(days)
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/weather/solar":
+            try:
+                result = weather_service.get_solar_data()
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/weather/correlation":
+            try:
+                # Get latest indoor sensor data
+                latest = query_latest()
+                indoor_data = None
+                if latest:
+                    indoor_data = {
+                        'temperature': latest.get('temperature'),
+                        'humidity': latest.get('humidity'),
+                    }
+                result = weather_service.get_greenhouse_correlation(indoor_data)
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/weather/advisory":
+            try:
+                variety = query.get("variety", [None])[0]
+                result = weather_service.get_growing_conditions_advisory(variety)
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        # ── Market Data (Phase 2) ───────────────────────────
+        elif path == "/api/market/prices":
+            try:
+                result = market_data_service.get_market_prices()
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/market/demand":
+            try:
+                result = market_data_service.get_seasonal_demand()
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        # ── Crop Intelligence (Phase 3) ─────────────────────
+        elif path == "/api/intelligence/correlations":
+            try:
+                variety = query.get("variety", ["rosso_premium"])[0]
+                result = crop_intelligence.get_condition_harvest_correlation(variety)
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path.startswith("/api/intelligence/recommendations/"):
+            try:
+                crop_id = int(path.split("/api/intelligence/recommendations/")[1])
+                result = crop_intelligence.get_growth_optimization_recommendations(crop_id)
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path.startswith("/api/intelligence/predict/"):
+            try:
+                crop_id = int(path.split("/api/intelligence/predict/")[1])
+                result = crop_intelligence.predict_yield(crop_id)
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path.startswith("/api/intelligence/health/"):
+            try:
+                crop_id = int(path.split("/api/intelligence/health/")[1])
+                result = crop_intelligence.get_crop_health_score(crop_id)
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        # ── Data Export & Reports (Phase 4) ──────────────────
+        elif path == "/api/export/sensor-csv":
+            try:
+                sensor_id = query.get("sensor_id", ["arduino_1"])[0]
+                start = query.get("start", ["-7d"])[0]
+                end = query.get("end", ["now()"])[0]
+                fields = query.get("fields", None)
+                aggregation = query.get("aggregation", [None])[0]
+                csv_data = data_export_service.export_sensor_csv(
+                    sensor_id, start, end, fields, aggregation
+                )
+                self.send_response(200)
+                self.send_header("Content-Type", "text/csv")
+                self.send_header("Content-Disposition",
+                                 f'attachment; filename="sensor_{sensor_id}.csv"')
+                self.end_headers()
+                self.wfile.write(csv_data.encode())
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path.startswith("/api/export/crop-report/"):
+            try:
+                crop_id = int(path.split("/api/export/crop-report/")[1])
+                result = data_export_service.export_crop_report(crop_id)
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/reports/weekly":
+            try:
+                sensor_id = query.get("sensor_id", ["arduino_1"])[0]
+                result = data_export_service.generate_weekly_summary(sensor_id)
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/reports/monthly":
+            try:
+                sensor_id = query.get("sensor_id", ["arduino_1"])[0]
+                result = data_export_service.generate_monthly_summary(sensor_id)
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
         # ── Site Visits Backoffice ─────────────────────────
         elif path == "/site-visits":
             try:
@@ -482,6 +689,13 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                 write_to_influx(data, sensor_id)
 
+                # Feed analytics engine (VPD, DLI, trends, anomalies)
+                try:
+                    analytics_result = sensor_analytics.ingest_reading(data, sensor_id)
+                except Exception as analytics_err:
+                    logger.warning(f"Analytics ingestion error: {analytics_err}")
+                    analytics_result = {}
+
                 # Check for resolved alerts first (values back to safe zone)
                 resolved = escalation_manager.check_for_resolved_alerts(data)
                 for resolution in resolved:
@@ -579,7 +793,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._send_json(201, {
                     "status": "saved",
                     "data": data,
-                    "triggered_rules": [t['rule_id'] for t in triggered]
+                    "triggered_rules": [t['rule_id'] for t in triggered],
+                    "analytics": analytics_result,
                 })
 
             except json.JSONDecodeError:
@@ -978,6 +1193,18 @@ class RequestHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send_json(500, {"error": str(e)})
 
+        # ── Market Data: Update Prices (Phase 2) ────────────
+        elif path == "/api/market/prices":
+            try:
+                data = self._read_body()
+                result = market_data_service.update_market_prices(data)
+                if 'error' in result:
+                    self._send_json(400, result)
+                else:
+                    self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
         else:
             self._send_json(404, {"error": "Not found"})
 
@@ -1130,6 +1357,36 @@ if __name__ == "__main__":
             print(f"  -> ETL_ENABLED=true but processor failed to initialize")
     else:
         print(f"  -> Background scheduler disabled (set ETL_ENABLED=true to enable)")
+    print("")
+    print("Sensor Analytics (Phase 1):")
+    print("  GET    /api/analytics/summary   - Full analytics snapshot (VPD, DLI, trends)")
+    print("  GET    /api/analytics/vpd       - Current VPD with classification")
+    print("  GET    /api/analytics/dli       - DLI progress + projected daily total")
+    print("  GET    /api/analytics/trends    - Trend direction for all sensors")
+    print("  GET    /api/analytics/anomalies - Active anomaly detections")
+    print("  GET    /api/analytics/history   - Historical data with aggregation")
+    print("")
+    print("Weather & Market (Phase 2):")
+    print("  GET    /api/weather/current     - Current outdoor weather (Open-Meteo)")
+    print("  GET    /api/weather/forecast    - 3-day forecast")
+    print("  GET    /api/weather/solar       - Sunrise/sunset + light advisory")
+    print("  GET    /api/weather/correlation - Indoor vs outdoor comparison")
+    print("  GET    /api/weather/advisory    - Growing conditions advisory")
+    print("  GET    /api/market/prices       - Market prices")
+    print("  POST   /api/market/prices       - Update market prices")
+    print("  GET    /api/market/demand       - Seasonal demand multipliers")
+    print("")
+    print("Crop Intelligence (Phase 3):")
+    print("  GET    /api/intelligence/correlations         - Condition-to-harvest correlations")
+    print("  GET    /api/intelligence/recommendations/{id} - Optimization recommendations")
+    print("  GET    /api/intelligence/predict/{id}         - Yield prediction")
+    print("  GET    /api/intelligence/health/{id}          - Crop health score")
+    print("")
+    print("Data Export & Reports (Phase 4):")
+    print("  GET    /api/export/sensor-csv          - CSV file download")
+    print("  GET    /api/export/crop-report/{id}    - Crop lifecycle report")
+    print("  GET    /api/reports/weekly              - Weekly summary")
+    print("  GET    /api/reports/monthly             - Monthly summary")
 
     # Check for stage advancements on startup
     print("")

@@ -1,0 +1,51 @@
+@startuml Phase 3 - Crop Intelligence Use Cases
+
+title Phase 3 - Crop Intelligence
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #FFF3E0
+skinparam packageBackgroundColor #FAFAFA
+
+actor "Grower" as grower #green
+actor "SQLite\nDatabase" as sqlite #gray
+
+package "Crop Intelligence Engine" {
+    usecase "View Condition-Harvest\nCorrelations\n--\nGET /api/intelligence/correlations\n  ?variety=rosso_premium\n...\nCorrelates avg conditions during\ngrowth with yield/quality outcomes.\nCompares best vs worst batches\nto identify key success factors." as UC_CORR
+
+    usecase "Get Optimization\nRecommendations\n--\nGET /api/intelligence/\n  recommendations/{crop_id}\n...\nCompares current conditions\nto historical best outcomes.\nSuggests specific adjustments\nfor temp, pH, EC, humidity." as UC_RECO
+
+    usecase "Predict Yield\n--\nGET /api/intelligence/\n  predict/{crop_id}\n...\nHistorical average yield\nadjusted by time-in-optimal\nconditions (factor: 0.7-1.1x).\nIncludes confidence interval." as UC_PREDICT
+
+    usecase "Check Crop Health Score\n--\nGET /api/intelligence/\n  health/{crop_id}\n...\nWeighted 0-100 score:\n- Temperature: 25 pts\n- pH: 25 pts\n- EC: 25 pts\n- Humidity: 15 pts\n- VPD: 10 pts" as UC_HEALTH
+}
+
+note right of UC_CORR
+  Uses crop_condition_snapshots
+  table (daily averages) joined
+  with harvest results to find
+  optimal growing patterns.
+end note
+
+note right of UC_HEALTH
+  Score breakdown:
+  100 = all parameters in
+        optimal range
+  <50 = critical, needs
+        immediate attention
+end note
+
+grower --> UC_CORR
+grower --> UC_RECO
+grower --> UC_PREDICT
+grower --> UC_HEALTH
+
+UC_CORR --> sqlite : crop_condition_snapshots\nharvest data
+UC_RECO --> sqlite : current conditions\nvs historical best
+UC_PREDICT --> sqlite : historical yields\ncondition snapshots
+UC_HEALTH --> sqlite : current readings\noptimal ranges
+
+UC_RECO ..> UC_CORR : <<uses>>\nhistorical patterns
+UC_PREDICT ..> UC_HEALTH : <<extends>>\nadjustment factor
+
+@enduml

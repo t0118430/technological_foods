@@ -1,0 +1,56 @@
+  1. Reorganized backend/api/ into domain subfolders                                                                                                          
+  
+  Moved 32 files from a flat directory into 9 subfolders:                                                                                                       ┌────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────┐                                         
+  │     Folder     │                                            Contents                                            │
+  ├────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ db/            │ database.py, pg_database.py                                                                    │
+  ├────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ etl/           │ influx_pg_etl.py, data_retention.py                                                            │
+  ├────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ notifications/ │ notification_service, alert_escalation, multi_channel_notifier, tier_notification_router       │
+  ├────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ sensors/       │ ac_controller, drift_detection_service                                                         │
+  ├────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ crops/         │ growth_stage_manager, config_loader                                                            │
+  ├────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ business/      │ business_model, business_dashboard, client_manager, site_visits_manager, lead_generation_legal │
+  ├────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ harvester/     │ data_harvester + 5 source files                                                                │
+  ├────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ rules/         │ rule_engine, rules_config.json                                                                 │
+  ├────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ tests/         │ 8 test files                                                                                   │
+  └────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────┘
+  Created __init__.py re-exports, fixed all imports, Path(__file__) references, and @patch() targets. 181 tests passing.
+
+  2. Committed and pushed refactor branch
+
+  - Branch: refactor/organize-api-domain-subfolders
+  - Pushed to origin, PR link provided (manual creation needed since gh CLI not installed)
+
+  3. Wrote PR description for site-visits → master
+
+  Covering the PostgreSQL three-layer architecture, site visits module, and supporting tools.
+
+  4. Investigated 401 Unauthorized issue
+
+  Found that server.py uses X-API-Key header auth. Site visits endpoints are already public (whitelisted). All other endpoints require the header:
+  X-API-Key: agritech-secret-key-2026
+
+  5. Created Postman collection and curl examples
+
+  backend/postman/ with 3 files covering all 46 endpoints.
+
+  ---
+  Actions remaining
+
+  1. Create both PRs on GitHub (no gh CLI installed):
+    - refactor/organize-api-domain-subfolders → master — https://github.com/t0118430/technological_foods/pull/new/refactor/organize-api-domain-subfolders     
+    - site-visits → master — create from GitHub UI
+  2. Commit the postman folder — it's currently unstaged on site-visits
+  3. Install gh CLI if you want automated PR creation in future
+  4. Pre-existing broken tests (not caused by our changes):
+    - test_integration_notifications.py — imports SubscriptionTier which doesn't exist
+    - test_integration.py — pytest fixture error (name not found)
+  5. Unstaged files on site-visits still to deal with:
+    - backend/.env.example, backend/sql/init.sql, backend/ETL_GUIDE.md, .claude/settings.local.json

@@ -1,0 +1,17 @@
+● Created backend/tools/seed_site_visits.py. Here's what it does:               
+  5 demo clients — Dutch hydroponic companies with realistic names, tiers    
+  (bronze/silver/gold), locations, health scores, and contact details.
+  Skipped if the clients table already has data.                                                                                                          
+  35 demo site visits spread over the last ~4 months with:
+  - 4 inspectors rotating across visits
+  - Weighted visit types (50% routine, 25% follow-up, 15% audit, 10%
+  emergency)
+  - Random zones, crop batches, and sensor snapshots per visit
+  - Realistic observations, actions, and issues (with severity + category)   
+  - ~30% have follow-ups (some already completed)
+  - Rating distribution weighted toward 4-5 stars
+  - If visits already exist, prompts before clearing
+
+  Run it:
+  cd backend/api
+  python ../tools/seed_site_visits.py

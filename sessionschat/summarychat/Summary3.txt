@@ -1,0 +1,43 @@
+ Summary
+
+  What we did
+
+  1. Added business.site_visits table to init.sql — JSONB  
+  columns, FK to business.clients, 4 indexes, updated_at   
+  trigger
+  2. Added 9 site visits methods to pg_database.py —       
+  create_site_visit, get_site_visit, update_site_visit,    
+  delete_site_visit, list_site_visits,
+  get_site_visits_dashboard, get_site_visits_clients,      
+  get_site_visits_export, complete_site_visit_follow_up    
+  3. Created tests/ folder with conftest.py (PG fixtures)  
+  and test_pg_site_visits.py (40 integration tests) — all  
+  passing against real PostgreSQL
+  4. Fixed a cursor bug — _execute() returns a closed      
+  cursor on Python 3.14; rewrote our methods to use        
+  _fetchone for RETURNING and inline cursors for rowcount  
+  5. Fixed pagination determinism — added sv.id ASC        
+  tiebreaker to list_site_visits ORDER BY
+
+  What's still missing
+
+  server.py is not wired to the PG backend for site visits.
+   All 10 route handlers call site_visits_manager (SQLite) 
+  directly. When DB_BACKEND=postgres, they should call the 
+  pg_database.py methods instead — same pattern as
+  database.py line 418.
+
+  seed_site_visits.py is SQLite-only. It needs a DB_BACKEND
+   switch so demo data can be seeded into PostgreSQL for   
+  visual testing.
+
+  Next actions
+
+  1. Wire server.py — add a DB_BACKEND switch so site      
+  visits routes use pg_database when postgres is selected  
+  2. Update seed_site_visits.py — add PostgreSQL seeding   
+  support
+  3. Update the guide — mention how to run with
+  DB_BACKEND=postgres
+
+  Want me to continue with these?
