@@ -18,7 +18,10 @@
       "Bash(git rm:*)",
       "Bash(git commit:*)",
       "Bash(where:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(git push:*)",
+      "Bash(docker compose exec:*)",
+      "Bash(find:*)"
     ]
   }
 }

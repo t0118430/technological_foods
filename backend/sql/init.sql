@@ -624,6 +624,8 @@ CREATE TABLE bi.daily_sensor_agg_2027 PARTITION OF bi.daily_sensor_agg
 
 CREATE INDEX idx_daily_sensor_agg_sensor ON bi.daily_sensor_agg(sensor_id, metric_date DESC);
 CREATE INDEX idx_daily_sensor_agg_zone ON bi.daily_sensor_agg(zone_id, metric_date DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_daily_sensor_metric
+    ON bi.daily_sensor_agg (sensor_id, metric_date);
 
 -- Hourly sensor aggregates (non-partitioned, rolls off after 90 days)
 CREATE TABLE bi.hourly_sensor_agg (
