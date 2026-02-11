@@ -1,0 +1,25 @@
+{
+	"folders": [
+		{
+			"path": "../../arduino"
+		},
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../diagram"
+		},
+		{
+			"path": "../../docs"
+		},
+		{
+			"path": "../../Documentação"
+		},
+		{
+			"path": "../../infra"
+		},
+		{
+			"path": "../../sessionschat"
+		}
+	]
+}
