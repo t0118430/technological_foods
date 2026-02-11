@@ -1,0 +1,128 @@
+@startuml AgriTech_Component_Diagram
+
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam defaultFontSize 12
+skinparam rectangleBorderColor #555555
+skinparam noteBorderColor #999999
+
+title AgriTech Technological Foods\nComponent Diagram — Granularidade Grossa
+
+' ════════════════════════════════════
+' ACTORS
+' ════════════════════════════════════
+actor "Admin /\nTechnician" as admin
+actor "B2B Client\n(Bronze/Silver/Gold)" as client
+
+' ════════════════════════════════════
+' IOT DEVICE
+' ════════════════════════════════════
+component "Arduino UNO R4 WiFi\n+ DHT20 Sensor" as arduino #LightBlue
+
+' ════════════════════════════════════
+' CENTRAL API
+' ════════════════════════════════════
+package "AgriTech REST API\nserver.py (:3001)" as api #PaleGreen {
+    component "Sensor Ingestion\n/api/data, /api/commands" as api_sensor #MediumAquamarine
+    component "Rule Engine\n12 rules, AC/LED actions" as api_rules #Khaki
+    component "Crop Management\n8 stages, 6 varieties" as api_crops #DarkSeaGreen
+    component "Business & Clients\nSaaS tiers, site visits" as api_business #Thistle
+    component "Notifications\nmulti-channel, escalation" as api_notif #LightPink
+    component "AI Analytics\nVPD, DLI, trends, yield" as api_ai #SkyBlue
+    component "Data Export\nCSV, reports, weekly/monthly" as api_export #LightSteelBlue
+    component "ETL Pipeline\nInfluxDB -> PostgreSQL" as api_etl #CadetBlue
+    component "Data Harvester\nweather, solar, market, tourism" as api_harvester #SandyBrown
+}
+
+' ════════════════════════════════════
+' DATA STORES
+' ════════════════════════════════════
+database "InfluxDB\n(HOT — real-time)" as influx #LightSteelBlue
+database "PostgreSQL\n(WARM — 7 schemas)" as postgres #CornflowerBlue
+database "Redis\n(CACHE — <5ms)" as redis #Tomato
+
+' ════════════════════════════════════
+' VISUALIZATION
+' ════════════════════════════════════
+component "Grafana\nDashboards" as grafana #Salmon
+component "Node-RED\nFlow Automation" as nodered #IndianRed
+
+' ════════════════════════════════════
+' EXTERNAL SERVICES
+' ════════════════════════════════════
+cloud "External APIs" as ext #Linen {
+    component "Open-Meteo\nWeather" as meteo #LightCyan
+    component "Haier hOn\nAC Control" as hon #Lavender
+    component "Market Data\nPrices" as market #NavajoWhite
+}
+
+cloud "Notification Channels" as notif_ch #MistyRose {
+    component "ntfy.sh\nPush" as ntfy
+    component "Twilio\nWhatsApp/SMS" as twilio
+    component "SMTP\nEmail" as smtp
+}
+
+' ════════════════════════════════════
+' RELATIONSHIPS — Consumers -> API
+' ════════════════════════════════════
+arduino -down-> api_sensor : HTTP POST /api/data\n(every 2s)
+api_sensor -up-> arduino : GET /api/commands\n(LED/AC actions)
+
+admin -down-> api : Swagger UI /api/docs\nRule CRUD, Crop mgmt
+client -down-> api_business : Site visits,\nDashboard, Reports
+
+' ════════════════════════════════════
+' RELATIONSHIPS — API -> Data Stores
+' ════════════════════════════════════
+api_sensor -down-> influx : Write sensor\ntime-series
+api_sensor -down-> redis : Cache latest\nreadings (TTL 30s)
+api_crops -down-> postgres : Crop lifecycle,\nClient data
+api_etl -down-> influx : Read hot data
+api_etl -down-> postgres : Write warm data
+
+' ════════════════════════════════════
+' RELATIONSHIPS — API -> External
+' ════════════════════════════════════
+api_rules --> api_notif : Alert\ntriggers
+api_notif -down-> ntfy : Push\nnotifications
+api_notif -down-> twilio : WhatsApp\n/ SMS
+api_notif -down-> smtp : Email\nalerts
+
+api_harvester -down-> meteo : Weather\nforecasts
+api_harvester -down-> market : Produce\nprices
+api_rules -down-> hon : AC cool/heat\ncommands
+
+' ════════════════════════════════════
+' RELATIONSHIPS — Visualization
+' ════════════════════════════════════
+influx -right-> grafana : Flux queries
+admin -down-> grafana : View dashboards
+
+' ════════════════════════════════════
+' NOTES
+' ════════════════════════════════════
+note right of api
+  **~72 REST endpoints**
+  Auth: X-API-Key header
+  Public: /api/health, /api/docs
+  Swagger UI at /api/docs
+end note
+
+note bottom of postgres
+  **7 Schemas:**
+  core | iot | crop | business
+  alert | bi | audit
+end note
+
+note bottom of api_ai
+  **22 new AI endpoints:**
+  /api/analytics/*
+  /api/weather/*
+  /api/market/*
+  /api/intelligence/*
+  /api/export/*
+  /api/reports/*
+end note
+
+@enduml

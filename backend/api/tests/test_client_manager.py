@@ -9,7 +9,7 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock
 from datetime import datetime, timedelta
 
-from client_manager import ClientManager, ServiceTier, Client, SensorUnit
+from business.client_manager import ClientManager, ServiceTier, Client, SensorUnit
 
 
 @pytest.fixture

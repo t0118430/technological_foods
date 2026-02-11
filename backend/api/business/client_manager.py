@@ -75,6 +75,7 @@ class ClientManager:
 
     def __init__(self, db_path: str = _DEFAULT_DB):
         self.db_path = db_path
+        Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
         self._init_database()
 
     def _init_database(self):

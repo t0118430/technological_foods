@@ -8,7 +8,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from business_model import BusinessDatabase, SUBSCRIPTION_TIERS
+from business.business_model import BusinessDatabase, SUBSCRIPTION_TIERS
 
 
 @pytest.fixture

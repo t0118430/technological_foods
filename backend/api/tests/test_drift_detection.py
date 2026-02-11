@@ -7,7 +7,7 @@ import pytest
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
-from drift_detection_service import DriftDetectionService, DriftAnalysis, SensorReading
+from sensors.drift_detection_service import DriftDetectionService, DriftAnalysis, SensorReading
 
 
 @pytest.fixture

@@ -10,7 +10,7 @@ import os
 from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
 
-from business_dashboard import BusinessDashboard, get_dashboard_data
+from business.business_dashboard import BusinessDashboard, get_dashboard_data
 
 
 @pytest.fixture

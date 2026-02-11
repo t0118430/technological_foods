@@ -30,12 +30,15 @@ services:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-agritech2026}
       - GF_INSTALL_PLUGINS=grafana-clock-panel
+      - PG_USER=${POSTGRES_USER:-agritech}
+      - PG_PASSWORD=${POSTGRES_PASSWORD:-agritech2026}
     volumes:
       - grafana-data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
       - influxdb
+      - postgres
     restart: unless-stopped
     networks:
       - agritech-network
