@@ -1,0 +1,503 @@
+{
+	"info": {
+		"name": "AgriTech Hydroponics API",
+		"description": "Complete API collection for the AgriTech Hydroponics platform.\n\n## Authentication\nProtected endpoints require the `X-API-Key` header. Set the `API_KEY` collection variable to match your `.env` value.\n\nPublic endpoints (no key needed): health, docs, site-visits, business/site-visits HTML pages.\n\n## Base URL\nDefault: `http://localhost:3001`",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3001"
+		},
+		{
+			"key": "API_KEY",
+			"value": "agritech-secret-key-2026"
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{ "key": "key", "value": "X-API-Key", "type": "string" },
+			{ "key": "value", "value": "{{API_KEY}}", "type": "string" },
+			{ "key": "in", "value": "header", "type": "string" }
+		]
+	},
+	"item": [
+		{
+			"name": "Public",
+			"description": "Endpoints that do NOT require API key authentication.",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"url": "{{base_url}}/api/health"
+					}
+				},
+				{
+					"name": "API Root",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"url": "{{base_url}}/"
+					}
+				},
+				{
+					"name": "Swagger Docs (HTML)",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"url": "{{base_url}}/api/docs"
+					}
+				},
+				{
+					"name": "OpenAPI Spec (JSON)",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"url": "{{base_url}}/api/openapi.json"
+					}
+				},
+				{
+					"name": "Business Dashboard (HTML)",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"url": "{{base_url}}/business"
+					}
+				},
+				{
+					"name": "Site Visits Backoffice (HTML)",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"url": "{{base_url}}/site-visits"
+					}
+				}
+			]
+		},
+		{
+			"name": "Site Visits",
+			"description": "Field inspection tracking (public, no API key needed).",
+			"auth": { "type": "noauth" },
+			"item": [
+				{
+					"name": "Dashboard Stats",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/site-visits/dashboard"
+					}
+				},
+				{
+					"name": "Client List (for dropdown)",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/site-visits/clients"
+					}
+				},
+				{
+					"name": "Export All Visits",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/site-visits/export"
+					}
+				},
+				{
+					"name": "List Visits (paginated)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/site-visits?page=1&per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["api", "site-visits"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "per_page", "value": "20" },
+								{ "key": "visit_type", "value": "routine", "disabled": true },
+								{ "key": "inspector", "value": "", "disabled": true },
+								{ "key": "date_from", "value": "2025-01-01", "disabled": true },
+								{ "key": "date_to", "value": "2025-12-31", "disabled": true },
+								{ "key": "follow_up", "value": "pending", "disabled": true },
+								{ "key": "search", "value": "", "disabled": true },
+								{ "key": "sort", "value": "visit_date", "disabled": true },
+								{ "key": "sort_dir", "value": "desc", "disabled": true }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Single Visit",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/site-visits/1"
+					}
+				},
+				{
+					"name": "Create Visit",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/api/site-visits",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"inspector_name\": \"Maria Silva\",\n  \"visit_type\": \"routine\",\n  \"client_id\": 1,\n  \"facility_name\": \"Greenhouse A\",\n  \"zones_inspected\": [\"Zone 1\", \"Zone 2\"],\n  \"crop_batches_checked\": [\"rosso_premium_001\"],\n  \"sensor_readings_snapshot\": {\n    \"temperature\": 23.5,\n    \"humidity\": 68.2,\n    \"ph\": 6.1\n  },\n  \"observations\": \"All crops healthy, good growth rate.\",\n  \"issues_found\": [\"Minor leaf discoloration in Zone 2\"],\n  \"actions_taken\": \"Adjusted nutrient solution EC.\",\n  \"follow_up_required\": true,\n  \"follow_up_date\": \"2026-02-18\",\n  \"follow_up_notes\": \"Re-check Zone 2 leaf health.\",\n  \"overall_rating\": 4,\n  \"photo_notes\": \"Photos taken of Zone 2 plants.\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Update Visit",
+					"request": {
+						"method": "PUT",
+						"url": "{{base_url}}/api/site-visits/1",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"observations\": \"Updated observations after re-check.\",\n  \"overall_rating\": 5\n}"
+						}
+					}
+				},
+				{
+					"name": "Complete Follow-Up",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/api/site-visits/1/complete-follow-up"
+					}
+				},
+				{
+					"name": "Delete Visit",
+					"request": {
+						"method": "DELETE",
+						"url": "{{base_url}}/api/site-visits/1"
+					}
+				}
+			]
+		},
+		{
+			"name": "Sensor Data",
+			"description": "Arduino sensor ingestion and latest readings.",
+			"item": [
+				{
+					"name": "Get Latest Reading",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/data/latest"
+					}
+				},
+				{
+					"name": "Post Sensor Data",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/api/data",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sensor_id\": \"arduino_1\",\n  \"temperature\": 24.5,\n  \"humidity\": 65.3,\n  \"light\": 850,\n  \"ph\": 6.2,\n  \"ec\": 1.8,\n  \"water_temp\": 21.0\n}"
+						}
+					}
+				},
+				{
+					"name": "Post Dual Sensor (Drift Detection)",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/api/sensors/dual",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sensor_id\": \"ph_dual_1\",\n  \"primary\": { \"ph\": 6.1 },\n  \"secondary\": { \"ph\": 6.3 },\n  \"drift\": { \"delta\": 0.2, \"threshold\": 0.5 }\n}"
+						}
+					}
+				},
+				{
+					"name": "Drift Status (All Sensors)",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/sensors/drift/status"
+					}
+				},
+				{
+					"name": "Drift Trend (Single Sensor)",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/sensors/drift/ph_dual_1"
+					}
+				}
+			]
+		},
+		{
+			"name": "AC Control",
+			"description": "Haier AC controller via hOn integration.",
+			"item": [
+				{
+					"name": "Get AC State",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/ac"
+					}
+				},
+				{
+					"name": "Control AC",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/api/ac",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"power\": true,\n  \"temperature\": 22,\n  \"mode\": \"cool\"\n}"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Rules",
+			"description": "Alert rule engine CRUD + Arduino command polling.",
+			"item": [
+				{
+					"name": "List All Rules",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/rules"
+					}
+				},
+				{
+					"name": "Get Single Rule",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/rules/temp_high"
+					}
+				},
+				{
+					"name": "Create Rule",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/api/rules",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"rule_id\": \"humidity_low\",\n  \"name\": \"Low Humidity Alert\",\n  \"sensor\": \"humidity\",\n  \"threshold\": 40.0,\n  \"condition\": \"below\",\n  \"severity\": \"warning\",\n  \"action\": {\n    \"type\": \"alert\",\n    \"message\": \"Humidity below safe minimum\"\n  }\n}"
+						}
+					}
+				},
+				{
+					"name": "Update Rule",
+					"request": {
+						"method": "PUT",
+						"url": "{{base_url}}/api/rules/humidity_low",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"threshold\": 35.0,\n  \"severity\": \"critical\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Delete Rule",
+					"request": {
+						"method": "DELETE",
+						"url": "{{base_url}}/api/rules/humidity_low"
+					}
+				},
+				{
+					"name": "Poll Commands (Arduino)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/commands?sensor_id=arduino_1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "commands"],
+							"query": [
+								{ "key": "sensor_id", "value": "arduino_1" }
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"description": "Alert notifications, escalation, and test endpoints.",
+			"item": [
+				{
+					"name": "Notification Status",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/notifications"
+					}
+				},
+				{
+					"name": "Send Test Alert",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/api/notifications/test"
+					}
+				},
+				{
+					"name": "Send Test Alert (Real Data)",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/api/notifications/test-real",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"crop_id\": 1\n}"
+						}
+					}
+				},
+				{
+					"name": "Escalation Status",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/escalation"
+					}
+				}
+			]
+		},
+		{
+			"name": "Crops",
+			"description": "Crop lifecycle management from planting to harvest.",
+			"item": [
+				{
+					"name": "List Active Crops",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/crops"
+					}
+				},
+				{
+					"name": "Create Crop Batch",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/api/crops",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"variety\": \"rosso_premium\",\n  \"plant_date\": \"2026-02-11\",\n  \"zone\": \"main\",\n  \"notes\": \"Spring batch\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Get Crop Details",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/crops/1"
+					}
+				},
+				{
+					"name": "Get Stage Conditions",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/crops/1/conditions"
+					}
+				},
+				{
+					"name": "Get Stage Rules",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/crops/1/rules"
+					}
+				},
+				{
+					"name": "Advance Growth Stage",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/api/crops/1/advance",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"stage\": \"vegetative\",\n  \"reason\": \"Strong root system observed\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Record Harvest",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/api/crops/1/harvest",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"weight_kg\": 2.5,\n  \"quality_grade\": \"premium\",\n  \"market_value\": 15.00,\n  \"notes\": \"Excellent color and texture\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Crop Dashboard",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/dashboard"
+					}
+				},
+				{
+					"name": "Harvest Analytics",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/harvest/analytics"
+					}
+				}
+			]
+		},
+		{
+			"name": "Calibrations",
+			"description": "Sensor calibration tracking.",
+			"item": [
+				{
+					"name": "Record Calibration",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/api/calibrations",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sensor_type\": \"ph\",\n  \"next_due_days\": 30,\n  \"performed_by\": \"Technician A\",\n  \"notes\": \"Calibrated with pH 4.0 and 7.0 buffers\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Calibrations Due",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/calibrations/due"
+					}
+				}
+			]
+		},
+		{
+			"name": "Business",
+			"description": "Business intelligence dashboard.",
+			"item": [
+				{
+					"name": "Business Dashboard (JSON)",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/api/business/dashboard"
+					}
+				}
+			]
+		}
+	]
+}
