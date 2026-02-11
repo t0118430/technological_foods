@@ -1,428 +1,348 @@
-COMPREHENSIVE PROJECT REPORT - AgriTech Technological Foods
-=============================================================
-Generated: 2026-02-11
-Sources: Conversation Explorer (31 sessions), 10 summary chat files,
-         git diff ai-improvements vs origin/master, project_analysis_report.txt
-=============================================================
+
+================================================================================
+  AgriTech Technological Foods - Project Report
+  Generated: 2026-02-11 | Version 3
+================================================================================
 
 
-1. CONVERSATION HISTORY OVERVIEW (from conversation_explorer)
---------------------------------------------------------------
+  EXECUTIVE SUMMARY
+  -----------------
+  In 4 days (Feb 8-11), across 31 development sessions and 10 merged PRs,
+  the AgriTech platform evolved from a basic sensor monitoring system into
+  a full-stack smart agriculture platform with AI-powered analytics,
+  business intelligence, and proactive growing recommendations.
 
-  Total sessions tracked: 31
-  Date range: 2026-02-08 to 2026-02-11 (4 days of active development)
-  Total user messages: ~200+
+  The system now manages the complete lifecycle: from Arduino sensors in the
+  greenhouse, through real-time data processing, to market-aware harvest
+  timing and automated client reporting.
 
-  Session Timeline:
-  ┌──────────┬──────────┬──────┬──────────────────────────────────────────────┐
-  │   Date   │  Time    │ Msgs │  Primary Focus                               │
-  ├──────────┼──────────┼──────┼──────────────────────────────────────────────┤
-  │ Feb 08   │ 20:22    │  17  │ Foundation: API security, notifications,     │
-  │          │          │      │ alert rules, ntfy integration, 46 tests      │
-  │ Feb 08   │ 22:25    │   7  │ Swagger/OpenAPI spec, /api/docs endpoint     │
-  │ Feb 09   │ 00:26    │   8  │ Arduino DHT20 migration, simulated sensors   │
-  │ Feb 09   │ 00:58    │   2  │ Quick fixes & sensor calibration             │
-  │ Feb 09   │ 01:23    │  12  │ Pipeline integration tests (17 new)          │
-  │ Feb 09   │ 01:28    │   8  │ Additional integration testing               │
-  │ Feb 09   │ 01:46    │  16  │ Full test suite stabilization                │
-  │ Feb 09   │ 02:12    │   2  │ Final test fixes                             │
-  │ Feb 09   │ 03:22    │   1  │ Quick session (commit/cleanup)               │
-  │ Feb 10   │ 10:59    │  28  │ Code review + business layer (longest sess.) │
-  │ Feb 10   │ 11:49    │   7  │ Business model & drift detection             │
-  │ Feb 10   │ 14:49    │  23  │ Feature/dashboard review (25,581 lines)      │
-  │ Feb 10   │ 15:48    │   3  │ SonarQube infrastructure planning            │
-  │ Feb 10   │ 16:31    │   3  │ Data harvester module start                  │
-  │ Feb 10   │ 16:38    │   1  │ Quick adjustment                             │
-  │ Feb 10   │ 16:41    │  18  │ Data harvester (weather, solar, electricity) │
-  │ Feb 10   │ 17:33    │  18  │ Data harvester (market prices, tourism)      │
-  │ Feb 10   │ 18:14    │   5  │ Grafana bug fix, harvester finalization      │
-  │ Feb 10   │ 19:31    │   1  │ Quick session                                │
-  │ Feb 10   │ 19:49    │   3  │ Session management                           │
-  │ Feb 10   │ 20:13    │   1  │ Branch description for pipeline fix          │
-  │ Feb 10   │ 20:32    │   5  │ CI/CD docs + GitHub Actions improvements     │
-  │ Feb 10   │ 21:04    │   3  │ Prompt engineering for automated PR creation │
-  │ Feb 10   │ 21:16    │   5  │ PostgreSQL testing + merge request prep      │
-  │ Feb 10   │ 23:51    │   2  │ Site visits seed data + PG integration tests │
-  │ Feb 11   │ 00:06    │   3  │ PR creation + sensor pipeline analysis       │
-  │ Feb 11   │ 00:28    │   4  │ Test organization + PG data storage          │
-  │ Feb 11   │ 01:04    │   2  │ API folder reorganization discussion         │
-  │ Feb 11   │ 01:36    │   7  │ Refactoring, PRs, Postman collection         │
-  │ Feb 11   │ 02:22    │   5  │ Docker compose changes analysis              │
-  │ Feb 11   │ 15:37    │   1  │ This report generation session               │
-  └──────────┴──────────┴──────┴──────────────────────────────────────────────┘
+  Key numbers:
+    - 72 API endpoints (was 50)
+    - 15 test files / 5,466 lines of tests
+    - 261 files / ~74,000 lines of code
+    - 5 new AI analytics modules (+3,853 lines)
 
 
-2. SESSION SUMMARIES CONSOLIDATION (from summarychat/*.txt)
-------------------------------------------------------------
+================================================================================
+  1. WHAT THE SYSTEM DOES
+================================================================================
 
-  The 10 summary files cover the following distinct work streams:
+  The platform connects a physical greenhouse (Arduino UNO R4 WiFi + DHT20
+  sensor) to a cloud of services that automate monitoring, alerting, and
+  business operations for hydroponic farming in the Algarve region.
 
-  A. DATA HARVESTER MODULE (Session Summary.txt)
-     Built a module that pulls external public data on schedules and feeds
-     it into the rule engine for compound decisions (e.g., "run AC when
-     electricity is cheapest AND greenhouse is hot").
+  Data Flow:
+  ----------
 
-     7 files created:
-     - data_harvester.py       : DataSource ABC + HarvestScheduler (daemon threads)
-     - weather_source.py       : Open-Meteo API (current + 7-day forecast, Algarve)
-     - solar_source.py         : sunrise-sunset.org (day length for light planning)
-     - electricity_source.py   : OMIE day-ahead prices + ENTSO-E fallback
-     - market_price_source.py  : SQLite manual entry + CSV import for produce prices
-     - tourism_source.py       : SQLite seasonal index + CSV import for demand
-     - test_data_harvester.py  : 44 unit tests, all passing
+    Greenhouse                    Server                        Storage
+   +-----------+    HTTP POST   +-----------+    write     +----------+
+   | Arduino   | ------------> | server.py | -----------> | InfluxDB |
+   | (every 2s)|   /api/data   |           |              | (hot)    |
+   +-----------+               +-----+-----+              +----------+
+                                     |
+                    +----------------+----------------+
+                    |                |                |
+               Rule Engine    Growth Manager    AI Analytics
+               (12 rules)    (crop lifecycle)   (NEW layer)
+                    |                |                |
+              Notifications    SQLite/PG         VPD, DLI,
+              (ntfy, email,   (varieties,       trends,
+               WhatsApp)       stages)          forecasts
 
-     3 files modified:
-     - server.py: 6 GET + 4 POST routes under /api/harvester/
-     - rule_engine.py: external_condition support with dot-notation access
-     - .env.example: 6 new harvester env vars
-
-     Bug fixed: Grafana restart loop (docker-compose.override.yml Pi config
-     auto-merged on Windows). Renamed to docker-compose.pi.yml.
-
-     Tests: 44/44 new + 25/25 existing rule engine (backward compatible)
-
-  B. CI/CD PIPELINE REDESIGN (Chat Summary.txt)
-     Replaced 3 workflow files with 2 unified ones:
-     - Deleted: deploy-server-pi.yml, deploy-arduino-ota.yml, test-backend.yml
-     - Created: deploy.yml (unified deploy with change detection + selective rsync)
-     - Created: pr-checks.yml (PR gate with conditional checks + preview comment)
-
-     Documentation created under docs/devops/cicd/:
-     - CURRENT_PIPELINE.md
-     - BRANCH_PROTECTION_SETUP.md
-     - IMPROVEMENTS_ROADMAP.md (P0-P3 priorities)
-
-     Pending actions: Re-add permissions block to pr-checks.yml (was reverted),
-     configure branch protection on GitHub, validate change detection with test PRs.
-
-  C. POSTGRESQL THREE-LAYER ARCHITECTURE (## Architecture.txt)
-     Established the data architecture:
-     - InfluxDB (HOT)  : Real-time alerting, live dashboards
-     - PostgreSQL (WARM): Crop lifecycle, client management, BI
-     - Redis (CACHE)    : Latest readings (<5ms), dashboard refresh
-
-     Test plan defined with 9 verification steps covering Docker, schemas,
-     seeding, migration, both SQLite and PostgreSQL modes.
-
-  D. API DOMAIN REORGANIZATION (1. Reorganized backendapi... + Summary2.txt)
-     Restructured backend/api/ from 38 flat files into 9 domain subfolders:
-     ┌───────────────┬─────────────────────────────────────────────────────┐
-     │  Subfolder    │  Contents                                          │
-     ├───────────────┼─────────────────────────────────────────────────────┤
-     │ db/           │ database.py, pg_database.py                        │
-     │ etl/          │ influx_pg_etl.py, data_retention.py                │
-     │ notifications/│ notification_service, alert_escalation,            │
-     │               │ multi_channel_notifier, tier_notification_router   │
-     │ sensors/      │ ac_controller, drift_detection_service             │
-     │ crops/        │ growth_stage_manager, config_loader                │
-     │ business/     │ business_model, business_dashboard, client_manager,│
-     │               │ site_visits_manager, lead_generation_legal         │
-     │ harvester/    │ data_harvester + 5 source files                    │
-     │ rules/        │ rule_engine, rules_config.json                     │
-     │ tests/        │ 8 test files                                       │
-     └───────────────┴─────────────────────────────────────────────────────┘
-
-     All imports, Path(__file__) refs, and @patch() targets updated.
-     181 tests passing. Branch: refactor/organize-api-domain-subfolders
-
-  E. SITE VISITS MODULE (Summary3.txt + seed_site_visits.txt)
-     PostgreSQL integration for site visit management:
-     - Added business.site_visits table (JSONB columns, FK to clients, indexes)
-     - 9 methods in pg_database.py (CRUD + dashboard + export)
-     - 40 integration tests passing against real PostgreSQL
-     - Fixed cursor bug in Python 3.14
-     - Seed script: 5 demo clients + 35 demo visits
-
-     Remaining: server.py not yet wired to PG backend for site visits
-     (still calls SQLite site_visits_manager directly).
-
-  F. POSTMAN COLLECTION + CURL EXAMPLES (from reorganization session)
-     Created backend/postman/ with 3 files covering all 46 API endpoints.
-     Investigated 401 Unauthorized issue (X-API-Key header auth).
-
-  G. AUTOMATED PR CREATION PROMPT (Copy-paste...txt)
-     A meta-prompt was crafted to instruct another Claude instance to
-     implement all 5 priority items from the project_analysis_report.txt
-     as separate branches + PRs, with test verification after each.
+  Storage Architecture (three layers):
+    HOT   -> InfluxDB    : Real-time sensor data (time-series)
+    WARM  -> PostgreSQL  : Lifecycle data, business intel (7 schemas)
+    CACHE -> Redis       : Latest readings for fast dashboard access (<5ms)
 
 
-3. AI-IMPROVEMENTS BRANCH ANALYSIS (vs origin/master)
-------------------------------------------------------
+================================================================================
+  2. WHAT WAS BUILT (Development Timeline)
+================================================================================
 
-  Branch: ai-improvements (2 commits ahead of master)
-  Commits:
-    fccdd35  diagrams
-    c64fbf7  ai improvements
+  Day 1 - Feb 8: Foundation
+  -------------------------
+    - API security (API key auth)
+    - Notification system (ntfy push notifications)
+    - Alert rules engine
+    - Swagger/OpenAPI documentation
+    - 46 initial tests
 
-  Impact: +3,900 lines added, -15,648 lines removed (net: -11,748 lines)
-  Files: 91 files changed total
+  Day 2 - Feb 9: Hardware & Testing
+  ----------------------------------
+    - Arduino DHT20 sensor migration
+    - Simulated sensor mode for development
+    - 17 new integration tests
+    - Full test suite stabilization (all green)
 
-  3.1 NEW MODULES ADDED (5 new services + 2 test files)
+  Day 3 - Feb 10: Business Layer & Data
+  --------------------------------------
+    - Business model + client management
+    - Drift detection (dual sensor analysis)
+    - Data harvester (weather, solar, electricity prices, market, tourism)
+    - PostgreSQL three-layer architecture
+    - Site visits module (CRUD + PG integration)
+    - CI/CD pipeline redesign (2 unified workflows)
+    - API reorganization (38 flat files -> 9 domain folders)
+    - Postman collection (46 endpoints)
 
-  ┌─────────────────────────────┬───────┬────────────────────────────────────────┐
-  │  File                       │ Lines │  Purpose                               │
-  ├─────────────────────────────┼───────┼────────────────────────────────────────┤
-  │ sensor_analytics.py         │  656  │ VPD, DLI, trend analysis, anomaly      │
-  │                             │       │ detection (z-score, flatline, jumps),   │
-  │                             │       │ rolling buffer, historical queries      │
-  ├─────────────────────────────┼───────┼────────────────────────────────────────┤
-  │ crop_intelligence.py        │  637  │ Condition-harvest correlations, growth  │
-  │                             │       │ optimization, yield predictions, crop   │
-  │                             │       │ health scoring (weighted 0-100)         │
-  ├─────────────────────────────┼───────┼────────────────────────────────────────┤
-  │ weather_service.py          │  496  │ Open-Meteo: current weather, forecast,  │
-  │                             │       │ solar data, indoor vs outdoor compare,  │
-  │                             │       │ growing condition advisories (Algarve)  │
-  ├─────────────────────────────┼───────┼────────────────────────────────────────┤
-  │ data_export.py              │  473  │ Sensor CSV export, crop lifecycle       │
-  │                             │       │ reports, weekly/monthly summaries with  │
-  │                             │       │ auto-generated recommendations          │
-  ├─────────────────────────────┼───────┼────────────────────────────────────────┤
-  │ market_data_service.py      │  290  │ Algarve produce prices with seasonal   │
-  │                             │       │ adjustment, demand multipliers (tourism │
-  │                             │       │ peaks Jul/Aug 3.0x, low Jan/Feb 0.8x)  │
-  ├─────────────────────────────┼───────┼────────────────────────────────────────┤
-  │ test_sensor_analytics.py    │  323  │ Test suite for sensor analytics        │
-  ├─────────────────────────────┼───────┼────────────────────────────────────────┤
-  │ test_weather_service.py     │  313  │ Test suite for weather service         │
-  └─────────────────────────────┴───────┴────────────────────────────────────────┘
+  Day 4 - Feb 11: AI Analytics Layer
+  ------------------------------------
+    - Sensor analytics (VPD, DLI, trends, anomaly detection)
+    - Weather service (Open-Meteo, Algarve forecasts)
+    - Market data service (prices + seasonal demand)
+    - Crop intelligence (correlations, yield prediction, health scoring)
+    - Data export (CSV, crop reports, weekly/monthly summaries)
+    - 22 new API endpoints
 
-  New API endpoints added to server.py:
-    Phase 1 - Sensor Analytics:
-      GET /api/analytics/summary        Full sensor snapshot (VPD, DLI, trends)
-      GET /api/analytics/vpd            Vapor Pressure Deficit with classification
-      GET /api/analytics/dli            Daily Light Integral progress
-      GET /api/analytics/trends         Linear regression per field
-      GET /api/analytics/anomalies      Spike/flatline/jump detection
-      GET /api/analytics/history        Historical InfluxDB queries
 
-    Phase 2 - Weather & Market:
-      GET /api/weather/current          Current outdoor conditions
-      GET /api/weather/forecast         Hourly forecast (1-7 days)
-      GET /api/weather/solar            Sunrise/sunset, radiation, UV
-      GET /api/weather/correlation      Indoor vs outdoor comparison
-      GET /api/weather/advisory         Growing condition recommendations
-      GET /api/market/prices            Algarve produce prices
-      POST /api/market/prices           Manual price update
-      GET /api/market/demand            Seasonal demand multipliers
+================================================================================
+  3. PULL REQUESTS MERGED TO MASTER
+================================================================================
 
-    Phase 3 - Crop Intelligence:
-      GET /api/intelligence/correlations       Condition-harvest analysis
-      GET /api/intelligence/recommendations    Growth optimization tips
-      GET /api/intelligence/predict/{id}       Yield prediction
-      GET /api/intelligence/health/{id}        Crop health score (0-100)
+    PR   What it did
+    ---  ---------------------------------------------------------
+    #14  Pipeline + notifications system
+    #16  CI/CD pipeline redesign
+    #17  DevOps fixes (batch 1)
+    #18  DevOps fixes (batch 2)
+    #19  Security: credential rotation + SECURITY.md
+    #20  PostgreSQL + Redis data architecture
+    #21  Business module tests (4 new test files)
+    #22  API reorganization into 9 domain folders
+    #23  Site visits CRUD + PG integration
+    #24  Docker compose + Postman collection
+    #25  AI Analytics Layer (pending merge)
 
-    Phase 4 - Data Export & Reports:
+
+================================================================================
+  4. AI ANALYTICS LAYER (PR #25) - Detailed Breakdown
+================================================================================
+
+  This is the latest addition: a 4-phase intelligence layer that transforms
+  the system from reactive alerts to proactive recommendations.
+
+  Phase 1: Sensor Analytics (sensor_analytics.py - 656 lines)
+  ............................................................
+    What it does:
+      - Calculates VPD (Vapor Pressure Deficit) in real-time
+        Optimal for lettuce: 0.8-1.2 kPa
+      - Tracks DLI (Daily Light Integral) progress throughout the day
+        Lettuce needs 12-20 mol/m2/day
+      - Moving averages (10/30/60 readings) to smooth noise
+      - Trend detection using linear regression (rising/falling/stable)
+      - Anomaly detection: z-score spikes (>2.5 sigma), flatline sensors
+        (60+ identical readings), sudden jumps (>10% change)
+
+    Endpoints:
+      GET /api/analytics/summary     Full snapshot of all metrics
+      GET /api/analytics/vpd         Current VPD + classification
+      GET /api/analytics/dli         Light progress + projected daily total
+      GET /api/analytics/trends      Per-sensor trend direction
+      GET /api/analytics/anomalies   Detected anomalies list
+      GET /api/analytics/history     Historical data with aggregation
+
+  Phase 2: Weather & Market (weather_service.py + market_data_service.py)
+  .......................................................................
+    What it does:
+      - Pulls Algarve weather from Open-Meteo (37.0194, -7.9304)
+      - 7-day hourly forecast (temp, humidity, solar, UV)
+      - Compares indoor vs outdoor conditions (HVAC load estimation)
+      - Growing advisories: heat wave/cold snap warnings, EC adjustments
+      - Market prices for 6 products (Rosso ~10 EUR/kg, Basil ~20 EUR/kg)
+      - Seasonal demand multipliers (tourist peaks May-Sep: 1.5-3.0x)
+
+    Endpoints:
+      GET  /api/weather/current       Current outdoor conditions
+      GET  /api/weather/forecast      Hourly forecast (1-7 days)
+      GET  /api/weather/solar         Sunrise/sunset + solar data
+      GET  /api/weather/correlation   Indoor vs outdoor comparison
+      GET  /api/weather/advisory      Growing recommendations
+      GET  /api/market/prices         Current market prices
+      POST /api/market/prices         Update prices manually
+      GET  /api/market/demand         Monthly demand multipliers
+
+  Phase 3: Crop Intelligence (crop_intelligence.py - 637 lines)
+  ..............................................................
+    What it does:
+      - Correlates growing conditions with harvest outcomes
+        (compares best vs worst batches to find what works)
+      - Generates optimization recommendations from historical data
+      - Predicts yield based on historical average, adjusted by
+        time-in-optimal-range (0.7x to 1.1x factor)
+      - Health score per crop (0-100), weighted:
+        Temperature 25pts, pH 25pts, EC 25pts, Humidity 15pts, VPD 10pts
+
+    Endpoints:
+      GET /api/intelligence/correlations          Condition-harvest analysis
+      GET /api/intelligence/recommendations/{id}  Growth optimization tips
+      GET /api/intelligence/predict/{id}          Yield prediction
+      GET /api/intelligence/health/{id}           Crop health score
+
+  Phase 4: Data Export & Reports (data_export.py - 473 lines)
+  .............................................................
+    What it does:
+      - CSV export with optional aggregation (15-min, hourly, daily)
+      - Crop lifecycle reports (per-stage conditions + harvest outcomes)
+      - Weekly summaries: daily averages, VPD/DLI, trends, weather,
+        auto-generated recommendations
+      - Monthly summaries: harvest totals, yield trends, market context,
+        estimated revenue
+
+    Endpoints:
       GET /api/export/sensor-csv        Download sensor data as CSV
       GET /api/export/crop-report/{id}  Full crop lifecycle report
-      GET /api/reports/weekly            7-day summary with recommendations
-      GET /api/reports/monthly           30-day summary with market context
-
-  3.2 STRUCTURAL CHANGES (Flattened back from subfolders)
-
-  The ai-improvements branch REVERTS the domain subfolder reorganization,
-  moving 24 files back to a flat structure under backend/api/:
-    - business/ -> flat (business_model.py, business_dashboard.py, etc.)
-    - notifications/ -> flat (notification_service.py, alert_escalation.py, etc.)
-    - sensors/ -> flat (ac_controller.py, drift_detection_service.py)
-    - crops/ -> flat (growth_stage_manager.py, config_loader.py)
-    - rules/ -> flat (rule_engine.py, rules_config.json)
-    - db/ -> flat (database.py)
-    - etl/ -> flat (data_retention.py)
-    - tests/ -> flat (all test_*.py files)
-
-  All __init__.py package files and the package import structure are removed.
-  Imports in server.py return to direct module imports.
-
-  3.3 MODULES REMOVED (significant deletions)
-
-  ┌─────────────────────────────────────────────────┬───────┬─────────────────────┐
-  │  Removed File                                   │ Lines │  Category           │
-  ├─────────────────────────────────────────────────┼───────┼─────────────────────┤
-  │ site_visits.html (x2)                           │ 3,508 │ Site visits UI      │
-  │ etl/influx_pg_etl.py                            │ 1,083 │ ETL pipeline        │
-  │ db/pg_database.py                               │   954 │ PostgreSQL backend  │
-  │ sql/init.sql                                    │   920 │ PG schemas (7)      │
-  │ tests/test_data_harvester.py                    │   543 │ Harvester tests     │
-  │ tests/test_pg_site_visits.py                    │   537 │ PG integration tests│
-  │ business/site_visits_manager.py (x2)            │   934 │ Site visits logic   │
-  │ tools/migrate_sqlite_to_postgres.py             │   516 │ Migration script    │
-  │ postman/ (collection + curl examples)           │   847 │ API testing tools   │
-  │ harvester/ (all 5 sources + scheduler)          │ 1,190 │ Data harvester      │
-  │ tools/seed_site_visits.py                       │   390 │ Demo data seeding   │
-  │ tools/seed_varieties.py                         │   328 │ Variety seeding     │
-  │ site-visits-module/ (entire module)             │ 3,211 │ Standalone module   │
-  │ tests/ (root-level PG tests)                    │   720 │ PG test suite       │
-  │ SECURITY.md                                     │    56 │ Security docs       │
-  │ ETL_GUIDE.md                                    │   385 │ ETL documentation   │
-  │ docker-compose.yml                              │    37 │ Docker services     │
-  │ influxdb/tasks/ (flux files)                    │   161 │ InfluxDB tasks      │
-  │ Site visits guides (x2)                         │   676 │ Documentation       │
-  └─────────────────────────────────────────────────┴───────┴─────────────────────┘
-
-  3.4 MODIFICATIONS TO EXISTING FILES
-
-  server.py (588 lines changed):
-    - Removed: Redis cache layer, data harvester scheduler, site visits routes,
-      ETL status endpoint, all package-style imports
-    - Added: 22 new API routes across 4 phases (analytics, weather, market,
-      intelligence, export)
-    - Changed: query_latest() no longer accepts sensor_id, no Redis fallback
-    - Changed: Public endpoints reduced to /, /api/health, /api/docs, /api/openapi.json
-
-  database.py (+73, -22):
-    - Removed PostgreSQL backend switching (DB_BACKEND env var)
-    - Back to SQLite-only operation
-    - Added methods likely needed by new analytics services
-
-  rule_engine.py (+58 lines):
-    - Enhanced with changes from ai-improvements (external condition support
-      may have been partially preserved/reworked)
-
-  3.5 ARCHITECTURE DOCUMENTATION ADDED (5 PlantUML diagrams)
-
-    - use_cases_ai_improvements.puml    : Overview of all 4 phases
-    - use_cases_phase1_sensor_analytics : Detailed sensor analytics use cases
-    - use_cases_phase2_weather_market   : Weather & market data use cases
-    - use_cases_phase3_crop_intelligence: Crop intelligence use cases
-    - use_cases_phase4_export_reports   : Data export & reports use cases
+      GET /api/reports/weekly           7-day summary + recommendations
+      GET /api/reports/monthly          30-day summary + market context
 
 
-4. COMPARISON: WHAT AI-IMPROVEMENTS ADDS vs REMOVES
------------------------------------------------------
+================================================================================
+  5. BEFORE vs AFTER
+================================================================================
 
-  GAINS:
-    [+] Sensor analytics engine (VPD, DLI, trend analysis, anomaly detection)
-    [+] Weather service (Open-Meteo integration, Algarve-specific)
-    [+] Market data service (produce prices, seasonal demand)
-    [+] Crop intelligence (correlations, optimization, yield prediction, health)
-    [+] Data export & reporting (CSV export, weekly/monthly summaries)
-    [+] 22 new API endpoints covering analytics, weather, market, intelligence
-    [+] 636 lines of new tests (sensor analytics + weather service)
-    [+] 5 PlantUML architecture diagrams documenting the new features
-    [+] Simpler flat file structure (easier to navigate for smaller teams)
+  BEFORE (master only):                 AFTER (with AI layer):
+  --------------------------------      --------------------------------
+  Raw sensor data in Grafana            + Real-time VPD & DLI monitoring
+  Rule-based alerts (temp > X)          + Trend detection before alerts fire
+  Manual data inspection                + Automatic anomaly detection
+  No weather context                    + Weather-aware growing advisories
+  No yield tracking                     + Yield prediction while growing
+  No market awareness                   + Harvest timing by tourist demand
+  No automated reports                  + Weekly/monthly auto-reports
+  No crop comparison                    + Learn from past batches
+  Check multiple dashboards             + Single health score (0-100)
 
-  LOSSES:
-    [-] PostgreSQL backend (pg_database.py, init.sql with 7 schemas)
-    [-] Redis cache layer (sub-millisecond latest readings)
-    [-] Three-layer data architecture (InfluxDB + PostgreSQL + Redis)
-    [-] ETL pipeline (influx_pg_etl.py, 1,083 lines)
-    [-] Site visits module (manager, seed data, HTML UI, guides, tests)
-    [-] Data harvester module (weather/solar/electricity/market/tourism sources)
-    [-] Postman collection (46 endpoints documented)
-    [-] Migration tooling (SQLite-to-PostgreSQL migration script)
-    [-] Seed tooling (seed_varieties.py, seed_site_visits.py)
-    [-] Domain subfolder organization (reverted to flat structure)
-    [-] SECURITY.md and ETL_GUIDE.md documentation
-    [-] Docker compose services definition
-    [-] InfluxDB downsampling tasks (hourly + daily flux files)
-    [-] 543 lines of data harvester tests
-    [-] 537 lines of PostgreSQL integration tests
-
-  NET ASSESSMENT:
-    The ai-improvements branch represents a PIVOT in strategy:
-    - FROM: Multi-database enterprise architecture (PG + Redis + InfluxDB)
-            with site visits, ETL pipelines, and B2B client management
-    - TO:   Analytics-first approach with sensor intelligence, weather
-            integration, crop optimization, and data export capabilities
-
-    This is a trade-off: the branch adds ~2,875 lines of new analytical
-    capability but removes ~15,648 lines of infrastructure, tooling,
-    and business modules. The project becomes more focused on the core
-    value proposition (smart farming analytics) at the cost of losing
-    the broader platform features (multi-tenant, PostgreSQL, site visits).
+  In short: the system goes from "telling you when something is wrong"
+  to "telling you what to do before something goes wrong."
 
 
-5. CROSS-REFERENCE WITH ORIGINAL PROJECT ANALYSIS REPORT
-----------------------------------------------------------
+================================================================================
+  6. BACKEND STRUCTURE
+================================================================================
 
-  Original report priorities (from project_analysis_report.txt, Feb 10):
+  backend/api/
+    |-- db/                  Database abstraction (SQLite + PostgreSQL)
+    |-- etl/                 InfluxDB -> PostgreSQL data transfer
+    |-- notifications/       ntfy, email, WhatsApp, SMS, escalation
+    |-- sensors/             AC controller, drift detection
+    |-- crops/               Growth stages, variety management
+    |-- business/            Dashboard, client manager, site visits
+    |-- harvester/           External data (weather, solar, electricity)
+    |-- rules/               Rule engine + config loader
+    |-- tests/               15 test files (5,466 lines)
+    |
+    |-- sensor_analytics.py  [NEW] VPD, DLI, trends, anomalies
+    |-- weather_service.py   [NEW] Open-Meteo integration
+    |-- market_data_service.py [NEW] Prices + seasonal demand
+    |-- crop_intelligence.py [NEW] Correlations, predictions
+    |-- data_export.py       [NEW] CSV, reports, summaries
+    |-- server.py            Main HTTP server (72 endpoints)
+    |-- openapi.json         Swagger/OpenAPI spec
 
-  Priority 1: Rotate compromised credentials
-    Status: SECURITY.md was created on a fix branch but DELETED in ai-improvements.
-            The credential issue may still need attention.
+  Varieties supported:
+    rosso_premium, curly_green, arugula_rocket,
+    basil_genovese, mint_spearmint, tomato_cherry
 
-  Priority 2: Add tests for business modules
-    Status: PARTIALLY ADDRESSED. New test files added for sensor_analytics
-            and weather_service in ai-improvements. But the original targets
-            (business_model, client_manager, drift_detection, business_dashboard)
-            are still untested.
-
-  Priority 3: Document sensor transition plan
-    Status: NOT ADDRESSED in ai-improvements.
-
-  Priority 4: Clean up sessionschat duplicates
-    Status: NOT ADDRESSED. The summarychat folder still has overlapping files.
-
-  Priority 5: Wire snapshot notification to filter by zone
-    Status: NOT ADDRESSED directly. But sensor_analytics.py provides new
-            per-sensor querying capabilities that could serve a similar purpose.
-
-
-6. CURRENT BRANCH LANDSCAPE
------------------------------
-
-  Active branches:
-  ┌──────────────────────────────────────────────┬──────────────────────────────┐
-  │  Branch                                      │  Status                      │
-  ├──────────────────────────────────────────────┼──────────────────────────────┤
-  │ master                                       │ Main branch                  │
-  │ ai-improvements (LOCAL + REMOTE)             │ Current checked out branch   │
-  │ dev                                          │ Development branch           │
-  │ docker-compose-changes                       │ Docker compose updates       │
-  │ site-visits                                  │ Site visits feature           │
-  │ refactor/organize-api-domain-subfolders      │ API reorganization (remote)  │
-  │ feature/ci-cd-pipeline                       │ CI/CD improvements (remote)  │
-  │ feature/dashboard                            │ Dashboard feature (remote)   │
-  │ feature/notifications                        │ Notifications (remote)       │
-  │ feature/postgres-redis-data-architecture     │ PG+Redis arch (remote)       │
-  │ fix/pipeline/notificatidashboard             │ Pipeline fix (remote)        │
-  │ fix/report-item-1-credential-rotation        │ Credential rotation (remote) │
-  │ fix/report-item-2-add-business-tests         │ Business tests (remote)      │
-  │ investigations                               │ Research branch (remote)     │
-  └──────────────────────────────────────────────┴──────────────────────────────┘
+  Crop lifecycle stages:
+    germination -> seedling -> transplant -> vegetative ->
+    flowering* -> fruiting* -> maturity -> harvest_ready
+    (* flowering/fruiting only for tomato/fruit varieties)
 
 
-7. RECOMMENDATIONS
--------------------
+================================================================================
+  7. TEST COVERAGE
+================================================================================
 
-  IMMEDIATE:
-  1. Decide on architecture direction: The ai-improvements branch and the
-     feature/postgres-redis-data-architecture branch represent divergent
-     strategies. Choose one and consolidate.
+    Test File                          Lines   What it covers
+    --------------------------------   -----   --------------------------
+    test_notification_service.py         705   Notification channels
+    test_integration_notifications.py    574   Notification integration
+    test_data_harvester.py               543   External data harvester
+    test_pg_site_visits.py               537   PostgreSQL site visits
+    test_business_dashboard.py           357   Business dashboard
+    test_alert_escalation.py             326   Alert escalation rules
+    test_sensor_analytics.py *           323   VPD, DLI, anomalies
+    test_weather_service.py *            313   Weather API, caching
+    test_drift_detection.py              288   Sensor drift detection
+    test_preventive_alerts.py            280   Preventive alerting
+    test_business_model.py               259   Business model logic
+    test_rule_engine.py                  255   Rule engine evaluation
+    test_integration.py                  254   End-to-end integration
+    test_client_manager.py               240   Client management
+    test_config_loader.py                212   Config loading/merging
+    --------------------------------   -----
+    TOTAL                              5,466   15 test files
 
-  2. If keeping ai-improvements: Cherry-pick the PostgreSQL schema (init.sql)
-     and pg_database.py back as an optional backend. The analytics services
-     can work with SQLite while keeping the PG path available.
-
-  3. If keeping both: Create an integration branch that merges the new
-     analytics modules INTO the subfolder structure with PG support.
-
-  SHORT TERM:
-  4. Add tests for the remaining untested modules (business_model,
-     client_manager, drift_detection_service, business_dashboard)
-
-  5. Restore SECURITY.md and address credential rotation
-
-  6. The data harvester (weather/solar/electricity/market/tourism sources)
-     was a substantial investment (44 tests, 5 source files). The new
-     weather_service.py partially replaces weather_source.py but the
-     electricity/tourism/solar sources have no equivalent. Consider
-     restoring as a separate module.
-
-  7. Clean up sessionschat/summarychat/ duplicates
-
-  MEDIUM TERM:
-  8. Resolve the site visits feature: the module was fully built with PG
-     integration tests but removed in ai-improvements. Either restore it
-     or document why it was descoped.
-
-  9. Restore Postman collection or generate OpenAPI-based alternatives
-     for the 22 new endpoints.
-
-  10. The InfluxDB downsampling tasks (hourly/daily flux) were valuable
-      for production — consider restoring them.
+    * = Added by AI Analytics Layer (PR #25)
 
 
-====================================================================
-END OF COMPREHENSIVE REPORT
+================================================================================
+  8. INFRASTRUCTURE
+================================================================================
+
+  Docker services (5):
+    - InfluxDB    : Time-series sensor storage
+    - PostgreSQL  : Lifecycle + business data (7 schemas)
+    - Redis       : Cache layer for fast reads
+    - Grafana     : 15 dashboards (3 folders: Production, Business, DevOps)
+                    2 datasources: InfluxDB + PostgreSQL
+    - Node-RED    : Flow automation
+
+  CI/CD (GitHub Actions):
+    - deploy.yml      : Unified deploy with change detection + selective rsync
+    - pr-checks.yml   : PR gate with conditional checks + preview comment
+
+  Hardware:
+    - Raspberry Pi    : Production server (Algarve greenhouse)
+    - Arduino UNO R4  : Sensor hub (DHT20, pH, EC, water level, light)
+
+
+================================================================================
+  9. PRIORITY TRACKER
+================================================================================
+
+    #   Action Item                          Status     Done By
+    --  -----------------------------------  ---------  ------------------
+    1   Rotate compromised credentials       DONE       PR #19
+    2   Add business module tests            DONE       PR #21
+    3   Document sensor transition plan      OPEN       --
+    4   Clean up sessionschat duplicates     DONE       Archived 12 docs
+    5   Wire snapshots by sensor_id/zone     PARTIAL    sensor_analytics.py
+    6   Add Grafana dashboards               DONE       15 dashboards (132 panels)
+    A   Security: credentials in code        DONE       PR #19
+    B   Sensor data gap                      DONE       Earlier session
+    C   Database path bug                    DONE       Earlier session
+    D   Duplicate session files              DONE       Same as #4
+    E   Missing test coverage                DONE       PR #21 + PR #25
+    F   Single sensor dependency             OPEN       Same as #3
+
+    Progress: 9/12 resolved, 3 remaining
+
+
+================================================================================
+  10. WHAT'S LEFT TO DO
+================================================================================
+
+  High Priority:
+    [ ] Document the simulated-to-real sensor transition plan
+
+  Medium Priority:
+    [ ] Add tests for crop_intelligence.py, data_export.py, market_data_service.py
+    [ ] Update openapi.json to include the 22 new endpoints
+    [ ] Wire snapshot notifications to filter by sensor_id/zone
+
+  Low Priority:
+    [ ] Update Postman collection for new endpoints
+    [ ] Verify AI module imports work with domain subfolder structure
+
+  Completed (this session):
+    [x] Add Grafana dashboards for analytics data
+        15 dashboards (132 panels) across 3 folders:
+        Production (7), Business (4), DevOps (4 incl. 3 stubs)
+        + PostgreSQL datasource provisioned
+    [x] Clean up sessionschat/ duplicate files
+        Archived 12 stale docs to archived/docs/ (gitignored)
+
+
+================================================================================
+  END OF REPORT
+================================================================================

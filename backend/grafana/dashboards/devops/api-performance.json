@@ -1,0 +1,97 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "text",
+        "uid": "-- Mixed --"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "### API Performance Monitoring\n\n**Status:** Not yet available\n\nThis dashboard requires request logging middleware to be added to the Flask API.\n\n#### Prerequisites\n\n1. **Add request logging middleware** to `backend/api/app.py`:\n   - Log request method, path, status code, response time\n   - Store in `audit.events` or a dedicated `api.request_log` table\n\n2. **Required fields:**\n   - `timestamp` - request time\n   - `method` - GET/POST/PUT/DELETE\n   - `path` - API endpoint\n   - `status_code` - HTTP response code\n   - `response_time_ms` - latency in milliseconds\n   - `user_agent` - client identifier\n\n3. **Alternative:** Use Prometheus + Grafana Mimir for metrics collection",
+        "mode": "markdown"
+      },
+      "pluginVersion": "10.0.0",
+      "title": "API Performance - Setup Required",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "text",
+        "uid": "-- Mixed --"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 2,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "### Planned Panels\n\n| Panel | Description |\n|-------|-------------|\n| Request Rate | Requests per second over time |\n| Response Time P50/P95/P99 | Latency percentiles |\n| Error Rate | 4xx/5xx responses over time |\n| Top Endpoints | Most called API paths |\n| Slow Queries | Endpoints with highest latency |\n| Status Code Distribution | Pie chart of response codes |\n| Active Connections | Concurrent request gauge |\n| Endpoint Heatmap | Time-of-day usage patterns |",
+        "mode": "markdown"
+      },
+      "pluginVersion": "10.0.0",
+      "title": "Planned Panels",
+      "type": "text"
+    }
+  ],
+  "refresh": "1h",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "devops",
+    "api",
+    "agritech"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "Europe/Lisbon",
+  "title": "API Performance",
+  "uid": "api-performance",
+  "version": 0,
+  "weekStart": ""
+}

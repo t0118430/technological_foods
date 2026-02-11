@@ -32,8 +32,10 @@ The **Config Server** (rule engine) is the central decision-maker. All threshold
 
 | Service | Port | Description |
 |---------|------|-------------|
-| InfluxDB | 8086 | Time-series database |
-| Grafana | 3000 | Dashboard visualization |
+| InfluxDB | 8086 | Time-series database (sensor data) |
+| PostgreSQL | 5432 | Relational database (7 schemas: core, iot, crop, business, alert, bi, audit) |
+| Redis | 6379 | Cache layer (latest readings, rate limiting) |
+| Grafana | 3000 | Dashboard visualization (15 dashboards, 3 folders) |
 | Node-RED | 1880 | Visual flow programming |
 | API Server | 3001 | HTTP API + Config Server (runs outside Docker) |
 
@@ -550,6 +552,8 @@ docker ps
 
 You should see:
 - `agritech-influxdb` (InfluxDB database on port 8086)
+- `agritech-postgres` (PostgreSQL database on port 5432)
+- `agritech-redis` (Redis cache on port 6379)
 - `agritech-grafana` (Dashboard on port 3000)
 - `agritech-nodered` (Node-RED flow automation on port 1880)
 
@@ -602,17 +606,38 @@ docker exec -it agritech-influxdb influx query \
 3. Go to Dashboards > Browse
 4. Open the hydroponics dashboard
 
-## Grafana Dashboard
+## Grafana Dashboards
 
-A pre-configured dashboard is available at:
-`http://localhost:3000/d/hydroponics-overview`
+15 pre-configured dashboards are provisioned across 3 folders with 2 datasources (InfluxDB + PostgreSQL):
 
-The dashboard includes:
-- pH level over time (with optimal range 5.8-6.5)
-- EC level over time (with optimal range 1.2-2.5 mS/cm)
-- Temperature graphs (water + air)
-- Humidity monitoring
-- Current value gauges with color-coded thresholds
+### Production (7 dashboards)
+| Dashboard | URL | Panels | Data Source |
+|-----------|-----|--------|-------------|
+| Hydroponics Overview | `/d/hydroponics-overview` | 8 | InfluxDB |
+| Greenhouse Realtime | `/d/greenhouse-realtime` | 16 | InfluxDB |
+| Crop Lifecycle | `/d/crop-lifecycle` | 10 | PostgreSQL |
+| Yield & Harvest | `/d/yield-harvest` | 10 | PostgreSQL |
+| Alerts & Rule Engine | `/d/alerts-rule-engine` | 10 | PostgreSQL |
+| Environment & Weather | `/d/environment-weather` | 10 | InfluxDB |
+| Sensor Health | `/d/sensor-health` | 10 | Both |
+
+### Business (4 dashboards)
+| Dashboard | URL | Panels | Data Source |
+|-----------|-----|--------|-------------|
+| SaaS Revenue | `/d/saas-revenue` | 14 | PostgreSQL |
+| Client Health | `/d/client-health` | 10 | PostgreSQL |
+| Site Visits | `/d/site-visits` | 10 | PostgreSQL |
+| Market Intelligence | `/d/market-intelligence` | 8 | InfluxDB + text |
+
+### DevOps (4 dashboards)
+| Dashboard | URL | Panels | Data Source |
+|-----------|-----|--------|-------------|
+| ETL & Data Pipeline | `/d/etl-pipeline` | 10 | PostgreSQL |
+| API Performance | `/d/api-performance` | 2 | Stub (needs middleware) |
+| Docker Resources | `/d/docker-resources` | 2 | Stub (needs cAdvisor) |
+| CI/CD Pipeline | `/d/cicd-pipeline` | 2 | Stub (needs GitHub integration) |
+
+Dashboard files are in `grafana/dashboards/{production,business,devops}/`.
 
 ## Data Retention
 

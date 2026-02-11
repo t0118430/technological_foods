@@ -1,0 +1,97 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "text",
+        "uid": "-- Mixed --"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "### Docker Resource Monitoring\n\n**Status:** Not yet available\n\nThis dashboard requires cAdvisor to collect container metrics.\n\n#### Prerequisites\n\n1. **Add cAdvisor** to `docker-compose.yml`:\n   ```yaml\n   cadvisor:\n     image: gcr.io/cadvisor/cadvisor:v0.47.0\n     container_name: agritech-cadvisor\n     ports:\n       - '8080:8080'\n     volumes:\n       - /:/rootfs:ro\n       - /var/run:/var/run:ro\n       - /sys:/sys:ro\n       - /var/lib/docker/:/var/lib/docker:ro\n     restart: unless-stopped\n     networks:\n       - agritech-network\n   ```\n\n2. **Add Prometheus datasource** in Grafana provisioning\n\n3. **Alternative:** Use `docker stats` with Telegraf to push metrics to InfluxDB",
+        "mode": "markdown"
+      },
+      "pluginVersion": "10.0.0",
+      "title": "Docker Resources - Setup Required",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "text",
+        "uid": "-- Mixed --"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 2,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "### Planned Panels\n\n| Panel | Description |\n|-------|-------------|\n| CPU Usage per Container | Time series of CPU % |\n| Memory Usage per Container | RSS/cache memory |\n| Network I/O | Bytes in/out per container |\n| Disk I/O | Read/write bytes per container |\n| Container Status | Running/stopped/restarting |\n| Resource Limits | Memory/CPU limits vs usage |\n| Container Restart Count | Stability indicator |\n| Image Versions | Current image tags |",
+        "mode": "markdown"
+      },
+      "pluginVersion": "10.0.0",
+      "title": "Planned Panels",
+      "type": "text"
+    }
+  ],
+  "refresh": "1h",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "devops",
+    "docker",
+    "agritech"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "Europe/Lisbon",
+  "title": "Docker Resources",
+  "uid": "docker-resources",
+  "version": 0,
+  "weekStart": ""
+}

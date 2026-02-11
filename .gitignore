@@ -55,3 +55,6 @@ sonarqube/backups/
 sonarqube/data/
 sonarqube/logs/
 .scannerwork/
+
+# Archived documentation (stale/superseded docs)
+archived/docs/

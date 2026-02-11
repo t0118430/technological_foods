@@ -1,0 +1,898 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "green",
+                "value": 75
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT AVG(health_score) as \"Health\" FROM business.clients WHERE status = 'active'",
+          "refId": "A"
+        }
+      ],
+      "title": "Average Health Score",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 15
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT COUNT(*) as \"Open Tickets\" FROM business.support_tickets WHERE status NOT IN ('resolved', 'closed')",
+          "refId": "A"
+        }
+      ],
+      "title": "Open Tickets",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 4
+              },
+              {
+                "color": "red",
+                "value": 12
+              }
+            ]
+          },
+          "unit": "h"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT ROUND(AVG(response_time_hours)::numeric, 1) as \"Hours\" FROM business.support_tickets WHERE resolved_at IS NOT NULL AND resolved_at > NOW() - INTERVAL '30 days'",
+          "refId": "A"
+        }
+      ],
+      "title": "Avg Response Time",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT COUNT(*) as \"Notifications\" FROM alert.notification_log WHERE sent_at > NOW() - INTERVAL '30 days'",
+          "refId": "A"
+        }
+      ],
+      "title": "Notifications Sent (30d)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Healthy (80-100)"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "At Risk (60-79)"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Warning (40-59)"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Critical (0-39)"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "id": 5,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT CASE WHEN health_score >= 80 THEN 'Healthy (80-100)' WHEN health_score >= 60 THEN 'At Risk (60-79)' WHEN health_score >= 40 THEN 'Warning (40-59)' ELSE 'Critical (0-39)' END as \"Category\", COUNT(*) as \"Clients\" FROM business.clients WHERE status = 'active' GROUP BY 1 ORDER BY 1",
+          "refId": "A"
+        }
+      ],
+      "title": "Client Health Distribution",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "id": 6,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT subscription_tier as \"Tier\", ROUND(AVG(health_score)::numeric, 0) as \"Avg Health Score\" FROM business.clients WHERE status = 'active' GROUP BY subscription_tier ORDER BY subscription_tier",
+          "refId": "A"
+        }
+      ],
+      "title": "Health Score by Tier",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total Uses"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-GrYlRd"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "id": 7,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT c.name as \"Client\", fu.feature_name as \"Feature\", SUM(fu.usage_count) as \"Total Uses\" FROM business.feature_usage fu JOIN business.clients c ON fu.client_id = c.id WHERE fu.usage_date > NOW() - INTERVAL '30 days' GROUP BY c.name, fu.feature_name ORDER BY \"Total Uses\" DESC LIMIT 50",
+          "refId": "A"
+        }
+      ],
+      "title": "Feature Usage Heatmap",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true,
+          "values": []
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT severity, COUNT(*) as count FROM business.support_tickets WHERE status NOT IN ('resolved', 'closed') GROUP BY severity",
+          "refId": "A"
+        }
+      ],
+      "title": "Support Tickets by Severity",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "time_series",
+          "rawSql": "SELECT date_trunc('day', sent_at) as time, channel as metric, COUNT(*) as value FROM alert.notification_log WHERE $__timeFilter(sent_at) GROUP BY 1, 2 ORDER BY 1",
+          "refId": "A"
+        }
+      ],
+      "title": "Notification Volume",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Health"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 40
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 60
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Revenue"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyEUR"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "id": 10,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT c.name as \"Client\", c.subscription_tier as \"Tier\", c.health_score as \"Health\", c.total_revenue as \"Revenue\", COUNT(st.id) as \"Open Tickets\" FROM business.clients c LEFT JOIN business.support_tickets st ON c.id = st.client_id AND st.status NOT IN ('resolved', 'closed') WHERE c.status = 'active' AND c.health_score < 70 GROUP BY c.id, c.name, c.subscription_tier, c.health_score, c.total_revenue ORDER BY c.health_score ASC LIMIT 20",
+          "refId": "A"
+        }
+      ],
+      "title": "At-Risk Clients",
+      "type": "table"
+    }
+  ],
+  "refresh": "1h",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "business",
+    "clients",
+    "agritech"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-90d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "Europe/Lisbon",
+  "title": "Client Health",
+  "uid": "client-health",
+  "version": 0,
+  "weekStart": ""
+}

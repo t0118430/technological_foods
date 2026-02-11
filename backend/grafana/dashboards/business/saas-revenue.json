@@ -1,0 +1,1090 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT total_revenue as \"MRR\" FROM bi.monthly_revenue WHERE month = date_trunc('month', CURRENT_DATE) ORDER BY month DESC LIMIT 1",
+          "refId": "A"
+        }
+      ],
+      "title": "MRR (Current Month)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT COUNT(*) as \"Active Clients\" FROM business.clients WHERE status = 'active'",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Clients",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT AVG(total_revenue) as \"Avg Revenue\" FROM bi.monthly_revenue WHERE month = date_trunc('month', CURRENT_DATE)",
+          "refId": "A"
+        }
+      ],
+      "title": "Avg Revenue/Client",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT ROUND(COUNT(*) FILTER (WHERE status = 'cancelled' AND updated_at > NOW() - INTERVAL '30 days') * 100.0 / NULLIF(COUNT(*), 0), 1) as \"Churn %\" FROM business.clients",
+          "refId": "A"
+        }
+      ],
+      "title": "Churn Rate (30d)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "line"
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 2
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              },
+              {
+                "id": "custom.stacking",
+                "value": {
+                  "group": "A",
+                  "mode": "none"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "time_series",
+          "rawSql": "SELECT month as time, SUM(subscription_revenue) as \"Subscriptions\", SUM(service_revenue) as \"Services\", SUM(harvest_revenue) as \"Harvest Sales\", SUM(total_revenue) as \"Total\" FROM bi.monthly_revenue GROUP BY month ORDER BY month",
+          "refId": "A"
+        }
+      ],
+      "title": "Monthly Revenue Trend",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "time_series",
+          "rawSql": "SELECT mr.month as time, c.subscription_tier as metric, SUM(mr.total_revenue) as value FROM bi.monthly_revenue mr JOIN business.clients c ON mr.client_id = c.id GROUP BY mr.month, c.subscription_tier ORDER BY mr.month",
+          "refId": "A"
+        }
+      ],
+      "title": "Revenue by Tier",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 12
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT subscription_tier as tier, COUNT(*) as count FROM business.clients WHERE status = 'active' GROUP BY subscription_tier",
+          "refId": "A"
+        }
+      ],
+      "title": "Client Distribution by Tier",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 12
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT status, COUNT(*) as count FROM business.payments WHERE payment_date > NOW() - INTERVAL '90 days' GROUP BY status",
+          "refId": "A"
+        }
+      ],
+      "title": "Payment Status Overview",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 12
+      },
+      "id": 9,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "time_series",
+          "rawSql": "SELECT date_trunc('month', created_at) as time, COUNT(*) as \"New Clients\" FROM business.clients GROUP BY date_trunc('month', created_at) ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "New Clients (Last 12M)",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 30,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Transactions"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "time_series",
+          "rawSql": "SELECT payment_date as time, SUM(amount) as \"Revenue\", COUNT(*) as \"Transactions\" FROM business.payments WHERE status = 'completed' GROUP BY payment_date ORDER BY payment_date",
+          "refId": "A"
+        }
+      ],
+      "title": "Payment Trend (Daily)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 30,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Lost Revenue"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyEUR"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Failed"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "time_series",
+          "rawSql": "SELECT payment_date as time, COUNT(*) as \"Failed\", SUM(amount) as \"Lost Revenue\" FROM business.payments WHERE status IN ('failed', 'refunded') GROUP BY payment_date ORDER BY payment_date",
+          "refId": "A"
+        }
+      ],
+      "title": "Failed Payments",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total Revenue"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyEUR"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 28
+      },
+      "id": 12,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT c.name, c.company_name, c.subscription_tier as \"Tier\", c.total_revenue as \"Total Revenue\", c.health_score as \"Health\", c.status FROM business.clients c ORDER BY c.total_revenue DESC LIMIT 20",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Clients by Revenue",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Amount"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyEUR"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 28
+      },
+      "id": 13,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "format": "table",
+          "rawSql": "SELECT p.payment_date as \"Date\", c.name as \"Client\", p.amount as \"Amount\", p.tier as \"Tier\", p.payment_method as \"Method\", p.status FROM business.payments p JOIN business.clients c ON p.client_id = c.id ORDER BY p.payment_date DESC LIMIT 30",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent Payments",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      },
+      "id": 14,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "### Revenue Forecast\nForecasting requires historical data accumulation. As monthly_revenue data grows, consider adding linear regression or moving average panels for revenue prediction.",
+        "mode": "markdown"
+      },
+      "pluginVersion": "10.0.0",
+      "title": "Revenue Forecast Note",
+      "type": "text"
+    }
+  ],
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "business",
+    "revenue",
+    "agritech"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-12M",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "Europe/Lisbon",
+  "title": "SaaS Revenue",
+  "uid": "saas-revenue",
+  "version": 0,
+  "weekStart": ""
+}

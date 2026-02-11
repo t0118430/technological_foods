@@ -1,0 +1,97 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "text",
+        "uid": "-- Mixed --"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "### CI/CD Pipeline Monitoring\n\n**Status:** Not yet available\n\nThis dashboard requires GitHub integration for build/deploy metrics.\n\n#### Prerequisites\n\n1. **Option A: GitHub Webhook**\n   - Set up a webhook endpoint in the API\n   - Capture push, PR, and workflow events\n   - Store in `audit.events` with `event_type = 'github_*'`\n\n2. **Option B: grafana-github-datasource Plugin**\n   - Install: `GF_INSTALL_PLUGINS=grafana-github-datasource`\n   - Configure with GitHub PAT token\n   - Query workflow runs, PRs, issues directly\n\n3. **Option C: GitHub Actions + InfluxDB**\n   - Add a step to CI workflow that posts metrics to InfluxDB\n   - Build time, test results, deploy status",
+        "mode": "markdown"
+      },
+      "pluginVersion": "10.0.0",
+      "title": "CI/CD Pipeline - Setup Required",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "text",
+        "uid": "-- Mixed --"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 2,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "### Planned Panels\n\n| Panel | Description |\n|-------|-------------|\n| Build Success Rate | Pass/fail ratio over time |\n| Average Build Time | Duration trend |\n| Deployment Frequency | Deploys per day/week |\n| Lead Time | Commit to deploy duration |\n| PR Merge Time | Average PR lifecycle |\n| Test Coverage | Coverage % trend |\n| Failed Tests | Flaky/failing test tracker |\n| Release Timeline | Version history |",
+        "mode": "markdown"
+      },
+      "pluginVersion": "10.0.0",
+      "title": "Planned Panels",
+      "type": "text"
+    }
+  ],
+  "refresh": "1h",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "devops",
+    "cicd",
+    "agritech"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "Europe/Lisbon",
+  "title": "CI/CD Pipeline",
+  "uid": "cicd-pipeline",
+  "version": 0,
+  "weekStart": ""
+}

@@ -1,0 +1,168 @@
+@startuml AgriTech_Deployment_Diagram
+
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam nodeBorderColor #555555
+skinparam noteBorderColor #999999
+
+title AgriTech Technological Foods\nDeployment Diagram
+
+' ════════════════════════════════════
+' ARDUINO NODE
+' ════════════════════════════════════
+node "<<device>>\nArduino UNO R4 WiFi" as ard_node #LightBlue {
+    component "DHT20\nTemp + Humidity" as dht20 #PaleTurquoise
+    component "LED Indicator" as led #Orange
+    artifact "firmware.ino\n(OTA-updateable)" as firmware #White
+}
+
+' ════════════════════════════════════
+' RASPBERRY PI NODE
+' ════════════════════════════════════
+node "<<device>>\nRaspberry Pi 4\n4GB RAM | 64GB SD\nUbuntu Server 24.04 LTS" as pi #FFE4E1 {
+
+    ' --- Python API (bare-metal systemd service) ---
+    node "<<systemd service>>\nagritech-api.service" as api_svc #PaleGreen {
+        component "server.py\nREST API :3001\n(~72 endpoints)" as server #MediumAquamarine
+        component "Rule Engine" as rules #Khaki
+        component "Notification\nService" as notif #LightPink
+        component "AI Analytics\nLayer" as ai #SkyBlue
+        component "ETL Pipeline" as etl #CadetBlue
+        component "Data Harvester" as harvester #SandyBrown
+    }
+
+    ' --- Docker Engine ---
+    node "<<execution environment>>\nDocker Engine" as docker #AliceBlue {
+
+        node "<<container>>\ninfluxdb:2.7\n:8086 | 1536MB" as c_influx #LightSteelBlue {
+            database "hydroponics\nbucket" as influx_db
+        }
+
+        node "<<container>>\npostgres:15-alpine\n:5432 | 512MB" as c_pg #CornflowerBlue {
+            database "7 schemas\n35+ tables" as pg_db
+        }
+
+        node "<<container>>\nredis:7-alpine\n:6379 | 128MB" as c_redis #Tomato {
+            database "key-value\ncache" as redis_db
+        }
+
+        node "<<container>>\ngrafana:10.2.0\n:3000 | 512MB" as c_grafana #Salmon {
+            component "Provisioned\nDashboards" as grafana_dash
+        }
+
+        node "<<container>>\nnodered:3.1\n:1880 | 512MB" as c_nodered #IndianRed {
+            component "Automation\nFlows" as nodered_flows
+        }
+    }
+
+    ' --- Persistent Volumes ---
+    storage "/data/influxdb/" as vol_influx #Wheat
+    storage "/data/postgres/" as vol_pg #Wheat
+    storage "/data/grafana/" as vol_grafana #Wheat
+    storage "/data/nodered/" as vol_nodered #Wheat
+}
+
+' ════════════════════════════════════
+' BACKUP STORAGE
+' ════════════════════════════════════
+node "<<device>>\nUSB SSD" as usb #LightGray {
+    storage "/backups/\ndaily (7) | weekly (4)\nmonthly (12)" as backups
+}
+
+' ════════════════════════════════════
+' HAIER AC
+' ════════════════════════════════════
+node "<<device>>\nHaier AC Unit" as ac_unit #Lavender
+
+' ════════════════════════════════════
+' GITHUB CLOUD
+' ════════════════════════════════════
+cloud "<<cloud>>\nGitHub" as github #Linen {
+    component "Repository\nmaster branch" as repo
+    component "Actions CI/CD\npr-checks + deploy" as gha #LightCyan
+}
+
+' ════════════════════════════════════
+' EXTERNAL CLOUD SERVICES
+' ════════════════════════════════════
+cloud "<<cloud>>\nExternal Services" as ext_cloud #AliceBlue {
+    component "Open-Meteo\nWeather API" as meteo #LightCyan
+    component "Haier hOn\nCloud API" as hon #Lavender
+    component "ntfy.sh" as ntfy #LightGreen
+    component "Twilio" as twilio #LightBlue
+    component "SMTP Relay" as smtp #LightGray
+}
+
+' ════════════════════════════════════
+' COMMUNICATION — Arduino <-> Pi
+' ════════════════════════════════════
+ard_node -down-> api_svc : <<HTTP>>\nPOST /api/data (2s)\nGET /api/commands (2s)
+
+' ════════════════════════════════════
+' COMMUNICATION — API -> Docker containers
+' ════════════════════════════════════
+server -down-> c_influx : <<TCP>>\nInfluxDB client\nwrite + query
+server -down-> c_pg : <<TCP>>\npsycopg2 pool
+server -down-> c_redis : <<TCP>>\nRedis cache
+c_influx -right-> c_grafana : <<TCP>>\nFlux queries
+
+' ════════════════════════════════════
+' COMMUNICATION — Volumes
+' ════════════════════════════════════
+c_influx .down.> vol_influx : bind mount
+c_pg .down.> vol_pg : bind mount
+c_grafana .down.> vol_grafana : bind mount
+c_nodered .down.> vol_nodered : bind mount
+
+' ════════════════════════════════════
+' COMMUNICATION — API -> External
+' ════════════════════════════════════
+server -down-> meteo : <<HTTPS>>\nWeather forecast
+server -down-> hon : <<HTTPS>>\nAC commands
+hon -left-> ac_unit : <<WiFi Cloud>>
+notif -down-> ntfy : <<HTTPS>>\nPush
+notif -down-> twilio : <<HTTPS>>\nWhatsApp/SMS
+notif -down-> smtp : <<SMTP/TLS>>\nEmail
+
+' ════════════════════════════════════
+' COMMUNICATION — CI/CD Deployment
+' ════════════════════════════════════
+gha -down-> pi : <<SSH + rsync>>\nBackend deploy
+gha -down-> ard_node : <<OTA>>\nFirmware deploy
+
+' ════════════════════════════════════
+' COMMUNICATION — Backup
+' ════════════════════════════════════
+pi -right-> usb : <<systemd timer>>\nDaily backup @ 02:00
+
+' ════════════════════════════════════
+' NOTES
+' ════════════════════════════════════
+note right of pi
+  **Pi Optimizations:**
+  Swap disabled | noatime mount
+  /tmp, /var/log as tmpfs
+  Docker log limits: 10MB
+  InfluxDB retention: 30 days
+  Static IP via netplan
+  ufw: 22, 3001, 3000, 8086, 1880
+end note
+
+note bottom of gha
+  **CI/CD Pipeline:**
+  PR Gate: lint, pytest, security,
+  docker validate, arduino compile
+  Deploy: rsync, docker up,
+  systemctl restart, health check,
+  rollback on failure, ntfy notify
+end note
+
+note right of docker
+  **Docker network:**
+  agritech-network (bridge)
+  All 5 containers on
+  same internal network
+end note
+
+@enduml
