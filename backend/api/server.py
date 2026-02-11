@@ -710,8 +710,20 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                 # Forward anomaly detections to notification system
                 if analytics_result.get('anomalies'):
+                    # Sensor field labels and units in Portuguese
+                    _FIELD_LABELS = {
+                        'temperature': ('Temperatura', '°C'),
+                        'humidity': ('Humidade', '%'),
+                        'ph': ('pH', ''),
+                        'ec': ('EC', ' mS/cm'),
+                        'water_level': ('Nivel de Agua', '%'),
+                        'light_level': ('Luz', ' lux'),
+                        'light': ('Luz', ' lux'),
+                    }
+
                     for anomaly in analytics_result['anomalies']:
-                        anomaly_rule_id = f"anomaly_{anomaly['type']}_{anomaly['field']}"
+                        field = anomaly['field']
+                        label, unit = _FIELD_LABELS.get(field, (field.replace('_', ' ').title(), ''))
 
                         # Map anomaly severity to notification severity
                         if anomaly['severity'] == 'high':
@@ -719,34 +731,34 @@ class RequestHandler(BaseHTTPRequestHandler):
                         else:
                             notify_severity = 'warning'
 
-                        # Build descriptive message per anomaly type
-                        field_label = anomaly['field'].replace('_', ' ').title()
+                        # Build human-readable messages in Portuguese
                         if anomaly['type'] == 'spike':
-                            msg = (f"Anomaly: {field_label} spike detected "
-                                   f"({anomaly['value']}, z-score {anomaly['z_score']})")
-                            action = (f"Value is {anomaly['z_score']} std devs from mean "
-                                      f"({anomaly['mean']}). Check sensor calibration and verify reading.")
+                            msg = (f"{label} com valor fora do normal: "
+                                   f"{anomaly['value']}{unit} (media recente: {anomaly['mean']}{unit})")
+                            action = (f"Valor muito acima ou abaixo da media recente ({anomaly['mean']}{unit}). "
+                                      f"Verificar calibracao do sensor.")
                         elif anomaly['type'] == 'flatline':
-                            msg = (f"Anomaly: {field_label} sensor flatline "
-                                   f"({anomaly['consecutive_identical']} identical readings)")
-                            action = "Sensor may be stuck or disconnected. Check wiring and calibration."
+                            msg = (f"Sensor de {label} sem variacao "
+                                   f"({anomaly['consecutive_identical']} leituras identicas)")
+                            action = "Sensor pode estar bloqueado ou desligado. Verificar ligacoes e calibracao."
                         elif anomaly['type'] == 'sudden_jump':
-                            msg = (f"Anomaly: {field_label} sudden jump "
-                                   f"({anomaly['percent_change']}% change)")
-                            action = (f"Value jumped from {anomaly['previous']} to {anomaly['value']} "
-                                      f"({anomaly['percent_change']}%). Verify sensor integrity.")
+                            msg = (f"{label} com alteracao brusca: "
+                                   f"{anomaly['previous']}{unit} para {anomaly['value']}{unit} "
+                                   f"({anomaly['percent_change']}% de variacao)")
+                            action = (f"Valor saltou de {anomaly['previous']}{unit} para {anomaly['value']}{unit}. "
+                                      f"Verificar integridade do sensor.")
                         else:
-                            msg = f"Anomaly: {field_label} anomaly detected"
-                            action = "Check sensor and environmental conditions."
+                            msg = f"Anomalia detectada no sensor de {label}"
+                            action = "Verificar sensor e condicoes ambientais."
 
                         notifier.notify(
-                            rule_id=anomaly_rule_id,
+                            rule_id=f"Anomalia no sensor de {label}",
                             severity=notify_severity,
                             message=msg,
                             sensor_data=data,
                             recommended_action=action,
                         )
-                        logger.info(f"Anomaly notification sent: {anomaly_rule_id}")
+                        logger.info(f"Anomaly notification sent: {field} ({anomaly['type']})")
 
                 # Check for resolved alerts first (values back to safe zone)
                 resolved = escalation_manager.check_for_resolved_alerts(data)
