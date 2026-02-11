@@ -708,6 +708,46 @@ class RequestHandler(BaseHTTPRequestHandler):
                     logger.warning(f"Analytics ingestion error: {analytics_err}")
                     analytics_result = {}
 
+                # Forward anomaly detections to notification system
+                if analytics_result.get('anomalies'):
+                    for anomaly in analytics_result['anomalies']:
+                        anomaly_rule_id = f"anomaly_{anomaly['type']}_{anomaly['field']}"
+
+                        # Map anomaly severity to notification severity
+                        if anomaly['severity'] == 'high':
+                            notify_severity = 'critical'
+                        else:
+                            notify_severity = 'warning'
+
+                        # Build descriptive message per anomaly type
+                        field_label = anomaly['field'].replace('_', ' ').title()
+                        if anomaly['type'] == 'spike':
+                            msg = (f"Anomaly: {field_label} spike detected "
+                                   f"({anomaly['value']}, z-score {anomaly['z_score']})")
+                            action = (f"Value is {anomaly['z_score']} std devs from mean "
+                                      f"({anomaly['mean']}). Check sensor calibration and verify reading.")
+                        elif anomaly['type'] == 'flatline':
+                            msg = (f"Anomaly: {field_label} sensor flatline "
+                                   f"({anomaly['consecutive_identical']} identical readings)")
+                            action = "Sensor may be stuck or disconnected. Check wiring and calibration."
+                        elif anomaly['type'] == 'sudden_jump':
+                            msg = (f"Anomaly: {field_label} sudden jump "
+                                   f"({anomaly['percent_change']}% change)")
+                            action = (f"Value jumped from {anomaly['previous']} to {anomaly['value']} "
+                                      f"({anomaly['percent_change']}%). Verify sensor integrity.")
+                        else:
+                            msg = f"Anomaly: {field_label} anomaly detected"
+                            action = "Check sensor and environmental conditions."
+
+                        notifier.notify(
+                            rule_id=anomaly_rule_id,
+                            severity=notify_severity,
+                            message=msg,
+                            sensor_data=data,
+                            recommended_action=action,
+                        )
+                        logger.info(f"Anomaly notification sent: {anomaly_rule_id}")
+
                 # Check for resolved alerts first (values back to safe zone)
                 resolved = escalation_manager.check_for_resolved_alerts(data)
                 for resolution in resolved:
@@ -740,8 +780,22 @@ class RequestHandler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
 
+                # Collect stage-specific rules from active crops
+                stage_rules = []
+                try:
+                    active_crops = db.get_active_crops()
+                    for crop in active_crops:
+                        crop_rules = growth_manager.get_stage_specific_rules(crop['id'])
+                        stage_rules.extend(crop_rules)
+                except Exception as stage_err:
+                    logger.debug(f"Stage rules collection error: {stage_err}")
+
                 # Evaluate rules (config server decides what to do)
-                triggered = rule_engine.evaluate(data, sensor_id, external_data=external_context)
+                triggered = rule_engine.evaluate(
+                    data, sensor_id,
+                    external_data=external_context,
+                    extra_rules=stage_rules,
+                )
 
                 # Execute AC actions from triggered rules
                 ac_actions = [t for t in triggered if t['action'].get('type') == 'ac']

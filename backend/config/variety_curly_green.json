@@ -82,6 +82,18 @@
       "critical_max": 700.0,
       "warning_margin": 100.0,
       "notes": "Moderate light, excessive light causes bolting and bitterness"
+    },
+    "vpd": {
+      "optimal_min": 0.8,
+      "optimal_max": 1.2,
+      "warning_low": 0.4,
+      "warning_high": 1.6,
+      "notes": "Standard lettuce VPD — heat-sensitive, avoid high VPD"
+    },
+    "dli": {
+      "optimal_min": 12,
+      "optimal_max": 18,
+      "notes": "Moderate DLI, excessive light triggers bolting"
     }
   },
 

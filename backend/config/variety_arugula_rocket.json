@@ -50,6 +50,21 @@
     }
   },
 
+  "optimal_ranges": {
+    "vpd": {
+      "optimal_min": 0.6,
+      "optimal_max": 1.0,
+      "warning_low": 0.3,
+      "warning_high": 1.4,
+      "notes": "Cool-season crop — prefers lower VPD with higher humidity"
+    },
+    "dli": {
+      "optimal_min": 12,
+      "optimal_max": 16,
+      "notes": "Fast-growing leafy green, moderate light needs"
+    }
+  },
+
   "algarve_climate": {
     "optimal_season": "spring_autumn_winter",
     "heat_tolerance": "moderate",
