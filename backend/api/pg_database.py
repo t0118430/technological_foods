@@ -554,6 +554,283 @@ class PostgresDatabase:
             """, (sensor_id, zone_id, metric_date, avg_val, min_val,
                   max_val, stddev_val, count, optimal_pct, critical_pct))
 
+    # ── Site Visits ───────────────────────────────────────
+
+    def create_site_visit(self, data: Dict[str, Any]) -> int:
+        """Create a new site visit record."""
+        with self.get_connection() as conn:
+            row = self._fetchone(conn, """
+                INSERT INTO business.site_visits (
+                    visit_date, inspector_name, client_id, facility_name,
+                    visit_type, zones_inspected, crop_batches_checked,
+                    sensor_readings_snapshot, observations, issues_found,
+                    actions_taken, follow_up_required, follow_up_date,
+                    follow_up_notes, overall_rating, photo_notes
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            """, (
+                data.get('visit_date', date.today().isoformat()),
+                data['inspector_name'],
+                data.get('client_id'),
+                data.get('facility_name', ''),
+                data['visit_type'],
+                psycopg2.extras.Json(data.get('zones_inspected', [])),
+                psycopg2.extras.Json(data.get('crop_batches_checked', [])),
+                psycopg2.extras.Json(data.get('sensor_readings_snapshot', {})),
+                data.get('observations', ''),
+                psycopg2.extras.Json(data.get('issues_found', [])),
+                data.get('actions_taken', ''),
+                bool(data.get('follow_up_required', False)),
+                data.get('follow_up_date'),
+                data.get('follow_up_notes', ''),
+                data.get('overall_rating', 3),
+                data.get('photo_notes', ''),
+            ))
+            return row['id']
+
+    def get_site_visit(self, visit_id: int) -> Optional[Dict[str, Any]]:
+        """Get a single site visit by ID with client name."""
+        with self.get_connection() as conn:
+            return self._fetchone(conn, """
+                SELECT sv.*, c.name AS client_name
+                FROM business.site_visits sv
+                LEFT JOIN business.clients c ON sv.client_id = c.id
+                WHERE sv.id = %s
+            """, (visit_id,))
+
+    def update_site_visit(self, visit_id: int, data: Dict[str, Any]) -> bool:
+        """Update an existing site visit. Only updates fields present in data."""
+        allowed = {
+            'visit_date', 'inspector_name', 'client_id', 'facility_name',
+            'visit_type', 'zones_inspected', 'crop_batches_checked',
+            'sensor_readings_snapshot', 'observations', 'issues_found',
+            'actions_taken', 'follow_up_required', 'follow_up_date',
+            'follow_up_notes', 'follow_up_completed', 'overall_rating', 'photo_notes'
+        }
+        json_fields = {'zones_inspected', 'crop_batches_checked', 'sensor_readings_snapshot', 'issues_found'}
+
+        sets = []
+        values = []
+        for key, value in data.items():
+            if key not in allowed:
+                continue
+            if key in json_fields and isinstance(value, (list, dict)):
+                value = psycopg2.extras.Json(value)
+            if key == 'follow_up_required':
+                value = bool(value)
+            sets.append(f"{key} = %s")
+            values.append(value)
+
+        if not sets:
+            return False
+
+        sets.append("updated_at = NOW()")
+        values.append(visit_id)
+
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    f"UPDATE business.site_visits SET {', '.join(sets)} WHERE id = %s",
+                    values
+                )
+                return cur.rowcount > 0
+
+    def delete_site_visit(self, visit_id: int) -> bool:
+        """Delete a site visit record."""
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "DELETE FROM business.site_visits WHERE id = %s", (visit_id,))
+                return cur.rowcount > 0
+
+    def list_site_visits(self, filters: Dict[str, Any] = None,
+                         page: int = 1, per_page: int = 20) -> Dict[str, Any]:
+        """List site visits with filtering, sorting, and pagination."""
+        filters = filters or {}
+        where_clauses = []
+        params = []
+
+        if filters.get('visit_type'):
+            where_clauses.append("sv.visit_type = %s")
+            params.append(filters['visit_type'])
+
+        if filters.get('inspector_name'):
+            where_clauses.append("sv.inspector_name ILIKE %s")
+            params.append(f"%{filters['inspector_name']}%")
+
+        if filters.get('date_from'):
+            where_clauses.append("sv.visit_date >= %s")
+            params.append(filters['date_from'])
+
+        if filters.get('date_to'):
+            where_clauses.append("sv.visit_date <= %s")
+            params.append(filters['date_to'])
+
+        if filters.get('follow_up') == 'pending':
+            where_clauses.append("sv.follow_up_required = TRUE AND sv.follow_up_completed = FALSE")
+        elif filters.get('follow_up') == 'completed':
+            where_clauses.append("sv.follow_up_required = TRUE AND sv.follow_up_completed = TRUE")
+
+        if filters.get('search'):
+            where_clauses.append(
+                "(sv.inspector_name ILIKE %s OR sv.observations ILIKE %s OR sv.facility_name ILIKE %s)")
+            search_term = f"%{filters['search']}%"
+            params.extend([search_term, search_term, search_term])
+
+        where_sql = (" WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+
+        sort_col = filters.get('sort', 'visit_date')
+        sort_dir = 'ASC' if filters.get('sort_dir', 'desc').lower() == 'asc' else 'DESC'
+        allowed_sorts = {'visit_date', 'inspector_name', 'visit_type', 'overall_rating', 'created_at'}
+        if sort_col not in allowed_sorts:
+            sort_col = 'visit_date'
+
+        with self.get_connection() as conn:
+            count_row = self._fetchone(conn,
+                f"SELECT COUNT(*) AS total FROM business.site_visits sv{where_sql}", params)
+            total = count_row['total']
+
+            offset = (page - 1) * per_page
+            visits = self._fetchall(conn, f"""
+                SELECT sv.*, c.name AS client_name
+                FROM business.site_visits sv
+                LEFT JOIN business.clients c ON sv.client_id = c.id
+                {where_sql}
+                ORDER BY sv.{sort_col} {sort_dir}, sv.id ASC
+                LIMIT %s OFFSET %s
+            """, params + [per_page, offset])
+
+            return {
+                'visits': visits,
+                'total': total,
+                'page': page,
+                'per_page': per_page,
+                'total_pages': max(1, -(-total // per_page)),
+            }
+
+    def get_site_visits_dashboard(self) -> Dict[str, Any]:
+        """Return KPIs, chart data, recent activity, and top clients."""
+        with self.get_connection() as conn:
+            total = self._fetchone(conn,
+                "SELECT COUNT(*) AS c FROM business.site_visits")['c']
+
+            this_month = self._fetchone(conn, """
+                SELECT COUNT(*) AS c FROM business.site_visits
+                WHERE visit_date >= date_trunc('month', CURRENT_DATE)
+            """)['c']
+
+            last_month = self._fetchone(conn, """
+                SELECT COUNT(*) AS c FROM business.site_visits
+                WHERE visit_date >= date_trunc('month', CURRENT_DATE) - INTERVAL '1 month'
+                  AND visit_date < date_trunc('month', CURRENT_DATE)
+            """)['c']
+
+            pending_followups = self._fetchone(conn, """
+                SELECT COUNT(*) AS c FROM business.site_visits
+                WHERE follow_up_required = TRUE AND follow_up_completed = FALSE
+            """)['c']
+
+            avg_rating = self._fetchone(conn,
+                "SELECT COALESCE(AVG(overall_rating), 0) AS avg FROM business.site_visits"
+            )['avg']
+
+            monthly_data = self._fetchall(conn, """
+                SELECT to_char(visit_date, 'YYYY-MM') AS month, COUNT(*) AS count
+                FROM business.site_visits
+                WHERE visit_date >= CURRENT_DATE - INTERVAL '6 months'
+                GROUP BY month
+                ORDER BY month
+            """)
+
+            type_data = self._fetchall(conn, """
+                SELECT visit_type AS type, COUNT(*) AS count
+                FROM business.site_visits
+                GROUP BY visit_type
+                ORDER BY count DESC
+            """)
+
+            rating_data = self._fetchall(conn, """
+                SELECT overall_rating AS rating, COUNT(*) AS count
+                FROM business.site_visits
+                GROUP BY overall_rating
+                ORDER BY overall_rating
+            """)
+
+            recent = self._fetchall(conn, """
+                SELECT sv.*, c.name AS client_name
+                FROM business.site_visits sv
+                LEFT JOIN business.clients c ON sv.client_id = c.id
+                ORDER BY sv.created_at DESC
+                LIMIT 10
+            """)
+
+            top_clients = self._fetchall(conn, """
+                SELECT c.id, c.name AS company_name, c.health_score,
+                       COUNT(sv.id) AS visit_count,
+                       MAX(sv.visit_date) AS last_visit
+                FROM business.site_visits sv
+                JOIN business.clients c ON sv.client_id = c.id
+                GROUP BY c.id, c.name, c.health_score
+                ORDER BY visit_count DESC
+                LIMIT 10
+            """)
+
+            inspectors = self._fetchall(conn, """
+                SELECT DISTINCT inspector_name
+                FROM business.site_visits
+                ORDER BY inspector_name
+            """)
+
+            return {
+                'kpis': {
+                    'total_visits': total,
+                    'visits_this_month': this_month,
+                    'visits_last_month': last_month,
+                    'month_delta': this_month - last_month,
+                    'pending_followups': pending_followups,
+                    'avg_rating': round(float(avg_rating), 1),
+                },
+                'charts': {
+                    'monthly': [{'month': r['month'], 'count': r['count']} for r in monthly_data],
+                    'by_type': [{'type': r['type'], 'count': r['count']} for r in type_data],
+                    'ratings': [{'rating': r['rating'], 'count': r['count']} for r in rating_data],
+                },
+                'recent_activity': recent,
+                'top_clients': top_clients,
+                'inspectors': [r['inspector_name'] for r in inspectors],
+            }
+
+    def get_site_visits_clients(self) -> List[Dict[str, Any]]:
+        """Get active clients for site visit form dropdown."""
+        with self.get_connection() as conn:
+            return self._fetchall(conn, """
+                SELECT id, name AS company_name, subscription_tier, health_score
+                FROM business.clients
+                WHERE status = 'active'
+                ORDER BY name
+            """)
+
+    def get_site_visits_export(self) -> List[Dict[str, Any]]:
+        """Return all visits flat for CSV export."""
+        with self.get_connection() as conn:
+            return self._fetchall(conn, """
+                SELECT sv.*, c.name AS client_name
+                FROM business.site_visits sv
+                LEFT JOIN business.clients c ON sv.client_id = c.id
+                ORDER BY sv.visit_date DESC
+            """)
+
+    def complete_site_visit_follow_up(self, visit_id: int) -> bool:
+        """Mark a site visit follow-up as completed."""
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE business.site_visits
+                    SET follow_up_completed = TRUE, updated_at = NOW()
+                    WHERE id = %s AND follow_up_required = TRUE
+                """, (visit_id,))
+                return cur.rowcount > 0
+
     # ── Dashboard ─────────────────────────────────────────
 
     def get_dashboard(self) -> Dict[str, Any]:
