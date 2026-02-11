@@ -241,7 +241,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         path, query = self._parsed_path()
 
-        if path in ("/", "/api/health", "/api/docs", "/api/openapi.json", "/business", "/site-visits", "/api/etl/status") or path.startswith("/api/site-visits"):
+        if path in ("/", "/api/health", "/api/docs", "/api/openapi.json", "/api/help", "/business", "/site-visits", "/api/etl/status") or path.startswith("/api/site-visits"):
             pass  # Public endpoints — no auth required
         elif not self._check_api_key():
             return
@@ -266,6 +266,17 @@ class RequestHandler(BaseHTTPRequestHandler):
                 "influxdb": INFLUXDB_URL,
                 "version": "2.0.0"
             })
+
+        elif path == "/api/help":
+            try:
+                help_path = Path(__file__).resolve().parent / "static" / "help.json"
+                help_data = json.loads(help_path.read_text(encoding="utf-8"))
+                self._send_json(200, help_data)
+            except FileNotFoundError:
+                self._send_json(404, {"error": "help.json not found"})
+            except Exception as e:
+                logger.error(f"Error serving help: {e}")
+                self._send_json(500, {"error": str(e)})
 
         elif path == "/api/data/latest":
             try:
@@ -1380,6 +1391,7 @@ if __name__ == "__main__":
     print("  GET    /api/docs                - Swagger UI")
     print("  GET    /api/openapi.json        - OpenAPI spec")
     print("  GET    /api/health              - Health check")
+    print("  GET    /api/help               - Dashboard help content (JSON)")
     print("  GET    /api/data/latest         - Get latest reading from InfluxDB")
     print("  POST   /api/data                - Save Arduino data + evaluate rules")
     print("  GET    /api/ac                  - Get AC status")
