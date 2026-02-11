@@ -12,11 +12,19 @@ License: Proprietary
 """
 
 import logging
+from enum import Enum
 from typing import List, Dict, Any, Optional
 from business_model import business_db, SUBSCRIPTION_TIERS
 from notification_service import notifier
 
 logger = logging.getLogger('tier-notification-router')
+
+
+class SubscriptionTier(Enum):
+    BRONZE = 'bronze'
+    SILVER = 'silver'
+    GOLD = 'gold'
+    PLATINUM = 'platinum'
 
 
 class TierNotificationRouter:
@@ -30,8 +38,17 @@ class TierNotificationRouter:
     - Engagement notifications
     """
 
-    def __init__(self):
+    def __init__(self, tier: SubscriptionTier = None):
         self.business_db = business_db
+        self.tier = tier
+
+    def should_send_alert(self, severity: str, sensor_type: str) -> bool:
+        """Check if the current tier allows sending alerts of this severity."""
+        if self.tier is None:
+            return True
+        tier_config = SUBSCRIPTION_TIERS.get(self.tier.value, SUBSCRIPTION_TIERS['bronze'])
+        allowed_types = tier_config['features']['alert_types']
+        return severity in allowed_types
 
     def send_notification(self, customer_id: int, notification_type: str,
                          severity: str, message: str, sensor_data: Dict[str, Any] = None,

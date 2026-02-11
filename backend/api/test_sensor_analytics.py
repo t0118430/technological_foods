@@ -39,9 +39,9 @@ class TestVPD:
         """VPD at 25°C, 50% RH should be ~1.58 kPa."""
         result = analytics.calculate_vpd(25.0, 50.0)
         # SVP at 25°C = 0.6108 * exp(17.27 * 25 / (25 + 237.3)) = 3.167 kPa
-        # VPD = 3.167 * (1 - 0.5) = 1.584 kPa
+        # VPD = 3.167 * (1 - 0.5) = 1.584 kPa (falls in 1.2-1.6 range = 'high')
         assert 1.5 < result['vpd_kpa'] < 1.7
-        assert result['classification'] == 'too_high'
+        assert result['classification'] == 'high'
 
     def test_vpd_known_value_22c_65pct(self, analytics):
         """VPD at 22°C, 65% RH - typical optimal conditions."""
@@ -297,7 +297,7 @@ class TestHelpers:
 
     def test_stddev(self):
         std = _stddev([2, 4, 4, 4, 5, 5, 7, 9])
-        assert 1.9 < std < 2.1  # Known sample stddev ~2.0
+        assert 1.9 < std < 2.2  # Known sample stddev ~2.138
         assert _stddev([]) == 0.0
         assert _stddev([5]) == 0.0
 
