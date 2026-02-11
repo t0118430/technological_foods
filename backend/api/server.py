@@ -7,6 +7,11 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from typing import Any, Dict
 
 from dotenv import load_dotenv
+
+# Load .env BEFORE importing modules that read env vars at import time
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(env_path)
+
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
@@ -47,10 +52,6 @@ from weather_service import weather_service
 from market_data_service import market_data_service
 from crop_intelligence import crop_intelligence
 from data_export import data_export_service
-
-# Load .env from backend directory
-env_path = Path(__file__).resolve().parent.parent / '.env'
-load_dotenv(env_path)
 
 # Configure logging
 logging.basicConfig(
