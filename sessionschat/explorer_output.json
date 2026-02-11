@@ -1,0 +1,1618 @@
+[
+  {
+    "session_id": "254c6c1b-9788-4a99-b16a-b165e27e29db",
+    "start_time": "2026-02-11T15:37:36.974000",
+    "end_time": "2026-02-11T15:37:36.974000",
+    "duration_seconds": 0.0,
+    "message_count": 1,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "taking into consideration the project analysis report under sessionchat folder on this project. please run the converstion_explorer script but first read the readme to understand and produce another report with the information from symmarychat txt files and also the changes brought by ai-improvements against origin/master",
+        "timestamp": "2026-02-11T15:37:36.974000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "d0bc2397-9a5f-4ebc-b313-b8378e617e83",
+    "start_time": "2026-02-11T02:22:09.294000",
+    "end_time": "2026-02-11T02:43:20.551000",
+    "duration_seconds": 1271.257,
+    "message_count": 5,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "see the differences between beanch docker-compose-changes and origin/master",
+        "timestamp": "2026-02-11T02:22:09.294000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "[Pasted text #1 +7 lines]",
+        "timestamp": "2026-02-11T02:34:54.120000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "contentHash": "69c07c18d73199fc"
+          }
+        }
+      },
+      {
+        "display": "that's on my raspebery pi",
+        "timestamp": "2026-02-11T02:35:38.075000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "[Pasted text #1 +179 lines]",
+        "timestamp": "2026-02-11T02:36:33.666000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "contentHash": "adccc5c63e003929"
+          }
+        }
+      },
+      {
+        "display": "[Pasted text #2 +70 lines]",
+        "timestamp": "2026-02-11T02:43:20.551000",
+        "pasted_contents": {
+          "2": {
+            "id": 2,
+            "type": "text",
+            "contentHash": "b0585a00327109a7"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "session_id": "d3c57ec6-19c8-434c-a483-df2cc70dca7a",
+    "start_time": "2026-02-11T01:36:49.690000",
+    "end_time": "2026-02-11T02:17:49.063000",
+    "duration_seconds": 2459.373,
+    "message_count": 7,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "so commit and make merge request informative",
+        "timestamp": "2026-02-11T01:36:49.690000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "create a branch indicative too",
+        "timestamp": "2026-02-11T01:37:06.183000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "give me a summary and actions to take from this chat",
+        "timestamp": "2026-02-11T01:53:52.166000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "give me a description for the pull request between site-visits and origin/master",
+        "timestamp": "2026-02-11T01:56:02.762000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i get unauthorized when i access those endpoint via my coimputer",
+        "timestamp": "2026-02-11T02:05:21.692000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "search the project and make a folder postman requests and exmaple for postman and curl",
+        "timestamp": "2026-02-11T02:08:43.351000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "can you do a summary of this chat and actions?",
+        "timestamp": "2026-02-11T02:17:49.063000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "7be6ee3d-0247-4cb0-99da-f24130249551",
+    "start_time": "2026-02-11T01:04:34.984000",
+    "end_time": "2026-02-11T01:13:31.588000",
+    "duration_seconds": 536.604,
+    "message_count": 2,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "and i need i guide for this",
+        "timestamp": "2026-02-11T01:04:34.984000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "acho que a nossa folder api is getting too messy order by folder and put in each folder what conserns each other and change the code base g",
+        "timestamp": "2026-02-11T01:13:31.588000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "2198cd5c-629e-4b67-aa36-9beec4e3841e",
+    "start_time": "2026-02-11T00:28:44.289000",
+    "end_time": "2026-02-11T01:33:12.069000",
+    "duration_seconds": 3867.78,
+    "message_count": 4,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "let's have a folder just with the tests",
+        "timestamp": "2026-02-11T00:28:44.289000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "can you check the site_visits_guide ? and check if something is missing to test the db visually?",
+        "timestamp": "2026-02-11T00:32:59.053000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i want to be able to store data in postresqql isn't that implmentws?",
+        "timestamp": "2026-02-11T00:37:47.230000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "give me a chat summary and actions of what were doing",
+        "timestamp": "2026-02-11T01:33:12.069000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "77c00701-7686-4078-990b-01c77d9304d8",
+    "start_time": "2026-02-11T00:06:45.502000",
+    "end_time": "2026-02-11T00:49:25.078000",
+    "duration_seconds": 2559.576,
+    "message_count": 3,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "create a pr with the summary of what was done here",
+        "timestamp": "2026-02-11T00:06:45.502000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "and in general are we translating the information arriving to the write on the production data (from the sensores)",
+        "timestamp": "2026-02-11T00:44:06.966000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i need to setupup on the data processing of the data, i want to read from the influx db and trasform the data in the backend . let's make it robust following the good programming practices and the documentation in this project",
+        "timestamp": "2026-02-11T00:49:25.078000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "8ef1076a-3ac8-4935-8542-1e8c22b799bc",
+    "start_time": "2026-02-10T23:51:34.109000",
+    "end_time": "2026-02-11T00:00:25.086000",
+    "duration_seconds": 530.977,
+    "message_count": 2,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "see the guide create me the python ../tools/seed_site_visits.py seed_site_visits_",
+        "timestamp": "2026-02-10T23:51:34.109000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "everything seem working fine, now i need to test the postgres integration with integtraion test real data cenarios",
+        "timestamp": "2026-02-11T00:00:25.086000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "a2b64b2d-366f-419e-9f53-3503d2f7142d",
+    "start_time": "2026-02-10T21:16:53.541000",
+    "end_time": "2026-02-10T22:00:58.402000",
+    "duration_seconds": 2644.861,
+    "message_count": 5,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "how can i test the changes?",
+        "timestamp": "2026-02-10T21:16:53.541000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "$  python -c \"from database import db; print(type(db)); print(db.get_active_crops())\"\n<class 'database.Database'>\n",
+        "timestamp": "2026-02-10T21:40:44.234000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "cd ..",
+        "timestamp": "2026-02-10T21:49:43.917000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "now let's preparae merge request with all this",
+        "timestamp": "2026-02-10T21:53:26.919000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "now we have infrastructure , let's read the data from raspebirei pi influx db",
+        "timestamp": "2026-02-10T22:00:58.402000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "6eda554d-c8b0-45b7-8845-906a19ae81c9",
+    "start_time": "2026-02-10T21:04:53.934000",
+    "end_time": "2026-02-11T00:32:17.148000",
+    "duration_seconds": 12443.214,
+    "message_count": 3,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "give me the perfect prompt to based on the project as claude on other folder will like to understand to use claude to pull request from branch compare with the file project_analysis_report.txt say and itenrate and try to implement that each point of the solutions when done ping on the notification system and stop processing ",
+        "timestamp": "2026-02-10T21:04:53.934000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "create a git commit for whatever is theer",
+        "timestamp": "2026-02-11T00:31:54.624000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "create a git commit for whatever is theer with proper messaging",
+        "timestamp": "2026-02-11T00:32:17.148000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "c6ec65d2-77a4-4885-80d8-86ec836d1400",
+    "start_time": "2026-02-10T20:32:07.378000",
+    "end_time": "2026-02-11T01:00:40.290000",
+    "duration_seconds": 16112.912,
+    "message_count": 5,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "let's document that and think of strategy to improve our deveops and pipeliens, create under ci/cd docs/improvements and other folder critical stuff and other what's implemented ",
+        "timestamp": "2026-02-10T20:32:07.378000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "give me a summary of this chat and save it in chat history in session",
+        "timestamp": "2026-02-10T20:44:51.645000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "[Pasted text #1 +59 lines]",
+        "timestamp": "2026-02-10T20:48:57.002000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "contentHash": "a7dd34ad610b1826"
+          }
+        }
+      },
+      {
+        "display": "i need an ssh key for github actions?",
+        "timestamp": "2026-02-10T20:53:02.762000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "make me a summary and actions from this chat",
+        "timestamp": "2026-02-11T01:00:40.290000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "f3879b3f-4c04-4811-9bce-15bc6eb0e9d2",
+    "start_time": "2026-02-10T20:13:45.378000",
+    "end_time": "2026-02-10T20:13:45.378000",
+    "duration_seconds": 0.0,
+    "message_count": 1,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "created my a branch description of what was made between fix/pipeline/notificatidashboard and origin dveelop",
+        "timestamp": "2026-02-10T20:13:45.378000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "fdfdad2e-d8ba-456a-822c-e8aba000dccb",
+    "start_time": "2026-02-10T19:49:14.667000",
+    "end_time": "2026-02-10T19:50:51.992000",
+    "duration_seconds": 97.325,
+    "message_count": 3,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "[Pasted text #1 +35 lines]",
+        "timestamp": "2026-02-10T19:49:14.667000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "contentHash": "56450d399c8493dc"
+          }
+        }
+      },
+      {
+        "display": "it is following the safe keeping we desirable for the project?",
+        "timestamp": "2026-02-10T19:50:03.046000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "[Pasted text #1 +77 lines] ye do preventive stuff and think of a tuyturial",
+        "timestamp": "2026-02-10T19:50:51.992000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "contentHash": "1ab4a29d40d292cf"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "session_id": "eead3ed0-da1e-4030-9305-29e0361829be",
+    "start_time": "2026-02-10T19:31:18.791000",
+    "end_time": "2026-02-10T19:31:18.791000",
+    "duration_seconds": 0.0,
+    "message_count": 1,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "how to undo on vim",
+        "timestamp": "2026-02-10T19:31:18.791000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "ff8f6846-b0c7-4f0d-9db1-fec1d4b84ef3",
+    "start_time": "2026-02-10T18:14:00.363000",
+    "end_time": "2026-02-10T20:10:04.298000",
+    "duration_seconds": 6963.935,
+    "message_count": 5,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "i'm getting this to arduino [Pasted text #1 +173 lines] also can you flash the led on when eveyrhing is right and blink when it's not",
+        "timestamp": "2026-02-10T18:14:00.363000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "contentHash": "0a462b799df57334"
+          }
+        }
+      },
+      {
+        "display": "when i say led is from the sensor kit arduino base kit",
+        "timestamp": "2026-02-10T18:16:56.675000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "the led still not blinking it's led from arduino sensor kit from seed on port d2",
+        "timestamp": "2026-02-10T18:19:41.801000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "let's change subjects let's prepare this project to have deploy pipelines let's keep in mind that different purpose hardware should receive only what needs to work",
+        "timestamp": "2026-02-10T20:09:33.324000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "let's change subjects let's prepare this project to have deploy pipelines let's keep in mind that different purpose hardware should receive only what needs to work i want a pull request stage on the pipeline to approve whats's going",
+        "timestamp": "2026-02-10T20:10:04.298000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "7699875e-dfc4-43c9-8e33-dc0f55508bd4",
+    "start_time": "2026-02-10T17:33:34.514000",
+    "end_time": "2026-02-10T19:58:17.634000",
+    "duration_seconds": 8683.12,
+    "message_count": 18,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "i'm following the raspebery pi ubuntu server setup with [Pasted text #1 +15 lines]",
+        "timestamp": "2026-02-10T17:33:34.514000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "content": "techfoods@centralstation:~$ cd ~\ntechfoods@centralstation:~$ git clone <your-repo-url> technological_foods git@github.com:t0118430/technological_foods.git technological_foods\nbash: your-repo-url: No such file or directory\ntechfoods@centralstation:~$ git clone git@github.com:t0118430/technological_foods.git technological_foods\nCloning into 'technological_foods'...\nThe authenticity of host 'github.com (140.82.121.3)' can't be established.\nED25519 key fingerprint is SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU.\nThis key is not known by any other names\nAre you sure you want to continue connecting (yes/no/[fingerprint])? yes\nWarning: Permanently added 'github.com' (ED25519) to the list of known hosts.\ngit@github.com: Permission denied (publickey).\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists.\n"
+          }
+        }
+      },
+      {
+        "display": "[Pasted text #2 +96 lines]",
+        "timestamp": "2026-02-10T17:40:50.347000",
+        "pasted_contents": {
+          "2": {
+            "id": 2,
+            "type": "text",
+            "contentHash": "d4cc0b3c5e140f52"
+          }
+        }
+      },
+      {
+        "display": "i put the cd technological_foods under prod and dev",
+        "timestamp": "2026-02-10T17:49:02.425000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "[Pasted text #1 +21 lines] fill that for me based on the project in this computer /c/git/technological*",
+        "timestamp": "2026-02-10T17:52:36.976000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "content": "# InfluxDB Configuration\nINFLUXDB_URL=http://localhost:8086\nINFLUXDB_USERNAME=admin\nINFLUXDB_PASSWORD=CHANGE_ME\nINFLUXDB_ORG=agritech\nINFLUXDB_BUCKET=hydroponics\nINFLUXDB_TOKEN=CHANGE_ME\n\n# Grafana Configuration\nGRAFANA_USER=admin\nGRAFANA_PASSWORD=CHANGE_ME\n\n# Node-RED\nNODERED_URL=http://localhost:1880\n\n# HTTP API Server\nHTTP_PORT=3001\n\n# Haier AC (hOn)\nHON_EMAIL=\nHON_PASSWORD=\n"
+          }
+        }
+      },
+      {
+        "display": "now there is some problem with authenticating the requests from the arduino wifir4",
+        "timestamp": "2026-02-10T19:04:02.268000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "[Pasted text #2 +117 lines]",
+        "timestamp": "2026-02-10T19:09:26.887000",
+        "pasted_contents": {
+          "2": {
+            "id": 2,
+            "type": "text",
+            "contentHash": "56d2ea748d9f885c"
+          }
+        }
+      },
+      {
+        "display": "[Pasted text #3 +38 lines]",
+        "timestamp": "2026-02-10T19:11:43.337000",
+        "pasted_contents": {
+          "3": {
+            "id": 3,
+            "type": "text",
+            "contentHash": "3a4f9398b52d7a07"
+          }
+        }
+      },
+      {
+        "display": "(venv) techfoods@centralstation:~/dev/technological_foods/backend$ http://localhost:8086/api/v2/buckets | head -20\nbash: http://localhost:8086/api/v2/buckets: No such file or directory\n",
+        "timestamp": "2026-02-10T19:15:24.929000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "[Pasted text #4 +6 lines]",
+        "timestamp": "2026-02-10T19:15:58.483000",
+        "pasted_contents": {
+          "4": {
+            "id": 4,
+            "type": "text",
+            "content": "(venv) techfoods@centralstation:~/dev/technological_foods/backend$   curl -H \"Authorization: Token agritech2026\"\n  http://localhost:8086/api/v2/buckets | head -20\ncurl: no URL specified!\ncurl: try 'curl --help' or 'curl --manual' for more information\nbash: http://localhost:8086/api/v2/buckets: No such file or directory\n(venv) techfoods@centralstation:~/dev/technological_foods/backend$\n"
+          }
+        }
+      },
+      {
+        "display": "based on the arduino code tell me what's wrong i think we are not sending the header in right plase [Pasted text #5 +41 lines]",
+        "timestamp": "2026-02-10T19:20:32.673000",
+        "pasted_contents": {
+          "5": {
+            "id": 5,
+            "type": "text",
+            "contentHash": "6c4621f854e16376"
+          }
+        }
+      },
+      {
+        "display": "[Pasted text #6 +4 lines]",
+        "timestamp": "2026-02-10T19:24:07.627000",
+        "pasted_contents": {
+          "6": {
+            "id": 6,
+            "type": "text",
+            "content": "anton@DESKTOP-G00AQN3 MINGW64 /\n$ curl -H \"Authorization: Token agritech2026\" http://http://192.168.1.100/:8086/api/v2/buckets\ncurl: (6) Could not resolve host: http\n\n"
+          }
+        }
+      },
+      {
+        "display": "[Pasted text #7 +3 lines]",
+        "timestamp": "2026-02-10T19:27:37.374000",
+        "pasted_contents": {
+          "7": {
+            "id": 7,
+            "type": "text",
+            "contentHash": "a6d5618f43fe15e9"
+          }
+        }
+      },
+      {
+        "display": "how to sudo systemctl restart see if my api is running?",
+        "timestamp": "2026-02-10T19:34:37.101000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "list because it wsan't found by that name",
+        "timestamp": "2026-02-10T19:35:06.657000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i want to see a swagger on my raspeberie pie",
+        "timestamp": "2026-02-10T19:39:07.958000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i want to test the notifications",
+        "timestamp": "2026-02-10T19:43:40.694000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "(venv) techfoods@centralstation:~/dev/technological_foods/backend/api$   curl -X POST -H \"X-API-Key: agritech-secret-key-2026\" http://192.168.1.100:3001/api/notifications/test\n{\"error\": \"Not found\"}(venv) ",
+        "timestamp": "2026-02-10T19:47:10.831000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "let's change topics i already connected to arduino uno wifi, but this information related with a crop so i want it to the be collected and store like we were imagining a real stage can you help me with ?[Pasted text #8 +33 lines] i need something more professional. if just on base information that something has to change deeply let's talk first present a plan and let's think",
+        "timestamp": "2026-02-10T19:58:17.634000",
+        "pasted_contents": {
+          "8": {
+            "id": 8,
+            "type": "text",
+            "contentHash": "125242c949db7d4e"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "session_id": "52ce395d-f6ec-48b6-bce6-7586dbe1387a",
+    "start_time": "2026-02-10T16:41:01.944000",
+    "end_time": "2026-02-10T18:34:28.315000",
+    "duration_seconds": 6806.371,
+    "message_count": 18,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "could you check tuturial raspebery pi ubuntu server steup make the links clickable please",
+        "timestamp": "2026-02-10T16:41:01.944000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "copiable i meantr",
+        "timestamp": "2026-02-10T16:41:35.226000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "change that for vim users",
+        "timestamp": "2026-02-10T16:46:25.936000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "add for vim users that for vim users",
+        "timestamp": "2026-02-10T16:46:39.142000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "[Pasted text #1 +21 lines] i add on this on my configure what is proposing is [Pasted text #2 +13 lines]",
+        "timestamp": "2026-02-10T16:49:20.686000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "content": "# This file is generated from information provided by the datasource.  Changes\n# to it will not persist across an instance reboot.  To disable cloud-init's\n# network configuration capabilities, write a file\n# /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg with the following:\n# network: {config: disabled}\nnetwork:\n    ethernets:\n        eth0:\n            dhcp4: true\n            dhcp6: true\n            optional: true\n    version: 2\n    wifis:\n        wlan0:\n            access-points:\n                DIGIFIBRA-EPdQ:\n                    auth:\n                        key-management: none\n            dhcp4: true\n            optional: true\n            regulatory-domain: PT\n"
+          },
+          "2": {
+            "id": 2,
+            "type": "text",
+            "content": "network:\n  version: 2\n  ethernets:\n    eth0:\n      dhcp4: no\n      addresses:\n        - 192.168.1.100/24\n      routes:\n        - to: default\n          via: 192.168.1.1\n      nameservers:\n        addresses:\n          - 8.8.8.8\n          - 1.1.1.1"
+          }
+        }
+      },
+      {
+        "display": "e uma mensagem como tinha antes a explicar cada passo para n\u00e3o mexermos no futuro sem sabermos ",
+        "timestamp": "2026-02-10T16:51:23.601000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "techfoods@centralstation:~$ sudo netplan apply\nWARNING:root:Cannot call Open vSwitch: ovsdb-server.service is not running.\n",
+        "timestamp": "2026-02-10T16:53:33.205000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "[Pasted text #3 +7 lines]",
+        "timestamp": "2026-02-10T16:54:21.701000",
+        "pasted_contents": {
+          "3": {
+            "id": 3,
+            "type": "text",
+            "content": "techfoods@centralstation:~$ ^[[200~sudo netplan apply~\nsudo: command not found\ntechfoods@centralstation:~$ sudo netplan apply\nWARNING:root:Cannot call Open vSwitch: ovsdb-server.service is not running.\nRead from remote host 192.168.1.135: Connection reset by peer\nConnection to 192.168.1.135 closed.\nclient_loop: send disconnect: Connection reset by peer\n"
+          }
+        }
+      },
+      {
+        "display": "[Pasted text #4 +10 lines]",
+        "timestamp": "2026-02-10T16:56:15.819000",
+        "pasted_contents": {
+          "4": {
+            "id": 4,
+            "type": "text",
+            "content": "techfoods@centralstation:~$ ip addr show eth0\n2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000\n    link/ether d8:3a:dd:f9:ae:41 brd ff:ff:ff:ff:ff:ff\n    inet 192.168.1.100/24 brd 192.168.1.255 scope global eth0\n       valid_lft forever preferred_lft forever\n    inet6 2a12:26c0:3001:c200:da3a:ddff:fef9:ae41/64 scope global mngtmpaddr noprefixroute\n       valid_lft forever preferred_lft forever\n    inet6 fe80::da3a:ddff:fef9:ae41/64 scope link\n       valid_lft forever preferred_lft forever\ntechfoods@centralstation:~$\n"
+          }
+        }
+      },
+      {
+        "display": "i just want to have a easy way to copy the commands not showing them a button to copy the commands",
+        "timestamp": "2026-02-10T16:57:15.010000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "read the file garbage on the source and tell if you can see feature to copy?",
+        "timestamp": "2026-02-10T17:19:29.978000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "change that plerase onm the raspe rbery pi to ubuntu server setup",
+        "timestamp": "2026-02-10T17:20:18.960000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "or better apply button",
+        "timestamp": "2026-02-10T17:20:50.398000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "why i'm getting [Pasted text #6 +70 lines]",
+        "timestamp": "2026-02-10T18:18:40.135000",
+        "pasted_contents": {
+          "5": {
+            "id": 5,
+            "type": "text",
+            "contentHash": "0a462b799df57334"
+          },
+          "6": {
+            "id": 6,
+            "type": "text",
+            "contentHash": "e8b81ad0c8831dfc"
+          }
+        }
+      },
+      {
+        "display": "i get [Pasted text #7 +8 lines] when i do python server.py on raspeberie pi",
+        "timestamp": "2026-02-10T18:29:46.307000",
+        "pasted_contents": {
+          "7": {
+            "id": 7,
+            "type": "text",
+            "content": "son: Forbidden\nHTTP response headers: HTTPHeaderDict({'Content-Type': 'application/json; charset=utf-8', 'X-Influxdb-Build': 'OSS', 'X-Influxdb-Version': 'v2.7.12', 'X-Platform-Error-Code': 'forbidden', 'Date': 'Tue, 10 Feb 2026 18:29:14 GMT', 'Content-Length': '67'})\nHTTP response body: {\"code\":\"forbidden\",\"message\":\"insufficient permissions for write\"}\n\n2026-02-10 18:29:16,668 - ERROR - Error saving data: (403)\nReason: Forbidden\nHTTP response headers: HTTPHeaderDict({'Content-Type': 'application/json; charset=utf-8', 'X-Influxdb-Build': 'OSS', 'X-Influxdb-Version': 'v2.7.12', 'X-Platform-Error-Code': 'forbidden', 'Date': 'Tue, 10 Feb 2026 18:29:16 GMT', 'Content-Length': '67'})\nHTTP response body: {\"code\":\"forbidden\",\"message\":\"insufficient permissions for write\"}\n"
+          }
+        }
+      },
+      {
+        "display": "i created with this name ",
+        "timestamp": "2026-02-10T18:32:10.949000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i created with this name ArduinoUNOR4Wifi",
+        "timestamp": "2026-02-10T18:32:21.992000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "give me me an updated guide on the coffigs for the backend because i didn clone and i have nothing private here i'll be adding by hand",
+        "timestamp": "2026-02-10T18:34:28.315000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "f4436bd7-195d-4f3c-aa61-bc6c494deabd",
+    "start_time": "2026-02-10T16:38:16.086000",
+    "end_time": "2026-02-10T16:38:16.086000",
+    "duration_seconds": 0.0,
+    "message_count": 1,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "[Pasted text #1 +21 lines] taking into account im im follloign gg the tutorial raspberry_pi_ubuntu_server_setup foir my steup",
+        "timestamp": "2026-02-10T16:38:16.086000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "contentHash": "73ae09f171e15214"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "session_id": "55d3fb4c-04f2-43cf-a223-ccea08b98211",
+    "start_time": "2026-02-10T16:31:55.983000",
+    "end_time": "2026-02-10T20:04:05.277000",
+    "duration_seconds": 12729.294,
+    "message_count": 3,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "analyze my code base documentatrion and , i'm me think of plan and place it under /future_emprovements thinking about a gateway to manage requests from different sources let's put there the authentication but keepn oin current for prottynping only that kind of scale management with kubernetes on the mix. think of a plan give you your wise input and what would think would make sendconsult C:\\git\\technological_foods\\sessionschat\\project_analysis_report.txt as well for insight",
+        "timestamp": "2026-02-10T16:31:55.983000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "add also related with config server we added that on the best proejct i worked on",
+        "timestamp": "2026-02-10T17:56:37.593000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "so you think for my raspeberie pie to work properly receving from multiple address works fine as is",
+        "timestamp": "2026-02-10T20:04:05.277000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "a531a57d-3826-4371-aadc-db43a540e3e0",
+    "start_time": "2026-02-10T15:48:40.133000",
+    "end_time": "2026-02-10T15:52:38.103000",
+    "duration_seconds": 237.97,
+    "message_count": 3,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "help me configuring my rasperbery pie to run the api in this project. take your time o thik about the documentation and all but i need you to focus on what i need in the raspeberie pie",
+        "timestamp": "2026-02-10T15:48:40.133000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "help me configuring my rasperbery pie to run the api in this project. take your time o thik about the documentation and all but i need you to focus on what i need in the raspeberie pie ubuntu server",
+        "timestamp": "2026-02-10T15:49:04.714000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "make this documentation in a mardown file saying devops",
+        "timestamp": "2026-02-10T15:52:38.103000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "ea1d9e1b-a760-4fbc-bf79-e1c4cb013ab7",
+    "start_time": "2026-02-10T14:49:35.820000",
+    "end_time": "2026-02-10T16:12:35.281000",
+    "duration_seconds": 4979.461,
+    "message_count": 23,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "let's make request to \n192.168.1.135 using the api in this project",
+        "timestamp": "2026-02-10T14:49:35.820000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "api key your-secret-api-key",
+        "timestamp": "2026-02-10T14:50:42.945000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i want to enter the raspebeiri by ssh",
+        "timestamp": "2026-02-10T14:52:19.613000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "centralstation@192.168.1.135: Permission denied (publickey,password).",
+        "timestamp": "2026-02-10T14:59:43.986000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i can-t find the password does that mean i-ll have to reinstall rasperberii pie _",
+        "timestamp": "2026-02-10T15:06:15.858000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "[Pasted text #1 +4 lines]",
+        "timestamp": "2026-02-10T15:08:09.197000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "content": "anton@DESKTOP-G00AQN3 MINGW64 ~\n$ ssh pi@192.168.1.135\npi@192.168.1.135's password:\nPermission denied, please try again.\n"
+          }
+        }
+      },
+      {
+        "display": "le-ts reinstall everything",
+        "timestamp": "2026-02-10T15:10:59.453000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i-m creating my raspeberie pi",
+        "timestamp": "2026-02-10T15:19:02.653000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "now i need to install there the connection to wifi and expose a door to receive api acalls",
+        "timestamp": "2026-02-10T15:21:10.307000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "the sd card with the ubuntu server is already installed",
+        "timestamp": "2026-02-10T15:31:30.845000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "let-s confiugure like that",
+        "timestamp": "2026-02-10T15:31:52.832000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "let-s confiugure like that plugged to mey pc",
+        "timestamp": "2026-02-10T15:32:07.213000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "let-s plug to the raspebery pi and congfigure via ethernet cable",
+        "timestamp": "2026-02-10T15:33:22.559000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "it-s connected via ethernet with cable to the router",
+        "timestamp": "2026-02-10T15:35:50.434000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "continue last process",
+        "timestamp": "2026-02-10T15:36:19.857000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i-ve the the user and key for the raspeberi wherre to paste it _",
+        "timestamp": "2026-02-10T15:38:30.273000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "techfoods",
+        "timestamp": "2026-02-10T15:39:19.263000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "when you that that pop up to enter password for git opens",
+        "timestamp": "2026-02-10T15:40:49.274000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "where can i store the password safely in project?",
+        "timestamp": "2026-02-10T15:42:47.601000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "this is more devops style so should be in a different project",
+        "timestamp": "2026-02-10T15:44:32.707000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "create a subfolder on the line of backend in the tree structure and put there everything related to this kind of configuring including pipelines that we can reuse for several versions",
+        "timestamp": "2026-02-10T15:46:07.821000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "make me a summary of this chat and actions",
+        "timestamp": "2026-02-10T16:11:31.887000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "place the summary under sessionschat/summarychat create a folder new and place it there .txt file",
+        "timestamp": "2026-02-10T16:12:35.281000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "5ba684d9-09e7-41a1-ab8d-3b7102a6008d",
+    "start_time": "2026-02-10T11:49:14.291000",
+    "end_time": "2026-02-10T16:10:10.645000",
+    "duration_seconds": 15656.354,
+    "message_count": 7,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "search the project code base for information aboiut sensor readings that are written on the db they should be appearing on some objsct to save on the db , change th arduino code base to send every field we have the backend prepared to write and comunicate at least we can virtually test any situation",
+        "timestamp": "2026-02-10T11:49:14.291000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "what's wrong witht that ? $ docker-compose up -d\nunable to get image 'nodered/node-red:3.1': error during connect: Get \"http://%2F%2F.%2Fpipe%2FdockerDesktopLinuxEngine/v1.51/images/nodered/node-red:3.1/json\": open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.",
+        "timestamp": "2026-02-10T12:57:25.738000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "[Pasted text #1 +27 lines]",
+        "timestamp": "2026-02-10T12:59:05.952000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "contentHash": "04c672c293d68e8c"
+          }
+        }
+      },
+      {
+        "display": "i need to epxpose that snapshop notification on the swagger",
+        "timestamp": "2026-02-10T13:04:22.933000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "one thing i noticed in snapshop endpoint we should select which production are we allowed to see",
+        "timestamp": "2026-02-10T13:05:35.283000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "generate me a crop id and test-real endpoint call?",
+        "timestamp": "2026-02-10T13:11:06.876000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "with what you know about the project look at folder sessionschat/summarychat and place a report with what you think about on the sessionschat folder",
+        "timestamp": "2026-02-10T16:10:10.645000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "content": "    \nResponse body\nDownload\n{\n  \"status\": \"test_sent_with_real_data\",\n  \"sensor_data\": {\n    \"humidity\": 76.44,\n    \"timestamp\": \"2026-02-10 13:24:35.292890+00:00\",\n    \"temperature\": 16.42\n  },\n  \"channels\": [\n    {\n      \"channel\": \"console\",\n      \"available\": true,\n      \"sent\": true\n    },\n    {\n      \"channel\": \"whatsapp\",\n      \"available\": false,\n      \"sent\": false\n    },\n    {\n      \"channel\": \"sms\",\n      \"available\": false,\n      \"sent\": false\n    },\n    {\n      \"channel\": \"email\",\n      \"available\": false,\n      \"sent\": false\n    },\n    {\n      \"channel\": \"ntfy\",\n      \"available\": false,\n      \"sent\": false\n    }\n  ]\n}"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "session_id": "df1335a8-e10d-4cf3-b6dd-3d1fac36521b",
+    "start_time": "2026-02-10T10:59:50.718000",
+    "end_time": "2026-02-10T20:35:53.867000",
+    "duration_seconds": 34563.149,
+    "message_count": 28,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "hello ive some changes to commit write a message for the commit",
+        "timestamp": "2026-02-10T10:59:50.718000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "claude",
+        "timestamp": "2026-02-10T11:02:54.416000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "analyze all of what was done in this project. read every readme me and pdf an write notes to notion app, the notion tree could start with techfoods and the rest is up to you but i'll like sections such as backlog, priority, kanban boards, produce tasks and epic can you integrate with notion app?",
+        "timestamp": "2026-02-10T11:12:16.008000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/login ",
+        "timestamp": "2026-02-10T11:22:10.574000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/rate-limit-options",
+        "timestamp": "2026-02-10T11:22:18.115000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/rate-limit-options",
+        "timestamp": "2026-02-10T11:22:18.503000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/rate-limit-options",
+        "timestamp": "2026-02-10T11:22:18.824000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "conitnue please",
+        "timestamp": "2026-02-10T11:25:10.038000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "ntn_Z68536087907z6rxIVRCHFOcULs8slyt8XDzUe1dJiE2z7 and 30319881c5568083b238df5201852ca9",
+        "timestamp": "2026-02-10T11:32:47.536000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "where is the set by setp guide to use this?",
+        "timestamp": "2026-02-10T11:34:27.738000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "do i have to create a proejct in notion?",
+        "timestamp": "2026-02-10T11:35:22.515000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "page id 30319881c5568083b238df5201852ca9",
+        "timestamp": "2026-02-10T11:36:13.158000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "this is the user cenas",
+        "timestamp": "2026-02-10T11:37:25.158000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "this is the user atopedro@gmail.com",
+        "timestamp": "2026-02-10T11:37:43.264000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i can the integration is well configed",
+        "timestamp": "2026-02-10T11:52:54.933000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "page id 30319881c5568083b238df5201852ca9",
+        "timestamp": "2026-02-10T11:54:36.536000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "",
+        "timestamp": "2026-02-10T11:58:51.563000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "fulley integrated now let's start sending data",
+        "timestamp": "2026-02-10T12:03:51.364000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i've on tool that i never looked at before in this code base, it related witha script converted from jira to gitbu",
+        "timestamp": "2026-02-10T13:12:34.988000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/rate-limit-options",
+        "timestamp": "2026-02-10T13:12:44.774000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "let's go?",
+        "timestamp": "2026-02-10T13:13:14.727000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/rate-limit-options",
+        "timestamp": "2026-02-10T13:13:15.596000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/rate-limit-options",
+        "timestamp": "2026-02-10T13:16:40.309000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "let's go?",
+        "timestamp": "2026-02-10T13:16:46.520000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "man give me the swagger test door fo the request test-real",
+        "timestamp": "2026-02-10T13:22:06.593000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "thyis is the output of the arduino .............................................................................................................................................................................................................................................................................\n",
+        "timestamp": "2026-02-10T13:29:16.356000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i noticed on this project we don't have postgres runnign on raspeberie pie i think we need it becasue i belive we have logic to sotre in the tables that were ordered",
+        "timestamp": "2026-02-10T20:23:59.139000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "based in my vast documentation and my purpose i want to be distinguish crop from nursering to fruit, control all the data. let's do this like a professional data company, how to store the data, for alerting and dashboards but for business intelligence, which i have in this porject too documentation",
+        "timestamp": "2026-02-10T20:35:53.867000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "9343f9f1-7d57-4386-a747-b697b5c36c37",
+    "start_time": "2026-02-09T03:22:35.730000",
+    "end_time": "2026-02-09T03:22:35.730000",
+    "duration_seconds": 0.0,
+    "message_count": 1,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "/login ",
+        "timestamp": "2026-02-09T03:22:35.730000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "70429333-ce5d-438c-975c-004cbac120e1",
+    "start_time": "2026-02-09T02:12:09.913000",
+    "end_time": "2026-02-09T03:01:08.787000",
+    "duration_seconds": 2938.874,
+    "message_count": 2,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "i need a dashboard to see if any pipeline line is down and why. log that stuffi need a dashboard to see if any pipeline line is down and why. log that stuff",
+        "timestamp": "2026-02-09T02:12:09.913000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "exit",
+        "timestamp": "2026-02-09T03:01:08.787000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "8b6094ed-b9ba-4574-879c-92074db42390",
+    "start_time": "2026-02-09T01:46:19.418000",
+    "end_time": "2026-02-09T05:19:22.169000",
+    "duration_seconds": 12782.751,
+    "message_count": 16,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "[Pasted text #1 +13 lines] they wrote this for a github issie [Pasted text #2 +342 lines] code review as a pro to scale and be scalabale to the business lots of sensors lots of connection ",
+        "timestamp": "2026-02-09T01:46:19.418000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "content": "Unit Tests\nfailed 1 minute ago in 2s\nSearch logs\n0s\nCurrent runner version: '2.331.0'\nRunner Image Provisioner\nOperating System\nRunner Image\nGITHUB_TOKEN Permissions\nSecret source: Actions\nPrepare workflow directory\nPrepare all required actions\nGetting action download info\nError: This request has been automatically failed because it uses a deprecated version of `actions/upload-artifact: v3`. Learn more: https://github.blog/changelog/2024-04-16-deprecation-notice-v3-of-the-artifact-actions/"
+          },
+          "2": {
+            "id": 2,
+            "type": "text",
+            "contentHash": "16217007022af136"
+          }
+        }
+      },
+      {
+        "display": "/login ",
+        "timestamp": "2026-02-09T03:23:09.748000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "give me actions and user stories and tasks ",
+        "timestamp": "2026-02-09T03:26:25.897000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "do we have don't have integration test running on the pipeliene, do you think kubernetes would hlep managinsg everytrhing  ?",
+        "timestamp": "2026-02-09T03:57:00.743000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "please believe my vision and make this kind of stuff in remote place to creete impact in the communicties?",
+        "timestamp": "2026-02-09T04:11:02.185000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "ye let's change search for possiblee intrgration testes. let' s add fucntionality an adater to create tasks on on notion",
+        "timestamp": "2026-02-09T05:12:47.676000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/rate-limit-options",
+        "timestamp": "2026-02-09T05:12:48.859000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/login ",
+        "timestamp": "2026-02-09T05:13:17.688000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/rate-limit-options",
+        "timestamp": "2026-02-09T05:13:31.845000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "ye let's change search for possiblee intrgration testes. let' s add fucntionality an adater to create tasks on on notion",
+        "timestamp": "2026-02-09T05:13:40.850000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/rate-limit-options",
+        "timestamp": "2026-02-09T05:13:42.164000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "ye let's change search for possiblee intrgration testes. let' s add fucntionality an adater to create tasks on on notion",
+        "timestamp": "2026-02-09T05:16:08.095000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/rate-limit-options",
+        "timestamp": "2026-02-09T05:16:09.124000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/login ",
+        "timestamp": "2026-02-09T05:16:15.507000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "ye let's change search for possiblee intrgration testes. let' s add fucntionality an adater to create tasks on on notion",
+        "timestamp": "2026-02-09T05:19:21.055000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/rate-limit-options",
+        "timestamp": "2026-02-09T05:19:22.169000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "01b15732-8b88-4a3a-b2e8-143c64deed0c",
+    "start_time": "2026-02-09T01:28:02.090000",
+    "end_time": "2026-02-09T05:48:28.061000",
+    "duration_seconds": 15625.971,
+    "message_count": 8,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "[Pasted text #1 +206 lines] review that code see if that follows the rules of scallability and consentus over regidy business rules in this  pproject nest fixture is to test everything going to dev",
+        "timestamp": "2026-02-09T01:28:02.090000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "contentHash": "4661789841eacfc2"
+          }
+        }
+      },
+      {
+        "display": "/login ",
+        "timestamp": "2026-02-09T03:24:03.816000",
+        "pasted_contents": {}
+      },
+      {
+        "display": " give me actions and user stories and tasks i don't know if it should be in some backend bibliography",
+        "timestamp": "2026-02-09T03:27:42.996000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/login ",
+        "timestamp": "2026-02-09T03:57:43.315000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "P0: Code Quality & Test Coverage (8h) - BLOCKING MERGE i'd open issue on github to improve that",
+        "timestamp": "2026-02-09T04:30:34.058000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "realiza test por tudo de integration com dados reais para ver se vou receber em calqueuer dos user cases",
+        "timestamp": "2026-02-09T04:57:48.399000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "we wewere logging in a message something we shouldnt' let's do integration test",
+        "timestamp": "2026-02-09T05:48:26.700000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/rate-limit-options",
+        "timestamp": "2026-02-09T05:48:28.061000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "47c3b3d5-aa8e-4bbd-a858-26340604832f",
+    "start_time": "2026-02-09T01:23:52.195000",
+    "end_time": "2026-02-09T05:28:32.977000",
+    "duration_seconds": 14680.782,
+    "message_count": 12,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "[Pasted text #1 +202 lines] can you code review whast is going to be sent do dev from feature/dashboard between differenc to origin deve ",
+        "timestamp": "2026-02-09T01:23:52.195000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "contentHash": "30cd900c3f4c5cc8"
+          }
+        }
+      },
+      {
+        "display": "how to connect rasperbery pie to house wifi?",
+        "timestamp": "2026-02-09T02:20:49.457000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "contentHash": "16217007022af136"
+          }
+        }
+      },
+      {
+        "display": "created",
+        "timestamp": "2026-02-09T02:25:40.400000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "create me a notion notes , with manual how to use how to  test and we can pass whats in dev",
+        "timestamp": "2026-02-09T02:26:59.387000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/login ",
+        "timestamp": "2026-02-09T03:24:21.188000",
+        "pasted_contents": {}
+      },
+      {
+        "display": " give me actions and user stories and tasks ",
+        "timestamp": "2026-02-09T03:26:57.740000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "Vision: Technological Foods for Remote Communities",
+        "timestamp": "2026-02-09T04:25:49.510000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "Vision: Technological Foods for Remote Communities let's framework on organic farming thi with sustainabilitlity, reciclle water from cities.",
+        "timestamp": "2026-02-09T04:27:17.768000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "let's integrate notion to take notes is that possible ? like take note i wrtie a note and keep should be kept in a folder in desktop idea as the flag marktable r&B . created me epics userstorys , tasks, somethingwell thought and strucyured with thlogic modulorar we-ve got to escalate easily? ",
+        "timestamp": "2026-02-09T05:26:57.271000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "/rate-limit-options",
+        "timestamp": "2026-02-09T05:26:58.204000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "&exit",
+        "timestamp": "2026-02-09T05:28:02.628000",
+        "pasted_contents": {}
+      },
+      {
+        "display": ":q",
+        "timestamp": "2026-02-09T05:28:32.977000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "74d8f954-5f04-460f-950f-7f511ea32162",
+    "start_time": "2026-02-09T00:58:38.344000",
+    "end_time": "2026-02-09T01:04:25.510000",
+    "duration_seconds": 347.166,
+    "message_count": 2,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "let's look at this project and implemenrt sonar , for free or not but we most use their rules. can do you that  in this project ? give me inpusts too to make a decisiuon",
+        "timestamp": "2026-02-09T00:58:38.344000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "let's inpliment sonar local and prepare a package to run 24/7 raspbery pie sotoring information after 180 days for the client it's let's say 250 in active storage but than cold storage",
+        "timestamp": "2026-02-09T01:04:25.510000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "4f229f5a-c34a-41e9-909d-b2ed9f4a0934",
+    "start_time": "2026-02-09T00:26:34.761000",
+    "end_time": "2026-02-09T02:34:08.235000",
+    "duration_seconds": 7653.474,
+    "message_count": 8,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "can i have access to a previous convertion i was having just now 30 min ago?",
+        "timestamp": "2026-02-09T00:26:34.761000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "can we make a script to try what you are suggesting there and if we find a solution following the best prinmciples of scalabality and solid principles let's solve that",
+        "timestamp": "2026-02-09T00:29:38.883000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "can you give me a summaray of what happend in the branch against featru/notification and origin/master also let's createa a dev branch what we have in master which works. ",
+        "timestamp": "2026-02-09T00:52:53.864000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "commit these changes",
+        "timestamp": "2026-02-09T01:06:13.125000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "c",
+        "timestamp": "2026-02-09T01:06:19.398000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "what do i write on the commit message ? and merge request?",
+        "timestamp": "2026-02-09T01:07:21.261000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i need a summary to register as a github issue",
+        "timestamp": "2026-02-09T01:33:46.353000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "close",
+        "timestamp": "2026-02-09T02:34:08.235000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "55ed202a-c68c-4510-a4e7-093ee3bed4d3",
+    "start_time": "2026-02-08T22:25:40.061000",
+    "end_time": "2026-02-09T00:43:53.300000",
+    "duration_seconds": 8293.239,
+    "message_count": 7,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "a devops pro let's do some github actions deploy i want to connect the code in so that when the the services are down and recover starting saving everything sd before because i want to store the data locally in the raspeberie pie i bought sd card expansions for arduino what now? let's address theses conserns and thinmk of a plan to my case tending my plan from the documentation ",
+        "timestamp": "2026-02-08T22:25:40.061000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "do everything on the list but let's robust monitoring to the /chanels of the ntfy, we gonna bet in redundancy maybe for better results , invest more , could go on sending alerts on when to check ?  i want to grow to have the information on a server dependending on size let's say quarter the room , so let's value the hot cultures to have in mind in the market because we gonna produce soem heat. but do somehting scalalable where i have sonar panels could use the heat but not some much the hit from the electrical bill within reasonabel prices could make sense for developing so i was thinging for if you can can revise the pdf plano_agrigritech_*pdf in there is some of the abse the info that i was believe some time ago , now i think one good sensor and one bad sensor in prod , lookfor business points for the company, we pay them a visit calibrate they get \"negative points for asking for services\" , let's be prepared for that too but something prrivate to nfty channel like a report digest agressive, medium, optimist alert in private ntfy chanel. make a summary of everything i thing i spilling out ttoo much",
+        "timestamp": "2026-02-08T23:06:41.160000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "what happened with update noitifi?  for whatapp with can discard, but activate if needed , desia server to run in micro services, i can sell to the farmers stock measurement analayzes if they proivide with infortation about their conditions, so i don't wamnt a system made to regist with harsh winter rainy days, dry days, could take advange of microclime potencioal so that would be great the look at hour data see whenere in portugal would be great to be hydroponics user , by creaating employment help serve the market locally, when i'll finish the will full automated process at home ! it's the challenge of my life ! i was always looking at my crops and seeing deing / striving but i didn't knmow what led top that , and now i will know and help lookaly it's possble social investment in algarve with hidroponics tower but its a difficult production to measurment for sure if it was by tower double sensors i't be a lot. to something serious the water soruce has to be a tank and control from there. let's keep in evironment outtside the greenhouse keep records.",
+        "timestamp": "2026-02-08T23:30:00.448000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "let's create hot-culture crop crop recommendation top ana analyzes we get from local needs, not globallyu or nationally, economics analyzis let's sell what's premium just for itself rosso lettuce, the market will be looking for that, and if you read the pdfs about the company it says i want to scale to a nft with food grade pvc pipes with connections. to produce i want to produced several things i'll produce DWC with come other culture , and sending data. i can't fail the automation and having a system erading hundreds of sensors they good medium/cheap but always redunt notify data for review improvement, another buyness driven decision, i really need to have a structured plan. as everything you saw make, after hot culture crop recommnedations by locally weather variables ",
+        "timestamp": "2026-02-08T23:50:40.445000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "create business intelligence dashboard",
+        "timestamp": "2026-02-09T00:17:16.671000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "implemnet dual sensor redundancau system",
+        "timestamp": "2026-02-09T00:21:10.799000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i'm, startingting in porto, it's fine we could colect data for our investements just by searching for people that follow some page pages on public acccounts we can farm our tarket-public savyy tech people on hidroponics like vertifical farms near me or not i can pay visiutis to libon a and fix whatever in two to a week to pessimnistic and connect something prodfuction to my central, can we do scripts scraping on the them saving in our bd with your recomendation how safe could be in a server quarter bedroom size",
+        "timestamp": "2026-02-09T00:43:53.300000",
+        "pasted_contents": {}
+      }
+    ]
+  },
+  {
+    "session_id": "a4deb874-7be0-4565-b5bb-dfa20650b69d",
+    "start_time": "2026-02-08T20:22:19.362000",
+    "end_time": "2026-02-09T00:00:10.790000",
+    "duration_seconds": 13071.428,
+    "message_count": 17,
+    "project": "C:\\git\\technological_foods",
+    "messages": [
+      {
+        "display": "man as an expert on backend development let's make a test notification from the real data we are receiving i already have a test for that in this project",
+        "timestamp": "2026-02-08T20:22:19.362000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "one thing im logging on the console the alert i'm to test sendit to real  endpoint",
+        "timestamp": "2026-02-08T20:30:15.840000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "start the server and test with real arduino da",
+        "timestamp": "2026-02-08T20:42:55.889000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "the test_real_notification i want to receive a real notifcation by ntfy /techfoods",
+        "timestamp": "2026-02-08T20:44:01.679000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i want to send on the alert the information we are getting from the sensor",
+        "timestamp": "2026-02-08T20:48:50.743000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "we can use this endpoint to take us a snapshot of what is being measured",
+        "timestamp": "2026-02-08T20:50:29.544000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "the spnashop is amazing, but let's add logic snapchot gave a result [Pasted text #1 +136 lines] 15 is the limist but init's in the limit , let's add to our backend an alert preventive so if getting too  close to the limit send notification with the preventive obsious action for hydroponics all this with the already integrarted classes on the api ieverything following the good practices and modular thinging on micoservices",
+        "timestamp": "2026-02-08T21:25:43.787000",
+        "pasted_contents": {
+          "1": {
+            "id": 1,
+            "type": "text",
+            "contentHash": "9b88a9975caeee93"
+          }
+        }
+      },
+      {
+        "display": "now i don't want to spam the user if the alert was sent, i want to alert if he didnd't do anaything and send him even higher priotiry doing somwthing, so so on . so i could offer my services and control the production myself for some coin",
+        "timestamp": "2026-02-08T21:34:48.618000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "let's create config files a",
+        "timestamp": "2026-02-08T21:51:49.546000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "let's create config files for two speaces but i want to key it dry but i want config for rosso premium lettuce and for curly lettuce best or best ideal or satisfatory level based on public levels and what we acknewldge from the values, i rememeber we should also send the calibration sensor also the notification by time",
+        "timestamp": "2026-02-08T21:56:30.606000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "and now let's add ideal condition in different stages of grow to to the mix. i think we statart to need a db to store relationally or not the data we are receiving from the sensors",
+        "timestamp": "2026-02-08T22:06:10.241000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "lets do a notification chanel move-forward level on business grade with some grower, or pressure to get more sensores if it's in contract for instance. let's add a private business info that we study based on what we discussed today, let's mamke it scaleable important send notification by tiers to calibrate the sensors, change the db model if its need i like having cache for 180 days or something raw data cache",
+        "timestamp": "2026-02-08T22:39:20.888000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "let's contining when code reviewing the git hub actions create a branch with the pipeline stuf to deploy and staart testing",
+        "timestamp": "2026-02-08T23:10:46.936000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "let's contining when code reviewing the git hub actions create a branch with the pipeline stuf to deploy and staart testing the deveops stuff and code review let's test make a test on gihub action printing hello world from somethe where",
+        "timestamp": "2026-02-08T23:12:52.743000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i don't know if you notice we have deploy to raspebery pi (our server) and arduinso wifi over the wifi we need different deploys for that right ? we should be able to deploy from wifi",
+        "timestamp": "2026-02-08T23:36:49.672000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i want two envs for this",
+        "timestamp": "2026-02-08T23:53:45.392000",
+        "pasted_contents": {}
+      },
+      {
+        "display": "i want two stages to see if it works in my raspery bery from the folder we should be able let's looks to two envs dev and prod in a raspebery that i've connected to the supposeduly to the wifi, bnut it isnt i didnt' configure only havce connectred to power supply with ubuntu server installerd let's look at this how can i cannection with them ? they are my server processor for now in progress to be a gateways",
+        "timestamp": "2026-02-09T00:00:10.790000",
+        "pasted_contents": {}
+      }
+    ]
+  }
+]

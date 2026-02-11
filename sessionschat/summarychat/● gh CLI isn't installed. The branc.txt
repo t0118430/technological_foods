@@ -1,0 +1,67 @@
+● gh CLI isn't installed. The branch is pushed — you can create  
+  the PR from the link GitHub provided:
+
+  https://github.com/t0118430/technological_foods/pull/new/refact
+  or/organize-api-domain-subfolders
+
+  Here's the PR body to paste:
+
+  ---
+  Title: Reorganize backend/api/ into domain subfolders
+
+  Body:
+
+  Summary
+
+  Restructures the flat 38-file backend/api/ directory into 9    
+  domain subfolders for better navigability and separation of    
+  concerns. server.py stays at the root as the orchestrator.     
+
+  New structure
+
+  backend/api/
+  ├── server.py                       # Orchestrator (stays at   
+  root)
+  ├── db/                             # database.py,
+  pg_database.py
+  ├── etl/                            # influx_pg_etl.py,        
+  data_retention.py
+  ├── notifications/                  # notification_service,    
+  alert_escalation, multi_channel_notifier,
+  tier_notification_router
+  ├── sensors/                        # ac_controller,
+  drift_detection_service
+  ├── crops/                          # growth_stage_manager,    
+  config_loader
+  ├── business/                       # business_model,
+  business_dashboard, client_manager, site_visits_manager,       
+  lead_generation_legal
+  ├── harvester/                      # data_harvester +
+  weather/solar/electricity/market_price/tourism sources
+  ├── rules/                          # rule_engine,
+  rules_config.json
+  └── tests/                          # 8 test_*.py files        
+
+  What changed
+
+  - 32 files moved into domain subfolders (git mv for blame      
+  preservation)
+  - 9 __init__.py files with re-exports for clean package imports
+   (e.g. from db import db, from notifications import notifier)  
+  - All Path(__file__) references updated for +1 directory depth 
+  - All imports updated: server.py, cross-package, within-package
+   (relative), test files, @patch() targets, standalone scripts  
+  - No functional changes — pure structural refactor
+
+  Why
+
+  The flat directory had 38 files making it hard to navigate.    
+  Domain subfolders group related modules, make dependencies     
+  visible at the folder level, and follow standard Python package
+   conventions.
+
+  Test plan
+
+  - All 181 tests pass (pytest tests/ -x)
+  - Syntax check on all Python files (ast.parse)
+  - Manual: start server, verify /api/health

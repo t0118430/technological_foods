@@ -1,0 +1,57 @@
+Summary                                                          
+  We reorganized backend/api/ from a flat 38-file directory into 
+  9 domain subfolders:
+  Subfolder: db/                                                   Files moved: database.py, pg_database.py                       
+  ────────────────────────────────────────
+  Subfolder: etl/
+  Files moved: influx_pg_etl.py, data_retention.py
+  ────────────────────────────────────────
+  Subfolder: notifications/
+  Files moved: notification_service, alert_escalation,
+    multi_channel_notifier, tier_notification_router
+  ────────────────────────────────────────
+  Subfolder: sensors/
+  Files moved: ac_controller, drift_detection_service
+  ────────────────────────────────────────
+  Subfolder: crops/
+  Files moved: growth_stage_manager, config_loader
+  ────────────────────────────────────────
+  Subfolder: business/
+  Files moved: business_model, business_dashboard,
+  client_manager,
+     site_visits_manager, lead_generation_legal
+  ────────────────────────────────────────
+  Subfolder: harvester/
+  Files moved: data_harvester + 5 source files
+  ────────────────────────────────────────
+  Subfolder: rules/
+  Files moved: rule_engine, rules_config.json
+  ────────────────────────────────────────
+  Subfolder: tests/
+  Files moved: 8 test files
+  All imports, Path(__file__) references, and @patch() targets   
+  were updated. 181 tests pass.
+
+  Actions for you
+
+  1. Create the PR — gh CLI wasn't installed, so open this link  
+  and paste the PR body I provided above:
+  https://github.com/t0118430/technological_foods/pull/new/refact
+  or/organize-api-domain-subfolders
+  2. Manual smoke test — start the server and hit /api/health to 
+  confirm it runs end-to-end.
+  3. Pre-existing issues found (not caused by the reorg):        
+    - test_integration_notifications.py imports SubscriptionTier 
+  which doesn't exist in tier_notification_router.py — this test 
+  was already broken before the reorg.
+    - test_integration.py has a pytest fixture error (name       
+  fixture not found) — also pre-existing.
+  4. Unstaged changes left on the branch (not part of the reorg  
+  commit):
+    - backend/.env.example
+    - backend/sql/init.sql
+    - backend/ETL_GUIDE.md (untracked)
+    - .claude/settings.local.json
+
+  These are from the site-visits branch work. Commit them        
+  separately or on a different branch as appropriate.
