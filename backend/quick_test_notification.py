@@ -49,9 +49,9 @@ print("="*70)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 print("\n1️⃣ Importando módulos...")
 try:
-    from notification_service import NotificationService, NtfyChannel
-    from rule_engine import RuleEngine
-    from alert_escalation import AlertEscalationManager
+    from notifications.notification_service import NotificationService, NtfyChannel
+    from rules.rule_engine import RuleEngine
+    from notifications.alert_escalation import AlertEscalationManager
     print("   ✅ Todos os módulos importados com sucesso")
 except ImportError as e:
     print(f"   ❌ ERRO: Falha ao importar módulos: {e}")

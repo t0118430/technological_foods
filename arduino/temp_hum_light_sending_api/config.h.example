@@ -3,7 +3,7 @@
 #define WIFI_PASS "your-wifi-password"
 
 // API server
-#define API_HOST "192.168.1.130"
+#define API_HOST "your-server-ip"
 #define API_PORT 3001
 
 // API authentication (must match API_KEY in backend/.env)

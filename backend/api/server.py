@@ -12,16 +12,36 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 
 from urllib.parse import urlparse, parse_qs
 
-from ac_controller import controller as ac_controller
-from rule_engine import RuleEngine
-from notification_service import notifier
-from alert_escalation import escalation_manager
-from growth_stage_manager import growth_manager
-from database import db
-from business_dashboard import dashboard as business_dashboard
-from drift_detection_service import drift_detector
-from multi_channel_notifier import multi_notifier, AlertLevel, ChannelType
-from client_manager import client_manager
+from sensors import ac_controller
+from rules import RuleEngine
+from notifications import notifier
+from notifications import escalation_manager
+from crops import growth_manager
+from db import db
+from business import business_dashboard
+from sensors import drift_detector
+from notifications import multi_notifier, AlertLevel, ChannelType
+from business import client_manager
+from business import site_visits_manager
+from etl import etl_processor
+from harvester import HarvestScheduler
+from harvester import WeatherSource
+from harvester import ElectricitySource
+from harvester import SolarSource
+from harvester import MarketPriceSource
+from harvester import TourismSource
+
+# Redis cache for latest readings (optional)
+_redis_cache = None
+try:
+    from db import RedisCache
+    _redis_cache = RedisCache()
+    if _redis_cache.available:
+        logging.getLogger('http-server').info("Redis cache enabled for latest readings")
+    else:
+        _redis_cache = None
+except ImportError:
+    pass
 from sensor_analytics import sensor_analytics
 from weather_service import weather_service
 from market_data_service import market_data_service
@@ -46,6 +66,7 @@ INFLUXDB_TOKEN = os.getenv('INFLUXDB_TOKEN', '')
 INFLUXDB_ORG = os.getenv('INFLUXDB_ORG', '')
 INFLUXDB_BUCKET = os.getenv('INFLUXDB_BUCKET', '')
 API_KEY = os.getenv('API_KEY', '')
+ETL_ENABLED = os.getenv('ETL_ENABLED', 'false').lower() == 'true'
 
 # InfluxDB client
 influx_client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
@@ -55,9 +76,23 @@ query_api = influx_client.query_api()
 # Rule engine (config server)
 rule_engine = RuleEngine()
 
+# Data Harvester
+harvest_scheduler = HarvestScheduler()
+weather_source = WeatherSource(influx_write_api=write_api, influx_bucket=INFLUXDB_BUCKET)
+electricity_source = ElectricitySource(influx_write_api=write_api, influx_bucket=INFLUXDB_BUCKET)
+solar_source = SolarSource(influx_write_api=write_api, influx_bucket=INFLUXDB_BUCKET)
+market_price_source = MarketPriceSource()
+tourism_source = TourismSource()
+
+harvest_scheduler.register(weather_source)
+harvest_scheduler.register(electricity_source)
+harvest_scheduler.register(solar_source)
+harvest_scheduler.register(market_price_source)
+harvest_scheduler.register(tourism_source)
+
 
 def write_to_influx(data: Dict[str, Any], sensor_id: str = "arduino_1"):
-    """Write sensor data to InfluxDB"""
+    """Write sensor data to InfluxDB and update Redis cache."""
     point = Point("sensor_reading")
     point = point.tag("sensor_id", sensor_id)
     point = point.tag("source", "http_api")
@@ -73,11 +108,24 @@ def write_to_influx(data: Dict[str, Any], sensor_id: str = "arduino_1"):
             point = point.field(key, str(value))
 
     write_api.write(bucket=INFLUXDB_BUCKET, record=point)
+
+    # Update Redis cache with latest reading (TTL 30s)
+    if _redis_cache:
+        _redis_cache.set_latest_reading(sensor_id, data, ttl=30)
+
     logger.info(f"Stored in InfluxDB: {data}")
 
 
-def query_latest():
-    """Query latest sensor readings from InfluxDB"""
+def query_latest(sensor_id: str = "arduino_1"):
+    """Query latest sensor readings. Tries Redis cache first, falls back to InfluxDB."""
+    # Try Redis cache first (sub-millisecond)
+    if _redis_cache:
+        cached = _redis_cache.get_latest_reading(sensor_id)
+        if cached:
+            cached['_source'] = 'redis_cache'
+            return cached
+
+    # Fallback to InfluxDB query
     query = f'''
     from(bucket: "{INFLUXDB_BUCKET}")
         |> range(start: -1h)
@@ -90,6 +138,7 @@ def query_latest():
         for record in table.records:
             result[record.get_field()] = record.get_value()
             result['timestamp'] = str(record.get_time())
+    result['_source'] = 'influxdb'
     return result
 
 
@@ -180,7 +229,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         path, query = self._parsed_path()
 
-        if path in ("/", "/api/health", "/api/docs", "/api/openapi.json"):
+        if path in ("/", "/api/health", "/api/docs", "/api/openapi.json", "/business", "/site-visits", "/api/etl/status") or path.startswith("/api/site-visits"):
             pass  # Public endpoints — no auth required
         elif not self._check_api_key():
             return
@@ -519,13 +568,119 @@ class RequestHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send_json(500, {"error": str(e)})
 
+        # ── Site Visits Backoffice ─────────────────────────
+        elif path == "/site-visits":
+            try:
+                sv_path = Path(__file__).resolve().parent.parent / "site_visits.html"
+                if sv_path.exists():
+                    self._send_html(200, sv_path.read_text(encoding="utf-8"))
+                else:
+                    self._send_html(404, "<h1>Not found</h1><p>site_visits.html is missing</p>")
+            except Exception as e:
+                logger.error(f"Site visits HTML error: {e}")
+                self._send_html(500, f"<h1>Error</h1><p>{str(e)}</p>")
+
+        elif path == "/api/site-visits/dashboard":
+            try:
+                data = site_visits_manager.get_dashboard_stats()
+                self._send_json(200, data)
+            except Exception as e:
+                logger.error(f"Site visits dashboard error: {e}")
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/site-visits/clients":
+            try:
+                clients = site_visits_manager.get_clients_list()
+                self._send_json(200, {"clients": clients})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/site-visits/export":
+            try:
+                data = site_visits_manager.get_export_data()
+                self._send_json(200, {"visits": data})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/site-visits":
+            # List visits with pagination and filters
+            try:
+                page = int(query.get('page', ['1'])[0])
+                per_page = int(query.get('per_page', ['20'])[0])
+                filters = {
+                    'visit_type': query.get('visit_type', [None])[0],
+                    'inspector_name': query.get('inspector', [None])[0],
+                    'date_from': query.get('date_from', [None])[0],
+                    'date_to': query.get('date_to', [None])[0],
+                    'follow_up': query.get('follow_up', [None])[0],
+                    'search': query.get('search', [None])[0],
+                    'sort': query.get('sort', ['visit_date'])[0],
+                    'sort_dir': query.get('sort_dir', ['desc'])[0],
+                }
+                # Remove None values
+                filters = {k: v for k, v in filters.items() if v is not None}
+                result = site_visits_manager.list_visits(filters, page, per_page)
+                self._send_json(200, result)
+            except Exception as e:
+                logger.error(f"Site visits list error: {e}")
+                self._send_json(500, {"error": str(e)})
+
+        elif path.startswith("/api/site-visits/"):
+            # Single visit detail: GET /api/site-visits/{id}
+            try:
+                visit_id = int(path.split("/api/site-visits/")[1])
+                visit = site_visits_manager.get_visit(visit_id)
+                if visit:
+                    self._send_json(200, visit)
+                else:
+                    self._send_json(404, {"error": "Visit not found"})
+            except ValueError:
+                self._send_json(400, {"error": "Invalid visit ID"})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        # ── ETL Status ────────────────────────────────────────
+        elif path == "/api/etl/status":
+            try:
+                status = etl_processor.get_status()
+                self._send_json(200, status)
+            except Exception as e:
+                logger.error(f"ETL status error: {e}")
+                self._send_json(500, {"error": str(e)})
+
+        # ── Data Harvester ───────────────────────────────────
+        elif path == "/api/harvester/status":
+            self._send_json(200, harvest_scheduler.get_status())
+
+        elif path == "/api/harvester/weather":
+            self._send_json(200, {
+                'current': weather_source.get_current_summary(),
+                'forecast_24h': weather_source.get_forecast_summary(),
+            })
+
+        elif path == "/api/harvester/electricity":
+            self._send_json(200, electricity_source.get_price_summary())
+
+        elif path == "/api/harvester/solar":
+            self._send_json(200, solar_source.get_solar_summary())
+
+        elif path == "/api/harvester/market-prices":
+            produce = query.get('produce', [None])[0]
+            self._send_json(200, market_price_source.get_price_summary()
+                            if not produce
+                            else {'prices': market_price_source.get_latest_prices(produce)})
+
+        elif path == "/api/harvester/tourism":
+            self._send_json(200, tourism_source.get_tourism_summary())
+
         else:
             self._send_json(404, {"error": "Not found"})
 
     def do_POST(self):
-        if not self._check_api_key():
-            return
         path, _ = self._parsed_path()
+        if not path.startswith("/api/site-visits"):
+            if not self._check_api_key():
+                return
 
         if path == "/api/data":
             try:
@@ -554,8 +709,27 @@ class RequestHandler(BaseHTTPRequestHandler):
                     )
                     logger.info(f"Alert resolved notification sent for {resolution['rule_id']}")
 
+                # Build external context for compound rules
+                external_context = {}
+                try:
+                    external_context['weather'] = weather_source.get_external_context()
+                except Exception:
+                    pass
+                try:
+                    external_context['electricity'] = electricity_source.get_external_context()
+                except Exception:
+                    pass
+                try:
+                    external_context['solar'] = solar_source.get_external_context()
+                except Exception:
+                    pass
+                try:
+                    external_context['tourism'] = tourism_source.get_external_context()
+                except Exception:
+                    pass
+
                 # Evaluate rules (config server decides what to do)
-                triggered = rule_engine.evaluate(data, sensor_id)
+                triggered = rule_engine.evaluate(data, sensor_id, external_data=external_context)
 
                 # Execute AC actions from triggered rules
                 ac_actions = [t for t in triggered if t['action'].get('type') == 'ac']
@@ -910,6 +1084,115 @@ class RequestHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send_json(500, {"error": str(e)})
 
+        # ── Site Visits: Create ───────────────────────────
+        elif path == "/api/site-visits":
+            try:
+                data = self._read_body()
+                if not data.get('inspector_name'):
+                    self._send_json(400, {"error": "inspector_name required"})
+                    return
+                if not data.get('visit_type'):
+                    self._send_json(400, {"error": "visit_type required"})
+                    return
+
+                visit_id = site_visits_manager.create_visit(data)
+                self._send_json(201, {"status": "created", "id": visit_id})
+            except Exception as e:
+                logger.error(f"Create visit error: {e}")
+                self._send_json(500, {"error": str(e)})
+
+        # ── ETL: Manual Trigger ────────────────────────────
+        elif path == "/api/etl/run":
+            try:
+                data = self._read_body() if int(self.headers.get("Content-Length", 0)) > 0 else {}
+                command = data.get('command', 'full')
+                dry_run = data.get('dry_run', False)
+
+                if command == 'hourly':
+                    result = etl_processor.process_hourly(dry_run=dry_run)
+                elif command == 'daily':
+                    result = etl_processor.process_daily(dry_run=dry_run)
+                elif command == 'cleanup':
+                    result = etl_processor.cleanup_old_hourly()
+                elif command == 'backfill':
+                    days = data.get('days', 30)
+                    result = etl_processor.backfill(days=days, dry_run=dry_run)
+                else:
+                    result = etl_processor.run_full_cycle(dry_run=dry_run)
+
+                self._send_json(200, {"status": "completed", "command": command, "result": result})
+            except Exception as e:
+                logger.error(f"ETL run error: {e}")
+                self._send_json(500, {"error": str(e)})
+
+        # ── Site Visits: Complete Follow-up ────────────────
+        elif path.endswith("/complete-follow-up") and "/api/site-visits/" in path:
+            try:
+                visit_id = int(path.split("/api/site-visits/")[1].split("/")[0])
+                success = site_visits_manager.complete_follow_up(visit_id)
+                if success:
+                    self._send_json(200, {"status": "completed", "id": visit_id})
+                else:
+                    self._send_json(404, {"error": "Visit not found or no follow-up pending"})
+            except ValueError:
+                self._send_json(400, {"error": "Invalid visit ID"})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        # ── Data Harvester: Manual Trigger ───────────────────
+        elif path == "/api/harvester/trigger":
+            try:
+                data = self._read_body() if int(self.headers.get("Content-Length", 0)) > 0 else {}
+                source_name = data.get('source')
+                results = harvest_scheduler.harvest_now(source_name)
+                self._send_json(200, {"status": "harvested", "results": results})
+            except KeyError:
+                self._send_json(404, {"error": f"Source '{data.get('source')}' not found"})
+            except Exception as e:
+                logger.error(f"Harvest trigger error: {e}")
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/harvester/market-prices":
+            try:
+                data = self._read_body()
+                row_id = market_price_source.add_price(
+                    produce_type=data['produce_type'],
+                    market_id=data['market_id'],
+                    price_per_kg=float(data['price_per_kg']),
+                    price_date=data.get('price_date'),
+                    source=data.get('source', 'manual'),
+                    notes=data.get('notes'),
+                )
+                self._send_json(201, {"status": "created", "id": row_id})
+            except (ValueError, KeyError) as e:
+                self._send_json(400, {"error": str(e)})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/harvester/market-prices/import":
+            try:
+                data = self._read_body()
+                csv_text = data.get('csv', '')
+                if not csv_text:
+                    self._send_json(400, {"error": "csv field required"})
+                    return
+                count = market_price_source.import_csv(csv_text)
+                self._send_json(200, {"status": "imported", "rows": count})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/harvester/tourism/import":
+            try:
+                data = self._read_body()
+                csv_text = data.get('csv', '')
+                if not csv_text:
+                    self._send_json(400, {"error": "csv field required"})
+                    return
+                count = tourism_source.import_csv(csv_text)
+                self._send_json(200, {"status": "imported", "rows": count})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
         # ── Market Data: Update Prices (Phase 2) ────────────
         elif path == "/api/market/prices":
             try:
@@ -926,9 +1209,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._send_json(404, {"error": "Not found"})
 
     def do_PUT(self):
-        if not self._check_api_key():
-            return
         path, _ = self._parsed_path()
+        if not path.startswith("/api/site-visits"):
+            if not self._check_api_key():
+                return
 
         if path.startswith("/api/rules/"):
             rule_id = path.split("/api/rules/")[1]
@@ -943,13 +1227,30 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"error": str(e)})
             except Exception as e:
                 self._send_json(500, {"error": str(e)})
+
+        # ── Site Visits: Update ───────────────────────────
+        elif path.startswith("/api/site-visits/"):
+            try:
+                visit_id = int(path.split("/api/site-visits/")[1])
+                data = self._read_body()
+                success = site_visits_manager.update_visit(visit_id, data)
+                if success:
+                    self._send_json(200, {"status": "updated", "id": visit_id})
+                else:
+                    self._send_json(404, {"error": "Visit not found or no fields to update"})
+            except ValueError:
+                self._send_json(400, {"error": "Invalid visit ID"})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
         else:
             self._send_json(404, {"error": "Not found"})
 
     def do_DELETE(self):
-        if not self._check_api_key():
-            return
         path, _ = self._parsed_path()
+        if not path.startswith("/api/site-visits"):
+            if not self._check_api_key():
+                return
 
         if path.startswith("/api/rules/"):
             rule_id = path.split("/api/rules/")[1]
@@ -957,6 +1258,20 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"status": "deleted", "id": rule_id})
             else:
                 self._send_json(404, {"error": f"Rule '{rule_id}' not found"})
+
+        # ── Site Visits: Delete ───────────────────────────
+        elif path.startswith("/api/site-visits/"):
+            try:
+                visit_id = int(path.split("/api/site-visits/")[1])
+                if site_visits_manager.delete_visit(visit_id):
+                    self._send_json(200, {"status": "deleted", "id": visit_id})
+                else:
+                    self._send_json(404, {"error": "Visit not found"})
+            except ValueError:
+                self._send_json(400, {"error": "Invalid visit ID"})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
         else:
             self._send_json(404, {"error": "Not found"})
 
@@ -1016,6 +1331,33 @@ if __name__ == "__main__":
     print("  POST   /api/calibrations        - Record sensor calibration")
     print("  GET    /api/calibrations/due    - Get sensors needing calibration")
     print("")
+    print("Site Visits Backoffice:")
+    print("  GET    /site-visits              - Site visits backoffice UI")
+    print("  GET    /api/site-visits          - List visits (paginated, filtered)")
+    print("  GET    /api/site-visits/dashboard - Visit analytics")
+    print("  GET    /api/site-visits/clients  - Client list for form dropdown")
+    print("  GET    /api/site-visits/export   - All visits for CSV export")
+    print("  GET    /api/site-visits/{id}     - Single visit detail")
+    print("  POST   /api/site-visits          - Create visit")
+    print("  POST   /api/site-visits/{id}/complete-follow-up - Mark follow-up done")
+    print("  PUT    /api/site-visits/{id}     - Update visit")
+    print("  DELETE /api/site-visits/{id}     - Delete visit")
+
+    print("")
+    print("ETL (InfluxDB -> PostgreSQL):")
+    print("  GET    /api/etl/status           - ETL status & watermarks")
+    print("  POST   /api/etl/run              - Manual ETL trigger (API key required)")
+
+    # Start ETL background scheduler if enabled
+    if ETL_ENABLED:
+        if etl_processor._initialized:
+            etl_processor.start_background_scheduler()
+            print(f"  -> Background scheduler RUNNING")
+        else:
+            print(f"  -> ETL_ENABLED=true but processor failed to initialize")
+    else:
+        print(f"  -> Background scheduler disabled (set ETL_ENABLED=true to enable)")
+    print("")
     print("Sensor Analytics (Phase 1):")
     print("  GET    /api/analytics/summary   - Full analytics snapshot (VPD, DLI, trends)")
     print("  GET    /api/analytics/vpd       - Current VPD with classification")
@@ -1051,11 +1393,36 @@ if __name__ == "__main__":
     print("Checking for crops ready to advance...")
     advanced = growth_manager.check_and_advance_stages()
     if advanced:
-        print(f"  → Auto-advanced {len(advanced)} crops to next stage")
+        print(f"  -> Auto-advanced {len(advanced)} crops to next stage")
         for adv in advanced:
-            print(f"     Crop {adv['crop_id']} ({adv['variety']}): {adv['from_stage']} → {adv['to_stage']}")
+            print(f"     Crop {adv['crop_id']} ({adv['variety']}): {adv['from_stage']} -> {adv['to_stage']}")
     else:
-        print("  → No crops ready to advance")
+        print("  -> No crops ready to advance")
+
+    # Start Data Harvester
+    print("")
+    print("Data Harvester:")
+    print("  GET    /api/harvester/status     - All sources status")
+    print("  GET    /api/harvester/weather    - Current conditions + forecast")
+    print("  GET    /api/harvester/electricity - Prices + cheapest hours")
+    print("  GET    /api/harvester/solar      - Sunrise/sunset/day length")
+    print("  GET    /api/harvester/market-prices - Latest produce prices")
+    print("  GET    /api/harvester/tourism    - Tourism index + forecast")
+    print("  POST   /api/harvester/trigger    - Manual harvest (specific or all)")
+    print("  POST   /api/harvester/market-prices - Add price entry")
+    print("  POST   /api/harvester/market-prices/import - Import CSV")
+    print("  POST   /api/harvester/tourism/import - Import tourism CSV")
+    harvest_scheduler.start()
+    print(f"  -> Data Harvester started with {len(harvest_scheduler._sources)} sources")
+    # Run initial harvest for sources that have free APIs (non-blocking)
+    import threading
+    def _initial_harvest():
+        for src_name in ('weather', 'solar'):
+            try:
+                harvest_scheduler.harvest_now(src_name)
+            except Exception as e:
+                logger.warning(f"Initial harvest for {src_name} failed: {e}")
+    threading.Thread(target=_initial_harvest, daemon=True).start()
 
     print("")
     server.serve_forever()

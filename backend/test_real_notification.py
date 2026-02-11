@@ -15,7 +15,7 @@ load_dotenv(env_path)
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent / 'api'))
 
-from notification_service import notifier
+from notifications.notification_service import notifier
 
 # InfluxDB Configuration
 INFLUXDB_URL = os.getenv('INFLUXDB_URL', 'http://localhost:8086')

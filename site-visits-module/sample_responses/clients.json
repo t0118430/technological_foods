@@ -1,0 +1,39 @@
+{
+  "clients": [
+    {
+      "id": 4,
+      "company_name": "AquaFarm Coimbra",
+      "service_tier": "silver",
+      "location": "Coimbra",
+      "health_score": 93
+    },
+    {
+      "id": 2,
+      "company_name": "BioGrow Porto",
+      "service_tier": "silver",
+      "location": "Porto",
+      "health_score": 92
+    },
+    {
+      "id": 3,
+      "company_name": "FreshLeaf Algarve",
+      "service_tier": "bronze",
+      "location": "Faro",
+      "health_score": 71
+    },
+    {
+      "id": 5,
+      "company_name": "GreenTech Braga",
+      "service_tier": "gold",
+      "location": "Braga",
+      "health_score": 98
+    },
+    {
+      "id": 1,
+      "company_name": "Horta Verde Lda",
+      "service_tier": "gold",
+      "location": "Lisbon",
+      "health_score": 67
+    }
+  ]
+}

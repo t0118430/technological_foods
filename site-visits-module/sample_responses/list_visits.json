@@ -1,0 +1,135 @@
+{
+  "visits": [
+    {
+      "id": 36,
+      "visit_date": "2026-02-09",
+      "inspector_name": "Sophie Mulder",
+      "client_id": 3,
+      "facility_name": "FreshLeaf Algarve",
+      "visit_type": "follow_up",
+      "zones_inspected": [
+        "Nursery"
+      ],
+      "crop_batches_checked": [
+        "Cherry Tomato #07"
+      ],
+      "sensor_readings_snapshot": {
+        "temperature_c": 21.1,
+        "humidity_pct": 45.0,
+        "ph": 5.77,
+        "ec_ms": 1.1,
+        "co2_ppm": 1169,
+        "light_ppfd": 212,
+        "water_temp_c": 19.2
+      },
+      "observations": "LED lighting array in Zone Nursery showing reduced output \u2014 replacement scheduled.",
+      "issues_found": [
+        {
+          "description": "pH sensor drift exceeding \u00b10.3",
+          "severity": "medium",
+          "related_to": "sensors"
+        }
+      ],
+      "actions_taken": "Calibrated pH and EC sensors. Topped up nutrient reservoirs.",
+      "follow_up_required": false,
+      "follow_up_date": null,
+      "follow_up_notes": "",
+      "follow_up_completed": false,
+      "overall_rating": 5,
+      "photo_notes": "",
+      "created_at": "2026-02-10 23:55:42",
+      "updated_at": "2026-02-10 23:55:42",
+      "client_name": "FreshLeaf Algarve"
+    },
+    {
+      "id": 55,
+      "visit_date": "2026-02-01",
+      "inspector_name": "Tom Visser",
+      "client_id": 1,
+      "facility_name": "Horta Verde Lda",
+      "visit_type": "routine",
+      "zones_inspected": [
+        "Nursery",
+        "Zone C",
+        "Propagation"
+      ],
+      "crop_batches_checked": [
+        "Mint Spearmint #03",
+        "Rosso Premium #12",
+        "Curly Green #10"
+      ],
+      "sensor_readings_snapshot": {
+        "temperature_c": 24.1,
+        "humidity_pct": 74.1,
+        "ph": 6.54,
+        "ec_ms": 1.77,
+        "co2_ppm": 704,
+        "light_ppfd": 513,
+        "water_temp_c": 21.5
+      },
+      "observations": "Quarterly sensor calibration completed. All readings within \u00b12% tolerance.",
+      "issues_found": [],
+      "actions_taken": "Installed new CO2 sensor in Zone Zone C. Verified data flow to dashboard.",
+      "follow_up_required": false,
+      "follow_up_date": null,
+      "follow_up_notes": "",
+      "follow_up_completed": false,
+      "overall_rating": 4,
+      "photo_notes": "",
+      "created_at": "2026-02-10 23:55:42",
+      "updated_at": "2026-02-10 23:55:42",
+      "client_name": "Horta Verde Lda"
+    },
+    {
+      "id": 52,
+      "visit_date": "2026-01-26",
+      "inspector_name": "Tom Visser",
+      "client_id": 3,
+      "facility_name": "FreshLeaf Algarve",
+      "visit_type": "audit",
+      "zones_inspected": [
+        "Nursery",
+        "Main Hall"
+      ],
+      "crop_batches_checked": [
+        "Rosso Premium #12"
+      ],
+      "sensor_readings_snapshot": {
+        "temperature_c": 23.4,
+        "humidity_pct": 71.1,
+        "ph": 5.73,
+        "ec_ms": 2.01,
+        "co2_ppm": 1081,
+        "light_ppfd": 344,
+        "water_temp_c": 19.2
+      },
+      "observations": "Pest scouting \u2014 no issues found. Sticky traps clean. Biological controls active.",
+      "issues_found": [
+        {
+          "description": "Algae buildup in reservoir",
+          "severity": "low",
+          "related_to": "water_quality"
+        },
+        {
+          "description": "Nutrient pump making unusual noise",
+          "severity": "medium",
+          "related_to": "equipment"
+        }
+      ],
+      "actions_taken": "Adjusted nutrient recipe: increased Fe-EDDHA to 15 ppm.",
+      "follow_up_required": true,
+      "follow_up_date": "2026-02-25",
+      "follow_up_notes": "Check pH stability after buffer adjustment.",
+      "follow_up_completed": true,
+      "overall_rating": 3,
+      "photo_notes": "",
+      "created_at": "2026-02-10 23:55:42",
+      "updated_at": "2026-02-10 23:55:42",
+      "client_name": "FreshLeaf Algarve"
+    }
+  ],
+  "total": 35,
+  "page": 1,
+  "per_page": 3,
+  "total_pages": 12
+}

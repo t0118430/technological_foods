@@ -1,0 +1,207 @@
+# Docker Compose Override for Raspberry Pi 4 (4GB RAM, 64GB SD)
+# This file is automatically merged with docker-compose.yml when running docker-compose commands
+# Optimized for limited resources and SD card longevity
+
+services:
+  influxdb:
+    # Memory limit: InfluxDB is the most memory-hungry service
+    mem_limit: 1536m
+    mem_reservation: 512m
+    cpus: 1.5
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Override volumes to use /data directory on SD card
+    volumes:
+      - /data/influxdb:/var/lib/influxdb2
+      - /data/influxdb-config:/etc/influxdb2
+
+    environment:
+      # Optimize for limited SD card space (64GB)
+      # Keep data for 30 days instead of default 90 days
+      - INFLUXDB_RETENTION_DAYS=30
+
+      # Reduce cache size for limited RAM
+      - INFLUXDB_CACHE_MAX_MEMORY_SIZE=256m
+      - INFLUXDB_CACHE_SNAPSHOT_MEMORY_SIZE=64m
+
+      # Optimize write performance for SD card
+      - INFLUXDB_STORAGE_WAL_FSYNC_DELAY=200ms
+
+      # Limit concurrent queries
+      - INFLUXDB_QUERY_CONCURRENCY=5
+      - INFLUXDB_QUERY_MAX_SELECT_POINT=10000
+
+    # Logging: Limit log size on SD card
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  grafana:
+    # Memory limit: Grafana needs less memory
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 0.5
+
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+    # Override volumes to use /data directory
+    volumes:
+      - /data/grafana:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+    environment:
+      # Disable analytics to save bandwidth on SIM router
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+
+      # Optimize for limited resources
+      - GF_DATABASE_WAL=true
+      - GF_LOG_MODE=console file
+      - GF_LOG_LEVEL=warn
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  nodered:
+    # Memory limit: Node-RED is lightweight
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 0.5
+
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:1880/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+    # Override volumes to use /data directory
+    volumes:
+      - /data/nodered:/data
+
+    environment:
+      # Optimize for Raspberry Pi
+      - NODE_OPTIONS=--max_old_space_size=384
+
+      # Reduce logging
+      - NODE_RED_OPTIONS=-v
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  postgres:
+    # Memory limit: PostgreSQL on Pi
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 1.0
+
+    # Override volumes to use /data directory on SD card
+    volumes:
+      - /data/postgres:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+
+    environment:
+      # Optimize for limited RAM
+      - POSTGRES_SHARED_BUFFERS=128MB
+      - POSTGRES_WORK_MEM=4MB
+      - POSTGRES_MAINTENANCE_WORK_MEM=32MB
+      - POSTGRES_EFFECTIVE_CACHE_SIZE=256MB
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  redis:
+    # Memory limit: Redis is lightweight
+    mem_limit: 128m
+    mem_reservation: 64m
+    cpus: 0.25
+
+    # Override volumes to use /data directory
+    volumes:
+      - /data/redis:/data
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+# Network configuration (inherited from main docker-compose.yml)
+networks:
+  agritech-network:
+    driver: bridge
+
+# Volume configuration for Raspberry Pi
+# These map to actual directories on the SD card instead of Docker-managed volumes
+volumes:
+  influxdb-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/influxdb
+
+  influxdb-config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/influxdb-config
+
+  grafana-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/grafana
+
+  nodered-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/nodered
+
+  postgres-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/postgres
+
+  redis-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/redis
