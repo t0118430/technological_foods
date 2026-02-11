@@ -13,8 +13,8 @@ License: Proprietary
 
 import logging
 from typing import List, Dict, Any, Optional
-from business_model import business_db, SUBSCRIPTION_TIERS
-from notification_service import notifier
+from business.business_model import business_db, SUBSCRIPTION_TIERS
+from .notification_service import notifier
 
 logger = logging.getLogger('tier-notification-router')
 

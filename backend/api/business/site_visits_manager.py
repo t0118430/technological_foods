@@ -16,7 +16,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
-_DEFAULT_DB = Path(__file__).resolve().parent.parent / 'data' / 'agritech.db'
+_DEFAULT_DB = Path(__file__).resolve().parent.parent.parent / 'data' / 'agritech.db'
 
 logger = logging.getLogger('site-visits')
 

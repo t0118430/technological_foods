@@ -11,7 +11,7 @@ from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 from enum import Enum
 
-_DEFAULT_DB = Path(__file__).resolve().parent.parent / 'data' / 'agritech.db'
+_DEFAULT_DB = Path(__file__).resolve().parent.parent.parent / 'data' / 'agritech.db'
 
 logger = logging.getLogger('client-manager')
 
@@ -243,7 +243,7 @@ class ClientManager:
 
             # Send alert if health is critically low
             if new_score < 60:
-                from multi_channel_notifier import business_reporter
+                from notifications.multi_channel_notifier import business_reporter
                 issues = self.get_client_issues(client_id)
                 business_reporter.send_client_health_alert(
                     client_name=self.get_client(client_id).company_name,

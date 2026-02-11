@@ -16,13 +16,13 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 # Adicionar diretório pai ao path
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from notification_service import NotificationService, NtfyChannel
-from rule_engine import RuleEngine
-from alert_escalation import AlertEscalationManager
-from tier_notification_router import TierNotificationRouter, SubscriptionTier
-from business_model import SUBSCRIPTION_TIERS
+from notifications.notification_service import NotificationService, NtfyChannel
+from rules.rule_engine import RuleEngine
+from notifications.alert_escalation import AlertEscalationManager
+from notifications.tier_notification_router import TierNotificationRouter, SubscriptionTier
+from business.business_model import SUBSCRIPTION_TIERS
 
 # Configuração de teste
 TEST_MODE = os.getenv('TEST_MODE', 'mock')  # 'mock' ou 'real'

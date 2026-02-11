@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from notification_service import (
+from notifications.notification_service import (
     NotificationChannel,
     NotificationService,
     ConsoleChannel,
@@ -17,7 +17,7 @@ from notification_service import (
     _sensor_status,
     SENSOR_META,
 )
-from rule_engine import RuleEngine
+from rules.rule_engine import RuleEngine
 
 
 # ── Helpers ───────────────────────────────────────────────────
@@ -103,7 +103,7 @@ class TestChannels:
         assert ch.send("Subject", "Body") is False
 
     @patch.dict('os.environ', {'NTFY_TOPIC': 'test-agritech'})
-    @patch('notification_service.urllib.request.urlopen')
+    @patch('notifications.notification_service.urllib.request.urlopen')
     def test_ntfy_send_posts_to_endpoint(self, mock_urlopen):
         ch = NtfyChannel()
         result = ch.send("[CRITICAL] Test Subject", "Test body")
@@ -116,7 +116,7 @@ class TestChannels:
         assert req.data == b"Test body"
 
     @patch.dict('os.environ', {'NTFY_TOPIC': 'test-agritech'})
-    @patch('notification_service.urllib.request.urlopen')
+    @patch('notifications.notification_service.urllib.request.urlopen')
     def test_ntfy_send_sets_priority_from_severity(self, mock_urlopen):
         ch = NtfyChannel()
         ch.send("[CRITICAL] High temp", "body")
@@ -125,7 +125,7 @@ class TestChannels:
         assert req.get_header("Tags") == "rotating_light"
 
     @patch.dict('os.environ', {'NTFY_TOPIC': 'test-agritech'})
-    @patch('notification_service.urllib.request.urlopen')
+    @patch('notifications.notification_service.urllib.request.urlopen')
     def test_ntfy_send_warning_priority(self, mock_urlopen):
         ch = NtfyChannel()
         ch.send("[WARNING] Low humidity", "body")
@@ -134,7 +134,7 @@ class TestChannels:
         assert req.get_header("Tags") == "warning"
 
     @patch.dict('os.environ', {'NTFY_TOPIC': 'my-topic', 'NTFY_TOKEN': 'tk_secret'})
-    @patch('notification_service.urllib.request.urlopen')
+    @patch('notifications.notification_service.urllib.request.urlopen')
     def test_ntfy_send_includes_auth_token(self, mock_urlopen):
         ch = NtfyChannel()
         ch.send("Subject", "Body")
@@ -142,7 +142,7 @@ class TestChannels:
         assert req.get_header("Authorization") == "Bearer tk_secret"
 
     @patch.dict('os.environ', {'NTFY_URL': 'https://my-ntfy.example.com', 'NTFY_TOPIC': 'farm'})
-    @patch('notification_service.urllib.request.urlopen')
+    @patch('notifications.notification_service.urllib.request.urlopen')
     def test_ntfy_send_uses_custom_url(self, mock_urlopen):
         ch = NtfyChannel()
         ch.send("Subject", "Body")

@@ -1,6 +1,6 @@
 import time
 import pytest
-from alert_escalation import AlertEscalationManager, ESCALATION_LEVELS
+from notifications.alert_escalation import AlertEscalationManager, ESCALATION_LEVELS
 
 
 class TestAlertEscalationBasics:

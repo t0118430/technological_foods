@@ -543,7 +543,7 @@ class PostgresDatabase:
                                 min_val: float, max_val: float,
                                 stddev_val: float, count: int,
                                 optimal_pct: float = None, critical_pct: float = None):
-        """Insert daily sensor aggregate."""
+        """Insert daily sensor aggregate (idempotent via upsert)."""
         with self.get_connection() as conn:
             self._execute(conn, """
                 INSERT INTO bi.daily_sensor_agg
@@ -551,6 +551,14 @@ class PostgresDatabase:
                      max_value, stddev_value, reading_count,
                      time_in_optimal_pct, time_in_critical_pct)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (sensor_id, metric_date) DO UPDATE SET
+                    avg_value = EXCLUDED.avg_value,
+                    min_value = EXCLUDED.min_value,
+                    max_value = EXCLUDED.max_value,
+                    stddev_value = EXCLUDED.stddev_value,
+                    reading_count = EXCLUDED.reading_count,
+                    time_in_optimal_pct = EXCLUDED.time_in_optimal_pct,
+                    time_in_critical_pct = EXCLUDED.time_in_critical_pct
             """, (sensor_id, zone_id, metric_date, avg_val, min_val,
                   max_val, stddev_val, count, optimal_pct, critical_pct))
 

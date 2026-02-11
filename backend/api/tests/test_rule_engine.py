@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from rule_engine import RuleEngine
+from rules.rule_engine import RuleEngine
 
 
 @pytest.fixture
