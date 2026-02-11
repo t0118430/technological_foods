@@ -5,6 +5,10 @@ Hybrid approach:
 - InfluxDB: Sensor data (time-series)
 - SQLite/PostgreSQL: Crops, stages, history (relational)
 
+Backend switch via DB_BACKEND env var:
+- DB_BACKEND=sqlite  (default) - Original SQLite backend
+- DB_BACKEND=postgres          - PostgreSQL via pg_database.py
+
 Author: AgriTech Hydroponics
 License: MIT
 """
@@ -19,7 +23,10 @@ from contextlib import contextmanager
 
 logger = logging.getLogger('database')
 
-# Database path
+# Database backend selection
+DB_BACKEND = os.getenv('DB_BACKEND', 'sqlite').lower()
+
+# Database path (SQLite)
 DB_PATH = Path(__file__).resolve().parent.parent / 'data' / 'agritech.db'
 DB_PATH.parent.mkdir(exist_ok=True)
 
@@ -407,5 +414,15 @@ class Database:
             conn.commit()
 
 
-# Global instance
-db = Database()
+# Global instance - switches based on DB_BACKEND env var
+if DB_BACKEND == 'postgres':
+    try:
+        from pg_database import get_pg_database
+        db = get_pg_database()
+        logger.info("Using PostgreSQL database backend")
+    except Exception as e:
+        logger.warning(f"PostgreSQL backend failed, falling back to SQLite: {e}")
+        db = Database()
+else:
+    db = Database()
+    logger.info("Using SQLite database backend")

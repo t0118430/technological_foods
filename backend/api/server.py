@@ -22,6 +22,19 @@ from business_dashboard import dashboard as business_dashboard
 from drift_detection_service import drift_detector
 from multi_channel_notifier import multi_notifier, AlertLevel, ChannelType
 from client_manager import client_manager
+from site_visits_manager import site_visits_manager
+
+# Redis cache for latest readings (optional)
+_redis_cache = None
+try:
+    from pg_database import RedisCache
+    _redis_cache = RedisCache()
+    if _redis_cache.available:
+        logging.getLogger('http-server').info("Redis cache enabled for latest readings")
+    else:
+        _redis_cache = None
+except ImportError:
+    pass
 
 # Load .env from backend directory
 env_path = Path(__file__).resolve().parent.parent / '.env'
@@ -52,7 +65,7 @@ rule_engine = RuleEngine()
 
 
 def write_to_influx(data: Dict[str, Any], sensor_id: str = "arduino_1"):
-    """Write sensor data to InfluxDB"""
+    """Write sensor data to InfluxDB and update Redis cache."""
     point = Point("sensor_reading")
     point = point.tag("sensor_id", sensor_id)
     point = point.tag("source", "http_api")
@@ -68,11 +81,24 @@ def write_to_influx(data: Dict[str, Any], sensor_id: str = "arduino_1"):
             point = point.field(key, str(value))
 
     write_api.write(bucket=INFLUXDB_BUCKET, record=point)
+
+    # Update Redis cache with latest reading (TTL 30s)
+    if _redis_cache:
+        _redis_cache.set_latest_reading(sensor_id, data, ttl=30)
+
     logger.info(f"Stored in InfluxDB: {data}")
 
 
-def query_latest():
-    """Query latest sensor readings from InfluxDB"""
+def query_latest(sensor_id: str = "arduino_1"):
+    """Query latest sensor readings. Tries Redis cache first, falls back to InfluxDB."""
+    # Try Redis cache first (sub-millisecond)
+    if _redis_cache:
+        cached = _redis_cache.get_latest_reading(sensor_id)
+        if cached:
+            cached['_source'] = 'redis_cache'
+            return cached
+
+    # Fallback to InfluxDB query
     query = f'''
     from(bucket: "{INFLUXDB_BUCKET}")
         |> range(start: -1h)
@@ -85,6 +111,7 @@ def query_latest():
         for record in table.records:
             result[record.get_field()] = record.get_value()
             result['timestamp'] = str(record.get_time())
+    result['_source'] = 'influxdb'
     return result
 
 
@@ -311,6 +338,77 @@ class RequestHandler(BaseHTTPRequestHandler):
             sensor_id = query.get("sensor_id", ["arduino_1"])[0]
             commands = rule_engine.get_pending_commands(sensor_id)
             self._send_json(200, {"commands": commands})
+
+        # ── Site Visits Backoffice ─────────────────────────
+        elif path == "/site-visits":
+            try:
+                sv_path = Path(__file__).resolve().parent.parent / "site_visits.html"
+                if sv_path.exists():
+                    self._send_html(200, sv_path.read_text(encoding="utf-8"))
+                else:
+                    self._send_html(404, "<h1>Not found</h1><p>site_visits.html is missing</p>")
+            except Exception as e:
+                logger.error(f"Site visits HTML error: {e}")
+                self._send_html(500, f"<h1>Error</h1><p>{str(e)}</p>")
+
+        elif path == "/api/site-visits/dashboard":
+            try:
+                data = site_visits_manager.get_dashboard_stats()
+                self._send_json(200, data)
+            except Exception as e:
+                logger.error(f"Site visits dashboard error: {e}")
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/site-visits/clients":
+            try:
+                clients = site_visits_manager.get_clients_list()
+                self._send_json(200, {"clients": clients})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/site-visits/export":
+            try:
+                data = site_visits_manager.get_export_data()
+                self._send_json(200, {"visits": data})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/site-visits":
+            # List visits with pagination and filters
+            try:
+                page = int(query.get('page', ['1'])[0])
+                per_page = int(query.get('per_page', ['20'])[0])
+                filters = {
+                    'visit_type': query.get('visit_type', [None])[0],
+                    'inspector_name': query.get('inspector', [None])[0],
+                    'date_from': query.get('date_from', [None])[0],
+                    'date_to': query.get('date_to', [None])[0],
+                    'follow_up': query.get('follow_up', [None])[0],
+                    'search': query.get('search', [None])[0],
+                    'sort': query.get('sort', ['visit_date'])[0],
+                    'sort_dir': query.get('sort_dir', ['desc'])[0],
+                }
+                # Remove None values
+                filters = {k: v for k, v in filters.items() if v is not None}
+                result = site_visits_manager.list_visits(filters, page, per_page)
+                self._send_json(200, result)
+            except Exception as e:
+                logger.error(f"Site visits list error: {e}")
+                self._send_json(500, {"error": str(e)})
+
+        elif path.startswith("/api/site-visits/"):
+            # Single visit detail: GET /api/site-visits/{id}
+            try:
+                visit_id = int(path.split("/api/site-visits/")[1])
+                visit = site_visits_manager.get_visit(visit_id)
+                if visit:
+                    self._send_json(200, visit)
+                else:
+                    self._send_json(404, {"error": "Visit not found"})
+            except ValueError:
+                self._send_json(400, {"error": "Invalid visit ID"})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
 
         else:
             self._send_json(404, {"error": "Not found"})
@@ -695,6 +793,37 @@ class RequestHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send_json(500, {"error": str(e)})
 
+        # ── Site Visits: Create ───────────────────────────
+        elif path == "/api/site-visits":
+            try:
+                data = self._read_body()
+                if not data.get('inspector_name'):
+                    self._send_json(400, {"error": "inspector_name required"})
+                    return
+                if not data.get('visit_type'):
+                    self._send_json(400, {"error": "visit_type required"})
+                    return
+
+                visit_id = site_visits_manager.create_visit(data)
+                self._send_json(201, {"status": "created", "id": visit_id})
+            except Exception as e:
+                logger.error(f"Create visit error: {e}")
+                self._send_json(500, {"error": str(e)})
+
+        # ── Site Visits: Complete Follow-up ────────────────
+        elif path.endswith("/complete-follow-up") and "/api/site-visits/" in path:
+            try:
+                visit_id = int(path.split("/api/site-visits/")[1].split("/")[0])
+                success = site_visits_manager.complete_follow_up(visit_id)
+                if success:
+                    self._send_json(200, {"status": "completed", "id": visit_id})
+                else:
+                    self._send_json(404, {"error": "Visit not found or no follow-up pending"})
+            except ValueError:
+                self._send_json(400, {"error": "Invalid visit ID"})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
         else:
             self._send_json(404, {"error": "Not found"})
 
@@ -716,6 +845,22 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"error": str(e)})
             except Exception as e:
                 self._send_json(500, {"error": str(e)})
+
+        # ── Site Visits: Update ───────────────────────────
+        elif path.startswith("/api/site-visits/"):
+            try:
+                visit_id = int(path.split("/api/site-visits/")[1])
+                data = self._read_body()
+                success = site_visits_manager.update_visit(visit_id, data)
+                if success:
+                    self._send_json(200, {"status": "updated", "id": visit_id})
+                else:
+                    self._send_json(404, {"error": "Visit not found or no fields to update"})
+            except ValueError:
+                self._send_json(400, {"error": "Invalid visit ID"})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
         else:
             self._send_json(404, {"error": "Not found"})
 
@@ -730,6 +875,20 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"status": "deleted", "id": rule_id})
             else:
                 self._send_json(404, {"error": f"Rule '{rule_id}' not found"})
+
+        # ── Site Visits: Delete ───────────────────────────
+        elif path.startswith("/api/site-visits/"):
+            try:
+                visit_id = int(path.split("/api/site-visits/")[1])
+                if site_visits_manager.delete_visit(visit_id):
+                    self._send_json(200, {"status": "deleted", "id": visit_id})
+                else:
+                    self._send_json(404, {"error": "Visit not found"})
+            except ValueError:
+                self._send_json(400, {"error": "Invalid visit ID"})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+
         else:
             self._send_json(404, {"error": "Not found"})
 
@@ -788,6 +947,18 @@ if __name__ == "__main__":
     print("Sensor Calibration:")
     print("  POST   /api/calibrations        - Record sensor calibration")
     print("  GET    /api/calibrations/due    - Get sensors needing calibration")
+    print("")
+    print("Site Visits Backoffice:")
+    print("  GET    /site-visits              - Site visits backoffice UI")
+    print("  GET    /api/site-visits          - List visits (paginated, filtered)")
+    print("  GET    /api/site-visits/dashboard - Visit analytics")
+    print("  GET    /api/site-visits/clients  - Client list for form dropdown")
+    print("  GET    /api/site-visits/export   - All visits for CSV export")
+    print("  GET    /api/site-visits/{id}     - Single visit detail")
+    print("  POST   /api/site-visits          - Create visit")
+    print("  POST   /api/site-visits/{id}/complete-follow-up - Mark follow-up done")
+    print("  PUT    /api/site-visits/{id}     - Update visit")
+    print("  DELETE /api/site-visits/{id}     - Delete visit")
 
     # Check for stage advancements on startup
     print("")

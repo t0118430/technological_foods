@@ -114,6 +114,48 @@ services:
         max-size: "5m"
         max-file: "2"
 
+  postgres:
+    # Memory limit: PostgreSQL on Pi
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 1.0
+
+    # Override volumes to use /data directory on SD card
+    volumes:
+      - /data/postgres:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+
+    environment:
+      # Optimize for limited RAM
+      - POSTGRES_SHARED_BUFFERS=128MB
+      - POSTGRES_WORK_MEM=4MB
+      - POSTGRES_MAINTENANCE_WORK_MEM=32MB
+      - POSTGRES_EFFECTIVE_CACHE_SIZE=256MB
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  redis:
+    # Memory limit: Redis is lightweight
+    mem_limit: 128m
+    mem_reservation: 64m
+    cpus: 0.25
+
+    # Override volumes to use /data directory
+    volumes:
+      - /data/redis:/data
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
 # Network configuration (inherited from main docker-compose.yml)
 networks:
   agritech-network:
@@ -149,3 +191,17 @@ volumes:
       type: none
       o: bind
       device: /data/nodered
+
+  postgres-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/postgres
+
+  redis-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/redis
