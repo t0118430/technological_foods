@@ -1,0 +1,525 @@
+{
+  "kpis": {
+    "total_visits": 35,
+    "visits_this_month": 2,
+    "visits_last_month": 8,
+    "month_delta": -6,
+    "pending_followups": 8,
+    "avg_rating": 4.0
+  },
+  "charts": {
+    "monthly": [
+      {
+        "month": "2025-10",
+        "count": 2
+      },
+      {
+        "month": "2025-11",
+        "count": 15
+      },
+      {
+        "month": "2025-12",
+        "count": 8
+      },
+      {
+        "month": "2026-01",
+        "count": 8
+      },
+      {
+        "month": "2026-02",
+        "count": 2
+      }
+    ],
+    "by_type": [
+      {
+        "type": "routine",
+        "count": 18
+      },
+      {
+        "type": "follow_up",
+        "count": 10
+      },
+      {
+        "type": "audit",
+        "count": 5
+      },
+      {
+        "type": "emergency",
+        "count": 2
+      }
+    ],
+    "ratings": [
+      {
+        "rating": 1,
+        "count": 1
+      },
+      {
+        "rating": 3,
+        "count": 8
+      },
+      {
+        "rating": 4,
+        "count": 15
+      },
+      {
+        "rating": 5,
+        "count": 11
+      }
+    ]
+  },
+  "recent_activity": [
+    {
+      "id": 36,
+      "visit_date": "2026-02-09",
+      "inspector_name": "Sophie Mulder",
+      "client_id": 3,
+      "facility_name": "FreshLeaf Algarve",
+      "visit_type": "follow_up",
+      "zones_inspected": [
+        "Nursery"
+      ],
+      "crop_batches_checked": [
+        "Cherry Tomato #07"
+      ],
+      "sensor_readings_snapshot": {
+        "temperature_c": 21.1,
+        "humidity_pct": 45.0,
+        "ph": 5.77,
+        "ec_ms": 1.1,
+        "co2_ppm": 1169,
+        "light_ppfd": 212,
+        "water_temp_c": 19.2
+      },
+      "observations": "LED lighting array in Zone Nursery showing reduced output \u2014 replacement scheduled.",
+      "issues_found": [
+        {
+          "description": "pH sensor drift exceeding \u00b10.3",
+          "severity": "medium",
+          "related_to": "sensors"
+        }
+      ],
+      "actions_taken": "Calibrated pH and EC sensors. Topped up nutrient reservoirs.",
+      "follow_up_required": false,
+      "follow_up_date": null,
+      "follow_up_notes": "",
+      "follow_up_completed": false,
+      "overall_rating": 5,
+      "photo_notes": "",
+      "created_at": "2026-02-10 23:55:42",
+      "updated_at": "2026-02-10 23:55:42",
+      "client_name": "FreshLeaf Algarve"
+    },
+    {
+      "id": 37,
+      "visit_date": "2025-11-21",
+      "inspector_name": "Sophie Mulder",
+      "client_id": 5,
+      "facility_name": "GreenTech Braga",
+      "visit_type": "follow_up",
+      "zones_inspected": [
+        "Nursery",
+        "Cold Storage",
+        "Zone C"
+      ],
+      "crop_batches_checked": [
+        "Mint Spearmint #03",
+        "Curly Green #10"
+      ],
+      "sensor_readings_snapshot": {
+        "temperature_c": 21.6,
+        "humidity_pct": 49.5,
+        "ph": 6.42,
+        "ec_ms": 1.01,
+        "co2_ppm": 625,
+        "light_ppfd": 169,
+        "water_temp_c": 23.5
+      },
+      "observations": "All systems operating within normal parameters. Nutrient levels stable.",
+      "issues_found": [
+        {
+          "description": "pH sensor drift exceeding \u00b10.3",
+          "severity": "medium",
+          "related_to": "sensors"
+        },
+        {
+          "description": "Missing HACCP log entries for 3 days",
+          "severity": "medium",
+          "related_to": "compliance"
+        }
+      ],
+      "actions_taken": "Replaced faulty float valve. Tested overflow protection.",
+      "follow_up_required": false,
+      "follow_up_date": null,
+      "follow_up_notes": "",
+      "follow_up_completed": false,
+      "overall_rating": 4,
+      "photo_notes": "",
+      "created_at": "2026-02-10 23:55:42",
+      "updated_at": "2026-02-10 23:55:42",
+      "client_name": "GreenTech Braga"
+    },
+    {
+      "id": 38,
+      "visit_date": "2025-10-15",
+      "inspector_name": "Anna de Groot",
+      "client_id": 1,
+      "facility_name": "Horta Verde Lda",
+      "visit_type": "routine",
+      "zones_inspected": [
+        "Zone D",
+        "Packing Area",
+        "Zone B",
+        "Propagation"
+      ],
+      "crop_batches_checked": [
+        "Mint Spearmint #03",
+        "Cherry Tomato #07",
+        "Rosso Premium #14"
+      ],
+      "sensor_readings_snapshot": {
+        "temperature_c": 27.2,
+        "humidity_pct": 63.1,
+        "ph": 6.54,
+        "ec_ms": 2.61,
+        "co2_ppm": 843,
+        "light_ppfd": 554,
+        "water_temp_c": 21.9
+      },
+      "observations": "All systems operating within normal parameters. Nutrient levels stable.",
+      "issues_found": [],
+      "actions_taken": "Adjusted nutrient recipe: increased Fe-EDDHA to 15 ppm.",
+      "follow_up_required": true,
+      "follow_up_date": "2026-03-02",
+      "follow_up_notes": "Monitor new batch transplant survival rate.",
+      "follow_up_completed": false,
+      "overall_rating": 4,
+      "photo_notes": "",
+      "created_at": "2026-02-10 23:55:42",
+      "updated_at": "2026-02-10 23:55:42",
+      "client_name": "Horta Verde Lda"
+    },
+    {
+      "id": 39,
+      "visit_date": "2025-10-16",
+      "inspector_name": "Sophie Mulder",
+      "client_id": 1,
+      "facility_name": "Horta Verde Lda",
+      "visit_type": "follow_up",
+      "zones_inspected": [
+        "Nursery",
+        "Cold Storage",
+        "Zone C",
+        "Zone B"
+      ],
+      "crop_batches_checked": [
+        "Mint Spearmint #03",
+        "Rosso Premium #12"
+      ],
+      "sensor_readings_snapshot": {
+        "temperature_c": 25.9,
+        "humidity_pct": 68.8,
+        "ph": 5.67,
+        "ec_ms": 1.07,
+        "co2_ppm": 1088,
+        "light_ppfd": 449,
+        "water_temp_c": 19.0
+      },
+      "observations": "Client reported yellowing leaves in Zone Zone C. Diagnosed as iron deficiency \u2014 adjusted nutrient mix.",
+      "issues_found": [],
+      "actions_taken": "Replaced UV steriliser lamp (3000h service interval).",
+      "follow_up_required": false,
+      "follow_up_date": null,
+      "follow_up_notes": "",
+      "follow_up_completed": false,
+      "overall_rating": 4,
+      "photo_notes": "",
+      "created_at": "2026-02-10 23:55:42",
+      "updated_at": "2026-02-10 23:55:42",
+      "client_name": "Horta Verde Lda"
+    },
+    {
+      "id": 40,
+      "visit_date": "2025-11-24",
+      "inspector_name": "Sophie Mulder",
+      "client_id": 1,
+      "facility_name": "Horta Verde Lda",
+      "visit_type": "routine",
+      "zones_inspected": [
+        "Zone A"
+      ],
+      "crop_batches_checked": [
+        "Curly Green #10",
+        "Curly Green #08",
+        "Mint Spearmint #03"
+      ],
+      "sensor_readings_snapshot": {
+        "temperature_c": 25.5,
+        "humidity_pct": 55.3,
+        "ph": 6.52,
+        "ec_ms": 1.13,
+        "co2_ppm": 1083,
+        "light_ppfd": 279,
+        "water_temp_c": 22.0
+      },
+      "observations": "Quarterly sensor calibration completed. All readings within \u00b12% tolerance.",
+      "issues_found": [],
+      "actions_taken": "Calibrated pH and EC sensors. Topped up nutrient reservoirs.",
+      "follow_up_required": false,
+      "follow_up_date": null,
+      "follow_up_notes": "",
+      "follow_up_completed": false,
+      "overall_rating": 4,
+      "photo_notes": "",
+      "created_at": "2026-02-10 23:55:42",
+      "updated_at": "2026-02-10 23:55:42",
+      "client_name": "Horta Verde Lda"
+    },
+    {
+      "id": 41,
+      "visit_date": "2025-11-24",
+      "inspector_name": "Pieter Smit",
+      "client_id": 5,
+      "facility_name": "GreenTech Braga",
+      "visit_type": "routine",
+      "zones_inspected": [
+        "Zone D",
+        "Zone C",
+        "Propagation"
+      ],
+      "crop_batches_checked": [
+        "Rosso Premium #12"
+      ],
+      "sensor_readings_snapshot": {
+        "temperature_c": 22.8,
+        "humidity_pct": 65.4,
+        "ph": 5.55,
+        "ec_ms": 1.86,
+        "co2_ppm": 754,
+        "light_ppfd": 564,
+        "water_temp_c": 23.8
+      },
+      "observations": "Emergency call-out: pump failure in main reservoir. Replaced impeller, system restored.",
+      "issues_found": [
+        {
+          "description": "Emergency stop button obstructed",
+          "severity": "high",
+          "related_to": "safety"
+        }
+      ],
+      "actions_taken": "Replaced UV steriliser lamp (3000h service interval).",
+      "follow_up_required": false,
+      "follow_up_date": null,
+      "follow_up_notes": "",
+      "follow_up_completed": false,
+      "overall_rating": 5,
+      "photo_notes": "",
+      "created_at": "2026-02-10 23:55:42",
+      "updated_at": "2026-02-10 23:55:42",
+      "client_name": "GreenTech Braga"
+    },
+    {
+      "id": 42,
+      "visit_date": "2025-12-30",
+      "inspector_name": "Anna de Groot",
+      "client_id": 4,
+      "facility_name": "AquaFarm Coimbra",
+      "visit_type": "follow_up",
+      "zones_inspected": [
+        "Main Hall",
+        "Nursery"
+      ],
+      "crop_batches_checked": [
+        "Basil Genovese #11",
+        "Rosso Premium #14",
+        "Rosso Premium #12"
+      ],
+      "sensor_readings_snapshot": {
+        "temperature_c": 18.2,
+        "humidity_pct": 45.7,
+        "ph": 6.23,
+        "ec_ms": 2.47,
+        "co2_ppm": 1153,
+        "light_ppfd": 286,
+        "water_temp_c": 21.4
+      },
+      "observations": "Client reported yellowing leaves in Zone Main Hall. Diagnosed as iron deficiency \u2014 adjusted nutrient mix.",
+      "issues_found": [
+        {
+          "description": "Missing HACCP log entries for 3 days",
+          "severity": "medium",
+          "related_to": "compliance"
+        }
+      ],
+      "actions_taken": "Flushed irrigation lines. Applied H2O2 sterilisation cycle.",
+      "follow_up_required": false,
+      "follow_up_date": null,
+      "follow_up_notes": "",
+      "follow_up_completed": false,
+      "overall_rating": 4,
+      "photo_notes": "",
+      "created_at": "2026-02-10 23:55:42",
+      "updated_at": "2026-02-10 23:55:42",
+      "client_name": "AquaFarm Coimbra"
+    },
+    {
+      "id": 43,
+      "visit_date": "2025-11-24",
+      "inspector_name": "Pieter Smit",
+      "client_id": 3,
+      "facility_name": "FreshLeaf Algarve",
+      "visit_type": "routine",
+      "zones_inspected": [
+        "Cold Storage",
+        "Water Treatment",
+        "Packing Area"
+      ],
+      "crop_batches_checked": [
+        "Curly Green #10",
+        "Mint Spearmint #03",
+        "Curly Green #08"
+      ],
+      "sensor_readings_snapshot": {
+        "temperature_c": 19.3,
+        "humidity_pct": 74.4,
+        "ph": 6.32,
+        "ec_ms": 0.99,
+        "co2_ppm": 759,
+        "light_ppfd": 452,
+        "water_temp_c": 18.7
+      },
+      "observations": "Water quality test results normal. TDS within range. No pathogen detected.",
+      "issues_found": [],
+      "actions_taken": "Flushed irrigation lines. Applied H2O2 sterilisation cycle.",
+      "follow_up_required": false,
+      "follow_up_date": null,
+      "follow_up_notes": "",
+      "follow_up_completed": false,
+      "overall_rating": 4,
+      "photo_notes": "",
+      "created_at": "2026-02-10 23:55:42",
+      "updated_at": "2026-02-10 23:55:42",
+      "client_name": "FreshLeaf Algarve"
+    },
+    {
+      "id": 44,
+      "visit_date": "2026-01-11",
+      "inspector_name": "Tom Visser",
+      "client_id": 1,
+      "facility_name": "Horta Verde Lda",
+      "visit_type": "routine",
+      "zones_inspected": [
+        "Nursery"
+      ],
+      "crop_batches_checked": [
+        "Curly Green #10"
+      ],
+      "sensor_readings_snapshot": {
+        "temperature_c": 19.8,
+        "humidity_pct": 60.1,
+        "ph": 6.77,
+        "ec_ms": 0.88,
+        "co2_ppm": 1061,
+        "light_ppfd": 320,
+        "water_temp_c": 19.5
+      },
+      "observations": "Follow-up from last visit \u2014 pH stability confirmed after buffer adjustment.",
+      "issues_found": [
+        {
+          "description": "Missing HACCP log entries for 3 days",
+          "severity": "medium",
+          "related_to": "compliance"
+        }
+      ],
+      "actions_taken": "Submitted maintenance report to client. Next visit scheduled.",
+      "follow_up_required": true,
+      "follow_up_date": "2026-02-16",
+      "follow_up_notes": "Confirm nutrient deficiency resolved \u2014 re-inspect leaves.",
+      "follow_up_completed": false,
+      "overall_rating": 4,
+      "photo_notes": "",
+      "created_at": "2026-02-10 23:55:42",
+      "updated_at": "2026-02-10 23:55:42",
+      "client_name": "Horta Verde Lda"
+    },
+    {
+      "id": 45,
+      "visit_date": "2025-11-14",
+      "inspector_name": "Sophie Mulder",
+      "client_id": 5,
+      "facility_name": "GreenTech Braga",
+      "visit_type": "routine",
+      "zones_inspected": [
+        "Cold Storage"
+      ],
+      "crop_batches_checked": [
+        "Mint Spearmint #03",
+        "Rosso Premium #14",
+        "Cherry Tomato #07"
+      ],
+      "sensor_readings_snapshot": {
+        "temperature_c": 27.5,
+        "humidity_pct": 58.0,
+        "ph": 6.51,
+        "ec_ms": 2.03,
+        "co2_ppm": 1026,
+        "light_ppfd": 445,
+        "water_temp_c": 22.3
+      },
+      "observations": "LED lighting array in Zone Cold Storage showing reduced output \u2014 replacement scheduled.",
+      "issues_found": [],
+      "actions_taken": "Adjusted nutrient recipe: increased Fe-EDDHA to 15 ppm.",
+      "follow_up_required": false,
+      "follow_up_date": null,
+      "follow_up_notes": "",
+      "follow_up_completed": false,
+      "overall_rating": 3,
+      "photo_notes": "",
+      "created_at": "2026-02-10 23:55:42",
+      "updated_at": "2026-02-10 23:55:42",
+      "client_name": "GreenTech Braga"
+    }
+  ],
+  "top_clients": [
+    {
+      "id": 1,
+      "company_name": "Horta Verde Lda",
+      "health_score": 67,
+      "visit_count": 9,
+      "last_visit": "2026-02-01"
+    },
+    {
+      "id": 5,
+      "company_name": "GreenTech Braga",
+      "health_score": 98,
+      "visit_count": 9,
+      "last_visit": "2026-01-14"
+    },
+    {
+      "id": 2,
+      "company_name": "BioGrow Porto",
+      "health_score": 92,
+      "visit_count": 6,
+      "last_visit": "2026-01-24"
+    },
+    {
+      "id": 4,
+      "company_name": "AquaFarm Coimbra",
+      "health_score": 93,
+      "visit_count": 6,
+      "last_visit": "2026-01-17"
+    },
+    {
+      "id": 3,
+      "company_name": "FreshLeaf Algarve",
+      "health_score": 71,
+      "visit_count": 5,
+      "last_visit": "2026-02-09"
+    }
+  ],
+  "inspectors": [
+    "Anna de Groot",
+    "Pieter Smit",
+    "Sophie Mulder",
+    "Tom Visser"
+  ]
+}

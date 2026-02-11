@@ -379,6 +379,38 @@ ALTER TABLE crop.batches
     ADD CONSTRAINT fk_batches_client
     FOREIGN KEY (client_id) REFERENCES business.clients(id);
 
+CREATE TABLE business.site_visits (
+    id SERIAL PRIMARY KEY,
+    visit_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    inspector_name VARCHAR(255) NOT NULL,
+    client_id INTEGER REFERENCES business.clients(id),
+    facility_name VARCHAR(255),
+    visit_type VARCHAR(20) NOT NULL CHECK (visit_type IN ('routine','emergency','follow_up','audit')),
+    zones_inspected JSONB DEFAULT '[]',
+    crop_batches_checked JSONB DEFAULT '[]',
+    sensor_readings_snapshot JSONB DEFAULT '{}',
+    observations TEXT,
+    issues_found JSONB DEFAULT '[]',
+    actions_taken TEXT,
+    follow_up_required BOOLEAN DEFAULT FALSE,
+    follow_up_date DATE,
+    follow_up_notes TEXT,
+    follow_up_completed BOOLEAN DEFAULT FALSE,
+    overall_rating INTEGER DEFAULT 3 CHECK (overall_rating BETWEEN 1 AND 5),
+    photo_notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TRIGGER trg_site_visits_updated
+    BEFORE UPDATE ON business.site_visits
+    FOR EACH ROW EXECUTE FUNCTION core.update_updated_at();
+
+CREATE INDEX idx_biz_site_visits_date ON business.site_visits(visit_date);
+CREATE INDEX idx_biz_site_visits_client ON business.site_visits(client_id);
+CREATE INDEX idx_biz_site_visits_type ON business.site_visits(visit_type);
+CREATE INDEX idx_biz_site_visits_followup ON business.site_visits(follow_up_required, follow_up_completed);
+
 CREATE TABLE business.client_sensors (
     id SERIAL PRIMARY KEY,
     client_id INTEGER NOT NULL REFERENCES business.clients(id) ON DELETE CASCADE,
