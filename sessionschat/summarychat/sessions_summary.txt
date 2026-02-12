@@ -1,0 +1,49 @@
+● Session Summary — 2026-02-11                                                                                                                            
+  Issues Fixed                                                                                                                                         
+  
+  1. python command not found on Pi — Install python-is-python3                                                                                          2. Swagger CORS error when accessing from PC                                                                                                         
+    - openapi.json had http://localhost:3001 hardcoded → changed to /
+    - server.py missing CORS headers → added do_OPTIONS handler + Access-Control-Allow-Origin: * on all responses
+  3. ntfy notifications not sending (available: false)
+    - Root cause: load_dotenv() was called AFTER module imports in server.py
+    - NtfyChannel read NTFY_TOPIC at import time → got empty string
+    - Fix: moved load_dotenv() before all imports
+  4. GitHub Actions: deprecated actions/upload-artifact@v3 → updated to v4, also setup-python@v4 → v5
+  5. GitHub Actions: pytest test_*.py not finding tests → changed to pytest tests/ after subfolder reorganization
+  6. GitHub Actions: 6 test collection errors
+    - 4 test files had flat imports (from business_dashboard) → updated to package imports (from business.business_dashboard)
+    - SubscriptionTier class didn't exist → aliased from ServiceTier
+    - ClientManager crashed in CI → added mkdir(parents=True) for data directory
+  7. SonarQube GitHub integration
+    - SONAR_HOST_URL secret was missing/wrong → needs https:// scheme
+    - ngrok tunnel needed for Pi to be reachable from GitHub Actions
+    - Project needs to be created in SonarQube with key technological-foods
+    - SONAR_TOKEN needs to be generated and added as GitHub secret
+  8. Notification messages were confusing
+    - Mixed English/Portuguese → all Portuguese now
+    - Technical jargon (z-score 2.73) → human-readable ("valor fora do normal")
+    - anomaly_spike_temperature rule ID → "Anomalia no sensor de Temperatura"
+    - Values missing units (17.56) → 17.56°C
+    - light_level missing from SENSOR_META → added, now shows with gauge bar
+
+  Deliverables Created
+
+  - Comprehensive project report v3 (sessionschat/comprehensive_project_report.txt) — rewritten for readability
+  - PR on fix/sonar branch — Grafana dashboards (15), architecture diagrams (2), stale docs cleanup (12 removed), CI fixes
+  - Deep analysis prompt (sessionschat/new_session_prompt.md) — for a new session to audit all existing logic, formulas, thresholds, and suggest       
+  improvements with Portuguese/EU public data sources
+
+  Open Propositions
+
+  1. Remove Redis — Only used for caching latest reading (30s TTL). InfluxDB on localhost is already fast enough. Removes a Docker service and reduces 
+  complexity. Architecture becomes: InfluxDB (real-time) + PostgreSQL (business). Agreed but not yet implemented.
+  2. SonarQube setup — Partially done. Needs:
+    - SonarQube admin password recovery
+    - Create project with key technological-foods
+    - Generate token → add as SONAR_TOKEN GitHub secret
+    - Use ngrok static domain so URL doesn't change on restart
+  3. Remaining from project report:
+    - Document simulated-to-real sensor transition plan
+    - Add tests for crop_intelligence.py, data_export.py, market_data_service.py
+    - Update openapi.json with the 22 new AI analytics endpoints
+    - Wire snapshot notifications to filter by sensor_id/zone
