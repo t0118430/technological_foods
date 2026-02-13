@@ -24,6 +24,7 @@ from notifications import escalation_manager
 from crops import growth_manager
 from db import db
 from business import business_dashboard
+from business import business_digest
 from sensors import drift_detector
 from notifications import multi_notifier, AlertLevel, ChannelType
 from business import client_manager
@@ -36,17 +37,6 @@ from harvester import SolarSource
 from harvester import MarketPriceSource
 from harvester import TourismSource
 
-# Redis cache for latest readings (optional)
-_redis_cache = None
-try:
-    from db import RedisCache
-    _redis_cache = RedisCache()
-    if _redis_cache.available:
-        logging.getLogger('http-server').info("Redis cache enabled for latest readings")
-    else:
-        _redis_cache = None
-except ImportError:
-    pass
 from sensor_analytics import sensor_analytics
 from weather_service import weather_service
 from market_data_service import market_data_service
@@ -93,7 +83,7 @@ harvest_scheduler.register(tourism_source)
 
 
 def write_to_influx(data: Dict[str, Any], sensor_id: str = "arduino_1"):
-    """Write sensor data to InfluxDB and update Redis cache."""
+    """Write sensor data to InfluxDB."""
     point = Point("sensor_reading")
     point = point.tag("sensor_id", sensor_id)
     point = point.tag("source", "http_api")
@@ -109,28 +99,16 @@ def write_to_influx(data: Dict[str, Any], sensor_id: str = "arduino_1"):
             point = point.field(key, str(value))
 
     write_api.write(bucket=INFLUXDB_BUCKET, record=point)
-
-    # Update Redis cache with latest reading (TTL 30s)
-    if _redis_cache:
-        _redis_cache.set_latest_reading(sensor_id, data, ttl=30)
-
     logger.info(f"Stored in InfluxDB: {data}")
 
 
 def query_latest(sensor_id: str = "arduino_1"):
-    """Query latest sensor readings. Tries Redis cache first, falls back to InfluxDB."""
-    # Try Redis cache first (sub-millisecond)
-    if _redis_cache:
-        cached = _redis_cache.get_latest_reading(sensor_id)
-        if cached:
-            cached['_source'] = 'redis_cache'
-            return cached
-
-    # Fallback to InfluxDB query
+    """Query latest sensor readings from InfluxDB."""
     query = f'''
     from(bucket: "{INFLUXDB_BUCKET}")
         |> range(start: -1h)
         |> filter(fn: (r) => r._measurement == "sensor_reading")
+        |> filter(fn: (r) => r.sensor_id == "{sensor_id}")
         |> last()
     '''
     tables = query_api.query(query)
@@ -351,6 +329,15 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._send_json(200, data)
             except Exception as e:
                 logger.error(f"Business dashboard error: {e}")
+                self._send_json(500, {"error": str(e)})
+
+        elif path == "/api/business/digest":
+            try:
+                tone = query.get('tone', ['medium'])[0]
+                data = business_digest.generate_digest(tone)
+                self._send_json(200, data)
+            except Exception as e:
+                logger.error(f"Business digest error: {e}")
                 self._send_json(500, {"error": str(e)})
 
         elif path == "/business":
@@ -1031,27 +1018,31 @@ class RequestHandler(BaseHTTPRequestHandler):
             try:
                 data = self._read_body() if int(self.headers.get("Content-Length", 0)) > 0 else {}
                 crop_id = data.get('crop_id')
+                sensor_id = data.get('sensor_id', query.get('sensor_id', ['arduino_1'])[0])
+                zone = data.get('zone', query.get('zone', [None])[0])
 
-                # Get latest real data from InfluxDB
-                latest = query_latest()
+                # Get latest real data from InfluxDB filtered by sensor_id
+                latest = query_latest(sensor_id)
 
                 if not latest:
                     self._send_json(404, {
-                        "error": "No sensor data available. Arduino may not be sending data yet."
+                        "error": f"No sensor data available for sensor '{sensor_id}'. Arduino may not be sending data yet."
                     })
                     return
 
                 response = {
                     "status": "test_sent_with_real_data",
+                    "sensor_id": sensor_id,
                     "sensor_data": latest,
                 }
+                if zone:
+                    response["zone"] = zone
 
                 # If crop_id provided, include production context
                 if crop_id is not None:
                     crop_id = int(crop_id)
                     conditions = growth_manager.get_current_conditions(crop_id)
                     if not conditions:
-                        # Return available crops so user can pick
                         crops = db.get_active_crops()
                         self._send_json(404, {
                             "error": f"Crop {crop_id} not found",
@@ -1067,8 +1058,10 @@ class RequestHandler(BaseHTTPRequestHandler):
                         "optimal_conditions": conditions["conditions"],
                     }
                 else:
-                    # No crop selected — list available productions
+                    # No crop selected — list available productions, filtered by zone if provided
                     crops = db.get_active_crops()
+                    if zone:
+                        crops = [c for c in crops if c.get('zone', 'main') == zone]
                     response["available_crops"] = crops
 
                 # Send notification with real data
@@ -1078,6 +1071,17 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._send_json(200, response)
             except Exception as e:
                 logger.error(f"Test alert error: {e}")
+                self._send_json(500, {"error": str(e)})
+
+        # ── Business Digest: Generate and Send ─────────────
+        elif path == "/api/business/digest":
+            try:
+                data = self._read_body() if int(self.headers.get("Content-Length", 0)) > 0 else {}
+                tone = data.get('tone', 'medium')
+                result = business_digest.send_digest(tone)
+                self._send_json(200, result)
+            except Exception as e:
+                logger.error(f"Business digest send error: {e}")
                 self._send_json(500, {"error": str(e)})
 
         # ── Config Server: Create Rule ────────────────────

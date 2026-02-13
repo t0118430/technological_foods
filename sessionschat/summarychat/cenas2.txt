@@ -1,0 +1,71 @@
+● Session Summary                                                                                                                     
+  What We Built
+
+  An ESP32 WROOM sensor station for your agritech project, reading real sensors and sending data to an API.                           
+  Problems Solved
+
+  1. DHT22 wires swapped — VCC and DATA were reversed on the sensor side
+  2. GPIO25 (DAC pin) — doesn't work for DHT protocol, moved to GPIO33
+  3. Adafruit DHT library — timing issues on ESP32, switched to DHTesp
+  4. DS18B20 x2 burned — bare wires touched each other without plastic connectors
+  5. LED burned — connected directly to 5V without resistor
+  6. ESP32 "dead" scare — just needed all wires removed, board was fine
+  7. EN pin needs 3.3V — something on breadboard pulling it low
+  8. Baud rate 115200 missing — switched to 9600
+
+  Current Pin Map
+  ┌──────┬────────────────────────────┬─────────────┐
+  │ GPIO │         Component          │   Status    │
+  ├──────┼────────────────────────────┼─────────────┤
+  │ 33   │ DHT22 (air temp/humidity)  │ Working     │
+  ├──────┼────────────────────────────┼─────────────┤
+  │ 27   │ DS18B20 (water temp)       │ Dead sensor │
+  ├──────┼────────────────────────────┼─────────────┤
+  │ 26   │ Water level sensor         │ Working     │
+  ├──────┼────────────────────────────┼─────────────┤
+  │ 25   │ LED (with resistor)        │ Working     │
+  ├──────┼────────────────────────────┼─────────────┤
+  │ 34   │ TDS sensor (not yet wired) │ Next        │
+  └──────┴────────────────────────────┴─────────────┘
+  What's Working
+
+  - DHT22 reading 18°C / 68% humidity
+  - Water level sensor detecting water (0/1)
+  - LED indicating status
+  - WiFi connected to your network
+  - API code ready (needs backend running)
+
+  What's Simulated (Still Fake)
+
+  - pH, EC, light level (random drift values)
+
+  ---
+  Propositions
+
+  Immediate (This Week)
+
+  1. Wire the TDS sensor on GPIO34 — replaces simulated EC with real data
+  2. Fix the EN pin issue — check what's pulling it low on the breadboard so you don't need the 3.3V jumper
+  3. Start the backend API — everything is ready to send data to 192.168.1.100:3001
+
+  Short Term (Parts Needed)
+
+  4. Replace DS18B20 (~$3) — get water temperature working with proper connectors this time
+  5. Replace LED (~$1) — or use the built-in one on GPIO2 for now
+  6. Get a screw terminal board (~$6) — eliminates breadboard connection issues
+  7. Add a light sensor (LDR) on GPIO35 — replaces simulated light level, ~$1
+
+  Medium Term
+
+  8. Add a real pH sensor — replaces the last simulated value (~$15-30)
+  9. Merge ESP32 code into the technological_foods repo — keep everything in one place
+  10. Set up the backend on your Raspberry Pi — run the API server 24/7
+  11. Add OTA (Over The Air) updates — update ESP32 code via WiFi instead of USB
+
+  Hardware Safety Rules Going Forward
+
+  - Always wire with USB unplugged
+  - Use plastic connectors, never bare wires on breadboard
+  - Resistor with every LED (220-330Ω)
+  - Pull-up resistor with every DS18B20 (4.7kΩ) — wire it BEFORE powering on
+  - One new component at a time — test each before adding the next

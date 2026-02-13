@@ -27,12 +27,12 @@ External data sources (weather, electricity prices, solar data, market prices, t
   │  Sensor Analytics ─► VPD, DLI, Trends   │
   │  Crop Intelligence ─► Yield Prediction  │
   │  Business Module ─► SaaS Dashboard      │
-  └───┬──────────┬──────────┬───────────────┘
-      │          │          │
-      ▼          ▼          ▼
-  InfluxDB   PostgreSQL    Redis
-  (hot data) (lifecycle,   (cache,
-   sensors)   BI, audit)   rate limit)
+  └───┬──────────┬─────────────────────────┘
+      │          │
+      ▼          ▼
+  InfluxDB   PostgreSQL
+  (hot data) (lifecycle,
+   sensors)   BI, audit)
       │          │
       ▼          ▼
    Grafana (15 dashboards, 3 folders)
@@ -64,7 +64,7 @@ External data sources (weather, electricity prices, solar data, market prices, t
 ```bash
 cd backend
 docker-compose up -d
-# Starts: InfluxDB (:8086), PostgreSQL (:5432), Redis (:6379), Grafana (:3000), Node-RED (:1880)
+# Starts: InfluxDB (:8086), PostgreSQL (:5432), Grafana (:3000), Node-RED (:1880)
 ```
 
 **2. Install Python dependencies:**
@@ -164,12 +164,12 @@ Dashboard JSON files: `grafana/dashboards/{production,business,devops}/`
 | **API Server** | Python 3.x, built-in `http.server`, no framework |
 | **Time-Series DB** | InfluxDB 2.x (sensor data, weather, energy) |
 | **Relational DB** | PostgreSQL 15 (7 schemas: core, iot, crop, business, alert, bi, audit) |
-| **Cache** | Redis (latest readings, rate limiting) |
+| **Cache** | InfluxDB last() queries (sub-second on localhost) |
 | **Dashboards** | Grafana (15 provisioned dashboards) |
 | **Flow Automation** | Node-RED |
 | **Notifications** | ntfy, Twilio (WhatsApp + SMS), SMTP Email |
 | **AC Control** | Haier hOn API |
 | **External Data** | Open-Meteo, OMIE, PVGIS, manual CSV imports |
 | **CI/CD** | GitHub Actions, SonarQube |
-| **Infrastructure** | Docker Compose (5 services) |
+| **Infrastructure** | Docker Compose (4 services) |
 | **Documentation** | Swagger UI (OpenAPI 3.0) |
