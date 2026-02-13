@@ -614,8 +614,12 @@ def _generate_correlation_insights(batches: List[Dict], variety: str) -> List[st
             insights.append(f'Best batch spent {opt_diff:.0f}% more time in optimal conditions')
 
     if best.get('avg_vpd') and worst.get('avg_vpd'):
-        if 0.8 <= best['avg_vpd'] <= 1.2 and not (0.8 <= worst['avg_vpd'] <= 1.2):
-            insights.append('Best batch maintained optimal VPD range (0.8-1.2 kPa)')
+        from sensor_analytics import VARIETY_VPD_TARGETS
+        vpd_targets = VARIETY_VPD_TARGETS.get(variety, VARIETY_VPD_TARGETS['_default'])
+        vpd_min = vpd_targets['optimal_min']
+        vpd_max = vpd_targets['optimal_max']
+        if vpd_min <= best['avg_vpd'] <= vpd_max and not (vpd_min <= worst['avg_vpd'] <= vpd_max):
+            insights.append(f'Best batch maintained optimal VPD range ({vpd_min}-{vpd_max} kPa)')
 
     return insights
 

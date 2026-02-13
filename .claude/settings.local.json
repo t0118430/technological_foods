@@ -39,7 +39,15 @@
       "Bash(gh pr create:*)",
       "Bash(where.exe:*)",
       "Bash(cmd /c \"where gh\")",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(winget install:*)",
+      "Bash(scoop install:*)",
+      "Bash(choco install:*)",
+      "Bash(git -C \"C:\\\\git\\\\technological_foods\" remote get-url origin)",
+      "Bash(choco:*)",
+      "Bash(scoop:*)",
+      "Bash(git -C \"C:\\\\git\\\\technological_foods\" log --oneline -5)",
+      "Bash(git -C \"C:\\\\git\\\\technological_foods\" status --short)"
     ]
   }
 }

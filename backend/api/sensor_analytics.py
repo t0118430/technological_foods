@@ -30,11 +30,50 @@ INFLUXDB_BUCKET = os.getenv('INFLUXDB_BUCKET', '')
 # 1 lux ~ 0.0185 umol/m2/s for sunlight (varies by spectrum)
 LUX_TO_PPFD = 0.0185
 
+# Default photoperiod for DLI projection (hours of expected light per day)
+DEFAULT_PHOTOPERIOD_HOURS = 14
+
 # Rolling buffer: ~900 readings at 2s interval = 30 min
 BUFFER_MAX_SIZE = 900
 
 # Sensor fields we track
 SENSOR_FIELDS = ['temperature', 'humidity', 'ph', 'ec', 'water_level', 'light_level']
+
+# Per-sensor anomaly detection thresholds
+# z_score: standard deviations from mean to flag as spike
+# flatline: consecutive identical readings to flag as stuck sensor
+# jump_pct: percent change from previous reading to flag as sudden jump
+ANOMALY_CONFIG = {
+    'temperature':  {'z_score': 2.5, 'flatline': 60,  'jump_pct': 10},
+    'humidity':     {'z_score': 2.5, 'flatline': 60,  'jump_pct': 15},
+    'ph':           {'z_score': 2.0, 'flatline': 120, 'jump_pct': 3},    # pH is stable; small changes matter
+    'ec':           {'z_score': 2.5, 'flatline': 120, 'jump_pct': 8},
+    'water_level':  {'z_score': 2.5, 'flatline': 300, 'jump_pct': 20},   # changes slowly in NFT
+    'light_level':  {'z_score': 3.0, 'flatline': 60,  'jump_pct': 50},   # very variable (clouds)
+}
+
+# Variety-specific VPD targets (kPa)
+# Defaults used when no variety is specified (general lettuce)
+VARIETY_VPD_TARGETS = {
+    '_default':         {'optimal_min': 0.8, 'optimal_max': 1.2, 'warning_low': 0.4, 'warning_high': 1.6},
+    'rosso_premium':    {'optimal_min': 0.8, 'optimal_max': 1.2, 'warning_low': 0.4, 'warning_high': 1.6},
+    'curly_green':      {'optimal_min': 0.8, 'optimal_max': 1.2, 'warning_low': 0.4, 'warning_high': 1.6},
+    'arugula_rocket':   {'optimal_min': 0.6, 'optimal_max': 1.0, 'warning_low': 0.3, 'warning_high': 1.4},
+    'basil_genovese':   {'optimal_min': 1.0, 'optimal_max': 1.5, 'warning_low': 0.5, 'warning_high': 2.0},
+    'mint_spearmint':   {'optimal_min': 0.6, 'optimal_max': 1.0, 'warning_low': 0.3, 'warning_high': 1.4},
+    'tomato_cherry':    {'optimal_min': 0.8, 'optimal_max': 1.6, 'warning_low': 0.4, 'warning_high': 2.0},
+}
+
+# Variety-specific DLI targets (mol/m2/day)
+VARIETY_DLI_TARGETS = {
+    '_default':         {'optimal_min': 12, 'optimal_max': 20},
+    'rosso_premium':    {'optimal_min': 14, 'optimal_max': 20},   # needs light for anthocyanin
+    'curly_green':      {'optimal_min': 12, 'optimal_max': 18},   # moderate, avoids bolting
+    'arugula_rocket':   {'optimal_min': 12, 'optimal_max': 16},   # fast crop, moderate light
+    'basil_genovese':   {'optimal_min': 16, 'optimal_max': 22},   # high-light herb
+    'mint_spearmint':   {'optimal_min': 10, 'optimal_max': 16},   # shade-tolerant
+    'tomato_cherry':    {'optimal_min': 20, 'optimal_max': 30},   # high-light fruiting
+}
 
 
 class SensorAnalytics:
@@ -101,18 +140,20 @@ class SensorAnalytics:
     # ── VPD (Vapor Pressure Deficit) ───────────────────────────────
 
     @staticmethod
-    def calculate_vpd(temp: float, humidity: float) -> Dict[str, Any]:
+    def calculate_vpd(temp: float, humidity: float,
+                      variety: str = None) -> Dict[str, Any]:
         """
         Calculate Vapor Pressure Deficit in kPa.
 
         VPD = SVP * (1 - RH/100)
         SVP (Tetens formula) = 0.6108 * exp(17.27 * T / (T + 237.3))
 
-        Optimal lettuce VPD: 0.8 - 1.2 kPa
+        Uses variety-specific optimal ranges from VARIETY_VPD_TARGETS.
 
         Args:
             temp: Temperature in Celsius
             humidity: Relative humidity in %
+            variety: Optional variety name for specific VPD targets
 
         Returns:
             Dict with vpd_kpa, classification, optimal range
@@ -121,28 +162,38 @@ class SensorAnalytics:
         vpd = svp * (1 - humidity / 100.0)
         vpd = round(vpd, 3)
 
-        if vpd < 0.4:
+        # Load variety-specific thresholds
+        targets = VARIETY_VPD_TARGETS.get(variety, VARIETY_VPD_TARGETS['_default'])
+        opt_min = targets['optimal_min']
+        opt_max = targets['optimal_max']
+        warn_low = targets['warning_low']
+        warn_high = targets['warning_high']
+
+        if vpd < warn_low:
             classification = 'too_low'
             risk = 'High disease risk - increase ventilation'
-        elif vpd < 0.8:
+        elif vpd < opt_min:
             classification = 'low'
             risk = 'Slightly low - monitor for mold'
-        elif vpd <= 1.2:
+        elif vpd <= opt_max:
             classification = 'optimal'
             risk = None
-        elif vpd <= 1.6:
+        elif vpd <= warn_high:
             classification = 'high'
             risk = 'Plants may stress - increase humidity or lower temp'
         else:
             classification = 'too_high'
             risk = 'Severe stress - plants closing stomata'
 
-        return {
+        result = {
             'vpd_kpa': vpd,
             'classification': classification,
-            'optimal_range': {'min': 0.8, 'max': 1.2},
+            'optimal_range': {'min': opt_min, 'max': opt_max},
             'risk': risk,
         }
+        if variety:
+            result['variety'] = variety
+        return result
 
     # ── DLI (Daily Light Integral) ─────────────────────────────────
 
@@ -173,12 +224,17 @@ class SensorAnalytics:
             avg_ppfd = (ppfd + prev['ppfd']) / 2.0
             dl['total_ppfd_seconds'] += avg_ppfd * interval
 
-    def calculate_dli(self, sensor_id: str) -> Dict[str, Any]:
+    def calculate_dli(self, sensor_id: str,
+                      variety: str = None) -> Dict[str, Any]:
         """
         Calculate Daily Light Integral from accumulated readings.
 
         DLI = sum(PPFD * time_interval) / 1,000,000 (converts umol to mol)
-        Optimal lettuce DLI: 12-20 mol/m2/day
+        Uses variety-specific optimal ranges from VARIETY_DLI_TARGETS.
+
+        Args:
+            sensor_id: Sensor identifier
+            variety: Optional variety name for specific DLI targets
 
         Returns:
             Dict with current_dli, projected_dli, hours_of_light, classification
@@ -194,7 +250,7 @@ class SensorAnalytics:
         now = datetime.now()
         hours_elapsed = now.hour + now.minute / 60.0
         if hours_elapsed > 0:
-            projected_dli = round(current_dli * (16.0 / hours_elapsed), 2)  # assume 16h photoperiod
+            projected_dli = round(current_dli * (DEFAULT_PHOTOPERIOD_HOURS / hours_elapsed), 2)
         else:
             projected_dli = 0
 
@@ -207,25 +263,33 @@ class SensorAnalytics:
         else:
             hours_of_light = 0
 
-        if current_dli < 6:
+        # Load variety-specific DLI targets
+        targets = VARIETY_DLI_TARGETS.get(variety, VARIETY_DLI_TARGETS['_default'])
+        dli_min = targets['optimal_min']
+        dli_max = targets['optimal_max']
+
+        if current_dli < dli_min * 0.5:
             classification = 'very_low'
-        elif current_dli < 12:
+        elif current_dli < dli_min:
             classification = 'low'
-        elif current_dli <= 20:
+        elif current_dli <= dli_max:
             classification = 'optimal'
-        elif current_dli <= 30:
+        elif current_dli <= dli_max * 1.5:
             classification = 'high'
         else:
             classification = 'too_high'
 
-        return {
+        result = {
             'current_dli': current_dli,
             'projected_dli': projected_dli,
             'hours_of_light': hours_of_light,
-            'optimal_range': {'min': 12, 'max': 20},
+            'optimal_range': {'min': dli_min, 'max': dli_max},
             'classification': classification,
             'unit': 'mol/m2/day',
         }
+        if variety:
+            result['variety'] = variety
+        return result
 
     # ── Nutrient Score ─────────────────────────────────────────────
 
@@ -409,10 +473,10 @@ class SensorAnalytics:
 
     def detect_anomalies(self, data: Dict[str, Any], sensor_id: str) -> List[Dict[str, Any]]:
         """
-        Z-score anomaly detection:
-        - Spikes: value > 2.5 standard deviations from mean
-        - Flatlines: 60+ identical consecutive readings
-        - Sudden jumps: >10% change from previous reading
+        Per-sensor anomaly detection using configurable thresholds:
+        - Spikes: value > N standard deviations from mean (per-sensor z_score)
+        - Flatlines: N+ identical consecutive readings (per-sensor flatline)
+        - Sudden jumps: >N% change from previous reading (per-sensor jump_pct)
 
         Args:
             data: Current sensor reading
@@ -437,48 +501,56 @@ class SensorAnalytics:
             if len(values) < 10:
                 continue
 
+            # Get per-sensor thresholds (fall back to defaults)
+            config = ANOMALY_CONFIG.get(field, {'z_score': 2.5, 'flatline': 60, 'jump_pct': 10})
+            z_threshold = config['z_score']
+            flatline_count = config['flatline']
+            jump_threshold = config['jump_pct']
+
             mean = _mean(values)
             std = _stddev(values)
 
-            # Spike detection (Z-score > 2.5)
+            # Spike detection (Z-score > threshold)
             if std > 0:
                 z_score = abs(current - mean) / std
-                if z_score > 2.5:
+                if z_score > z_threshold:
                     anomalies.append({
                         'type': 'spike',
                         'field': field,
                         'value': current,
                         'z_score': round(z_score, 2),
+                        'threshold': z_threshold,
                         'mean': round(mean, 3),
                         'std': round(std, 3),
-                        'severity': 'high' if z_score > 3.5 else 'medium',
+                        'severity': 'high' if z_score > z_threshold + 1.0 else 'medium',
                     })
 
-            # Flatline detection (60+ identical readings)
-            if len(values) >= 60:
-                recent_60 = values[-60:]
-                if all(v == recent_60[0] for v in recent_60):
+            # Flatline detection (N+ identical readings, per-sensor)
+            if len(values) >= flatline_count:
+                recent_n = values[-flatline_count:]
+                if all(v == recent_n[0] for v in recent_n):
                     anomalies.append({
                         'type': 'flatline',
                         'field': field,
                         'value': current,
-                        'consecutive_identical': 60,
+                        'consecutive_identical': flatline_count,
                         'severity': 'high',
                     })
 
-            # Sudden jump detection (>10% from previous)
+            # Sudden jump detection (>N% from previous, per-sensor)
             if len(values) >= 2:
                 prev = values[-2]
                 if prev != 0:
                     pct_change = abs(current - prev) / abs(prev) * 100
-                    if pct_change > 10:
+                    if pct_change > jump_threshold:
                         anomalies.append({
                             'type': 'sudden_jump',
                             'field': field,
                             'value': current,
                             'previous': prev,
                             'percent_change': round(pct_change, 1),
-                            'severity': 'high' if pct_change > 25 else 'medium',
+                            'threshold': jump_threshold,
+                            'severity': 'high' if pct_change > jump_threshold * 2.5 else 'medium',
                         })
 
         return anomalies
