@@ -116,6 +116,20 @@
       "warning_margin": 100.0,
       "unit": "lux",
       "notes": "12-16 hours photoperiod recommended"
+    },
+    "vpd": {
+      "optimal_min": 0.8,
+      "optimal_max": 1.2,
+      "warning_low": 0.4,
+      "warning_high": 1.6,
+      "unit": "kPa",
+      "notes": "Vapor Pressure Deficit — general lettuce range"
+    },
+    "dli": {
+      "optimal_min": 12,
+      "optimal_max": 20,
+      "unit": "mol/m2/day",
+      "notes": "Daily Light Integral — general lettuce target"
     }
   },
 

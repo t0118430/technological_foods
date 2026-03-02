@@ -1,0 +1,119 @@
+● Here's a ready-to-paste prompt for your next session:
+
+  ---
+  # Task: Reporting & Grafana Dashboards for Data Harvester
+
+  ## Context
+
+  Working directory: C:/git/technological_foods/backend/api/
+
+  We have a Data Harvester module that pulls external data on schedules and stores it:
+
+  ### InfluxDB measurements (bucket: hydroponics)
+  - `sensor_reading` — existing indoor sensor data (temperature, humidity, ph, ec, water_level, light)
+  - `weather_external` — tags: source=open_meteo, location=algarve; fields: temperature, humidity, wind_speed, precipitation, cloud_cover, pressure, uv_index
+  - `weather_forecast` — tags: source, location, forecast_hour; fields: temperature, humidity, wind_speed, rain_probability, uv_index, solar_radiation, forecast_time
+  - `electricity_price` — tags: source, market=portugal, date; fields: hour, price_eur_mwh, price_eur_kwh
+  - `solar_times` — tags: location=algarve; fields: sunrise, sunset, day_length_hours, solar_noon
+
+  ### SQLite tables (backend/data/agritech.db)
+  - `market_prices` — produce_type, market_id, price_per_kg, price_date, source, notes
+  - `tourism_index` — year, month, arrivals, occupancy_rate, seasonal_index, region, source
+  - Existing tables: crops, growth_stages, harvests, calibrations
+
+  ### Existing code to read
+  - `server.py` — HTTP server with all routes, InfluxDB read/write, rule engine integration
+  - `data_harvester.py` — DataSource ABC + HarvestScheduler
+  - `weather_source.py`, `electricity_source.py`, `solar_source.py` — InfluxDB sources with get_*_summary() methods
+  - `market_price_source.py`, `tourism_source.py` — SQLite sources with get_*_summary() methods
+  - `business_dashboard.py` — existing business intelligence dashboard (follow this pattern)
+  - `database.py` — SQLite connection pattern with context manager
+  - `influx_pg_etl.py` — existing ETL pattern for InfluxDB aggregation
+
+  ## Part 1: Reporting Engine (Python)
+
+  Create `harvest_reports.py` in the api/ directory that generates business reports combining internal + external data:
+
+  ### Report 1: Daily Operations Summary
+  - Indoor vs outdoor temperature correlation (sensor_reading vs weather_external)
+  - AC runtime hours estimated from rule triggers
+  - Electricity cost estimate: sum(hours_ac_ran × price_eur_kwh × estimated_kw)
+  - "Money saved" calculation: compare actual cost vs what it would have been running AC during peak hours
+  - Day length trend and its impact on supplemental lighting needs
+
+  ### Report 2: Weekly Production & Market Report
+  - Crops in each growth stage (from crops/growth_stages tables)
+  - Current market prices per produce type across all markets
+  - Revenue projection: estimated_yield_kg × best_market_price × tourism_demand_multiplier
+  - Price trend: compare this week's prices vs last entry per produce/market
+  - Stale price warnings (data older than 7 days)
+
+  ### Report 3: Monthly Strategic Overview
+  - Tourism index trend (current month vs next 3 months)
+  - Production planning recommendation based on demand forecast
+  - Electricity price patterns (cheapest hours distribution over the month)
+  - Weather patterns summary (avg temp, rain days, UV trends)
+  - Suggested rule adjustments (e.g., "June tourism index rising to 130, consider tightening humidity thresholds")
+
+  ### Implementation
+  - Follow the pattern in `business_dashboard.py`
+  - Each report returns a dict suitable for JSON API response
+  - Add GET endpoints to server.py:
+    - GET /api/reports/daily — today's operations summary
+    - GET /api/reports/weekly — this week's production report
+    - GET /api/reports/monthly — strategic overview
+  - Query InfluxDB using the existing `query_api` for time-series aggregations
+  - Query SQLite using the existing `database.py` pattern for relational data
+
+  ## Part 2: Grafana Dashboards (JSON provisioning)
+
+  Create Grafana dashboard JSON files in `backend/grafana/dashboards/` (create dir if needed).
+
+  ### Dashboard 1: "External Context" (new)
+  Row 1 — Weather Overlay:
+  - Panel: Indoor temp (sensor_reading.temperature) vs Outdoor temp (weather_external.temperature) — dual Y-axis line chart, last 24h
+  - Panel: Indoor humidity vs Outdoor humidity — same pattern
+  - Panel: Current conditions stat panels: outdoor temp, wind, UV, cloud cover
+
+  Row 2 — Solar & Light:
+  - Panel: Day length trend (solar_times.day_length_hours) over last 30 days — area chart
+  - Panel: Solar radiation forecast (weather_forecast.solar_radiation) — bar chart next 24h
+  - Panel: Sunrise/sunset times as annotations on the temperature chart
+
+  Row 3 — Electricity:
+  - Panel: Today's hourly prices (electricity_price) — bar chart colored green for cheapest 6 hours, red for most expensive 6
+  - Panel: Current price vs daily average — gauge
+  - Panel: Price heatmap — hour of day vs day of week, last 30 days
+
+  ### Dashboard 2: "Business Intelligence - External" (new)
+  Row 1 — Tourism & Demand:
+  - Panel: Monthly tourism index — bar chart showing current year, highlight current month
+  - Panel: Demand level gauge (low/medium/high)
+  - Panel: 3-month forecast table
+
+  Row 2 — Market Prices:
+  - Panel: Latest price per produce type across markets — grouped bar chart
+  - Panel: Price history trend per produce — line chart
+  - Panel: Stale data warnings — table with red highlight for >7 days old
+
+  Row 3 — Compound Decisions:
+  - Panel: "Smart AC savings" — overlay indoor temp, outdoor temp, electricity price, and AC state on same timeline
+  - Panel: "Production vs Demand" — active crops count vs tourism index
+
+  ### Dashboard specifications
+  - Use Flux query language (InfluxDB 2.x)
+  - Use the $bucket variable defaulting to "hydroponics"
+  - Time range default: last 24h for operations, last 30d for trends
+  - Color scheme: match existing Grafana theme (dark mode)
+  - Each dashboard should be a complete JSON file importable via Grafana UI or provisioning
+  - Include proper panel IDs, grid positions, and datasource references
+
+  ## Important
+  - No new dependencies — use only stdlib + existing packages
+  - Follow existing code patterns exactly (read the files first)
+  - Add unit tests for the reporting functions in test_harvest_reports.py
+  - The InfluxDB datasource in Grafana is named "InfluxDB" with bucket "hydroponics"
+
+  ---
+  This prompt gives the next session everything it needs — exact measurement names, field names, table schemas, existing patterns to follow, and specific panel layouts. It should produce working Grafana JSONs you can import directly and a reporting API you can call from
+  the business dashboard.

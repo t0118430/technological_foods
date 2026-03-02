@@ -61,6 +61,21 @@
     }
   },
 
+  "optimal_ranges": {
+    "vpd": {
+      "optimal_min": 0.8,
+      "optimal_max": 1.6,
+      "warning_low": 0.4,
+      "warning_high": 2.0,
+      "notes": "Fruiting crop — tolerates and benefits from higher VPD during fruiting"
+    },
+    "dli": {
+      "optimal_min": 20,
+      "optimal_max": 30,
+      "notes": "High-light fruiting crop, maximum DLI for fruit development"
+    }
+  },
+
   "algarve_climate": {
     "optimal_season": "may_to_september",
     "heat_tolerance": "excellent",

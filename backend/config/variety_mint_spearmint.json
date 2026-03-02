@@ -40,6 +40,21 @@
     }
   },
 
+  "optimal_ranges": {
+    "vpd": {
+      "optimal_min": 0.6,
+      "optimal_max": 1.0,
+      "warning_low": 0.3,
+      "warning_high": 1.4,
+      "notes": "Moisture-loving herb — prefers lower VPD, higher humidity"
+    },
+    "dli": {
+      "optimal_min": 10,
+      "optimal_max": 16,
+      "notes": "Shade-tolerant herb, excessive light reduces oil quality"
+    }
+  },
+
   "algarve_climate": {
     "optimal_season": "summer",
     "heat_tolerance": "excellent",

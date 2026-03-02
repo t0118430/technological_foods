@@ -1,0 +1,478 @@
+{
+  "version": "2.0.0",
+  "categories": [
+    {
+      "id": "getting-started",
+      "title": "Getting Started",
+      "icon": "rocket",
+      "items": [
+        {
+          "title": "System Health Check",
+          "description": "Verify the API server and all services are running correctly.",
+          "endpoint": "GET /api/health",
+          "tip": "This endpoint is public — no API key needed."
+        },
+        {
+          "title": "Latest Sensor Readings",
+          "description": "Get the most recent temperature, humidity, pH, EC, water level, and light values from InfluxDB.",
+          "endpoint": "GET /api/data/latest"
+        },
+        {
+          "title": "Interactive API Docs",
+          "description": "Open Swagger UI to browse and test all endpoints interactively in your browser.",
+          "endpoint": "GET /api/docs",
+          "tip": "Public endpoint. Click the Authorize button and enter your API key to test protected endpoints."
+        },
+        {
+          "title": "Dashboard Help",
+          "description": "Get this help content as structured JSON for building help UIs.",
+          "endpoint": "GET /api/help",
+          "tip": "Public endpoint. Returns the full help structure for dashboard integration."
+        }
+      ]
+    },
+    {
+      "id": "crop-management",
+      "title": "Crop Management",
+      "icon": "seedling",
+      "items": [
+        {
+          "title": "Register New Crop Batch",
+          "description": "Start tracking a new crop batch. Specify variety (rosso_premium, curly_green, arugula_rocket, basil_genovese, mint_spearmint, tomato_cherry), batch name, quantity, and optional notes.",
+          "endpoint": "POST /api/crops",
+          "tip": "The crop begins in the 'germination' stage and auto-advances when minimum duration is met."
+        },
+        {
+          "title": "View Active Crops",
+          "description": "List all active crop batches with their current growth stage, variety, and days in stage.",
+          "endpoint": "GET /api/crops"
+        },
+        {
+          "title": "Crop Details & History",
+          "description": "Get full details for a specific crop including stage history with timestamps and conditions.",
+          "endpoint": "GET /api/crops/{id}"
+        },
+        {
+          "title": "Stage-Specific Conditions",
+          "description": "Get the optimal temperature, humidity, EC, and light hours for the crop's current growth stage.",
+          "endpoint": "GET /api/crops/{id}/conditions",
+          "tip": "Conditions change as the crop advances through stages."
+        },
+        {
+          "title": "Advance Growth Stage",
+          "description": "Manually advance a crop to the next growth stage. Stages: germination → seedling → transplant → vegetative → flowering → fruiting → maturity → harvest_ready.",
+          "endpoint": "POST /api/crops/{id}/advance",
+          "tip": "Flowering and fruiting stages only apply to tomato_cherry and fruit-bearing varieties."
+        },
+        {
+          "title": "Record Harvest",
+          "description": "Record the harvest for a crop batch. Include weight in grams, quality score (1-10), and optional notes.",
+          "endpoint": "POST /api/crops/{id}/harvest"
+        },
+        {
+          "title": "Crop Dashboard",
+          "description": "Comprehensive dashboard showing all active crops, stage summaries, and recent activity.",
+          "endpoint": "GET /api/dashboard"
+        },
+        {
+          "title": "Harvest Analytics",
+          "description": "Performance metrics across all harvests: average yields, quality scores, and variety comparisons.",
+          "endpoint": "GET /api/harvest/analytics"
+        }
+      ]
+    },
+    {
+      "id": "sensor-analytics",
+      "title": "Sensor Analytics",
+      "icon": "chart-line",
+      "items": [
+        {
+          "title": "Full Analytics Snapshot",
+          "description": "Get VPD, DLI, trends, and anomalies in a single response. Best starting point for understanding current conditions.",
+          "endpoint": "GET /api/analytics/summary"
+        },
+        {
+          "title": "VPD (Vapor Pressure Deficit)",
+          "description": "Current VPD with classification. Ideal range: 0.4-1.6 kPa. Combines temperature and humidity into a single transpiration metric.",
+          "endpoint": "GET /api/analytics/vpd",
+          "tip": "VPD below 0.4 = mold risk. VPD above 1.6 = plant stress. Target 0.8-1.2 for vegetative growth."
+        },
+        {
+          "title": "DLI (Daily Light Integral)",
+          "description": "Daily light integral progress and projected total. Measures cumulative photosynthetically active radiation over 24 hours.",
+          "endpoint": "GET /api/analytics/dli"
+        },
+        {
+          "title": "Trend Detection",
+          "description": "Shows rising, falling, or stable trends for each sensor over the recent measurement window.",
+          "endpoint": "GET /api/analytics/trends"
+        },
+        {
+          "title": "Anomaly Detection",
+          "description": "Flags sensor readings that deviate significantly from expected patterns — sudden spikes, unusual values, or drift.",
+          "endpoint": "GET /api/analytics/anomalies"
+        },
+        {
+          "title": "Historical Data",
+          "description": "Query historical sensor data with aggregation. Parameters: hours (time range), aggregation (1h, 6h, 1d).",
+          "endpoint": "GET /api/analytics/history",
+          "tip": "Example: /api/analytics/history?hours=168&aggregation=1d for a 7-day daily summary."
+        }
+      ]
+    },
+    {
+      "id": "alerts-notifications",
+      "title": "Alerts & Notifications",
+      "icon": "bell",
+      "items": [
+        {
+          "title": "Notification Status",
+          "description": "Check which notification channels are active (console, ntfy, WhatsApp, SMS, email) and view recent alert history.",
+          "endpoint": "GET /api/notifications",
+          "tip": "Channels activate automatically when credentials are set in .env — no code changes needed."
+        },
+        {
+          "title": "Alert Escalation Status",
+          "description": "View current escalation state and any active alerts being escalated. Shows escalation level and time to next escalation.",
+          "endpoint": "GET /api/escalation"
+        },
+        {
+          "title": "Send Test Alert",
+          "description": "Fire a test alert through all configured channels using default sensor data. Bypasses cooldown for testing.",
+          "endpoint": "POST /api/notifications/test"
+        },
+        {
+          "title": "Send Test Alert (Real Data)",
+          "description": "Fire a test alert using current real sensor data from InfluxDB.",
+          "endpoint": "POST /api/notifications/test-real"
+        }
+      ]
+    },
+    {
+      "id": "rules-automation",
+      "title": "Rules & Automation",
+      "icon": "cogs",
+      "items": [
+        {
+          "title": "List All Rules",
+          "description": "View all configured rules with their thresholds, conditions, and enabled status. The system ships with 13 default rules.",
+          "endpoint": "GET /api/rules"
+        },
+        {
+          "title": "Create a Rule",
+          "description": "Add a new automation rule. Specify sensor, condition (above/below), threshold, and action (arduino, ac, or notify).",
+          "endpoint": "POST /api/rules",
+          "tip": "Rules take effect immediately — no server restart needed."
+        },
+        {
+          "title": "Update a Rule",
+          "description": "Change a rule's threshold, action, enabled status, or any other field. Only include the fields you want to change.",
+          "endpoint": "PUT /api/rules/{id}"
+        },
+        {
+          "title": "Delete a Rule",
+          "description": "Permanently remove a rule from the rule engine.",
+          "endpoint": "DELETE /api/rules/{id}"
+        },
+        {
+          "title": "Arduino Command Queue",
+          "description": "Arduino polls this endpoint to receive pending commands (LED, pump, etc.). Commands are cleared after retrieval.",
+          "endpoint": "GET /api/commands"
+        }
+      ]
+    },
+    {
+      "id": "weather-market",
+      "title": "Weather & Market",
+      "icon": "cloud-sun",
+      "items": [
+        {
+          "title": "Current Weather",
+          "description": "Current outdoor temperature, humidity, wind speed, and conditions for the Algarve region (Open-Meteo API).",
+          "endpoint": "GET /api/weather/current"
+        },
+        {
+          "title": "3-Day Forecast",
+          "description": "Weather forecast for the next 3 days including temperature ranges, precipitation probability, and conditions.",
+          "endpoint": "GET /api/weather/forecast"
+        },
+        {
+          "title": "Solar Data",
+          "description": "Sunrise, sunset times, day length, and UV index. Useful for planning supplemental lighting.",
+          "endpoint": "GET /api/weather/solar"
+        },
+        {
+          "title": "Indoor vs Outdoor Correlation",
+          "description": "Compare greenhouse readings with outdoor weather to assess insulation performance and ventilation needs.",
+          "endpoint": "GET /api/weather/correlation"
+        },
+        {
+          "title": "Growing Advisory",
+          "description": "AI-generated advisory combining indoor conditions, weather forecast, and crop data into actionable recommendations.",
+          "endpoint": "GET /api/weather/advisory"
+        },
+        {
+          "title": "Market Prices",
+          "description": "Current market prices per kg for tracked produce varieties.",
+          "endpoint": "GET /api/market/prices"
+        },
+        {
+          "title": "Seasonal Demand",
+          "description": "Demand multipliers by month and product. Useful for planning planting schedules around peak demand.",
+          "endpoint": "GET /api/market/demand"
+        }
+      ]
+    },
+    {
+      "id": "crop-intelligence",
+      "title": "Crop Intelligence",
+      "icon": "brain",
+      "items": [
+        {
+          "title": "Condition-to-Harvest Correlations",
+          "description": "Analyze which growing conditions (temperature, humidity, EC, light) correlate with the best harvest outcomes.",
+          "endpoint": "GET /api/intelligence/correlations"
+        },
+        {
+          "title": "Optimization Recommendations",
+          "description": "Get specific recommendations for improving conditions for a given crop based on historical data and variety targets.",
+          "endpoint": "GET /api/intelligence/recommendations/{id}"
+        },
+        {
+          "title": "Yield Prediction",
+          "description": "Predict expected yield for a crop based on current growing conditions and historical variety performance.",
+          "endpoint": "GET /api/intelligence/predict/{id}"
+        },
+        {
+          "title": "Crop Health Score",
+          "description": "Get a 0-100 health score for a crop based on how closely current conditions match optimal parameters.",
+          "endpoint": "GET /api/intelligence/health/{id}"
+        }
+      ]
+    },
+    {
+      "id": "reports-export",
+      "title": "Reports & Export",
+      "icon": "file-export",
+      "items": [
+        {
+          "title": "Export Sensor Data (CSV)",
+          "description": "Download sensor data as a CSV file. Specify time range with the hours parameter.",
+          "endpoint": "GET /api/export/sensor-csv",
+          "tip": "Example: /api/export/sensor-csv?hours=168 for a week of data."
+        },
+        {
+          "title": "Crop Lifecycle Report",
+          "description": "Full lifecycle report for a specific crop: variety info, stage history, conditions, harvest results, and quality scores.",
+          "endpoint": "GET /api/export/crop-report/{id}"
+        },
+        {
+          "title": "Weekly Summary",
+          "description": "7-day summary including sensor averages, alert counts, crop stage changes, harvest totals, and condition trends.",
+          "endpoint": "GET /api/reports/weekly"
+        },
+        {
+          "title": "Monthly Summary",
+          "description": "30-day summary with monthly averages, yield totals, variety comparisons, alert patterns, and business metrics.",
+          "endpoint": "GET /api/reports/monthly"
+        }
+      ]
+    },
+    {
+      "id": "business",
+      "title": "Business & SaaS",
+      "icon": "briefcase",
+      "items": [
+        {
+          "title": "Business Dashboard (HTML)",
+          "description": "Visual business dashboard with client management, revenue metrics, and SaaS overview. Opens in browser.",
+          "endpoint": "GET /business",
+          "tip": "Public endpoint — no API key needed."
+        },
+        {
+          "title": "Business Intelligence API",
+          "description": "Business metrics including MRR, ARR, client counts, subscription distribution, and upsell pipeline.",
+          "endpoint": "GET /api/business/dashboard"
+        },
+        {
+          "title": "Site Visits UI",
+          "description": "Visual backoffice for managing field visits to client greenhouses. Includes scheduling and follow-up tracking.",
+          "endpoint": "GET /site-visits",
+          "tip": "Public endpoint — no API key needed."
+        },
+        {
+          "title": "Site Visit Analytics",
+          "description": "Visit statistics, follow-up completion rates, and visit type distribution.",
+          "endpoint": "GET /api/site-visits/dashboard"
+        }
+      ]
+    },
+    {
+      "id": "data-harvester",
+      "title": "Data Harvester",
+      "icon": "database",
+      "items": [
+        {
+          "title": "Harvester Status",
+          "description": "Overview of all external data sources: last harvest time, next scheduled harvest, success/failure status.",
+          "endpoint": "GET /api/harvester/status"
+        },
+        {
+          "title": "Weather Data",
+          "description": "Current conditions and forecast from the weather harvester (Open-Meteo).",
+          "endpoint": "GET /api/harvester/weather"
+        },
+        {
+          "title": "Electricity Prices",
+          "description": "OMIE electricity spot prices with cheapest hours highlighted. Useful for scheduling energy-intensive operations.",
+          "endpoint": "GET /api/harvester/electricity"
+        },
+        {
+          "title": "Solar Data",
+          "description": "Sunrise, sunset, day length from PVGIS. Helps plan supplemental lighting schedules.",
+          "endpoint": "GET /api/harvester/solar"
+        },
+        {
+          "title": "Market Produce Prices",
+          "description": "Latest prices per kg for tracked produce. Supports manual entry and CSV import.",
+          "endpoint": "GET /api/harvester/market-prices"
+        },
+        {
+          "title": "Tourism Index",
+          "description": "Tourism index for the Algarve region. Higher tourism correlates with increased local market demand.",
+          "endpoint": "GET /api/harvester/tourism"
+        },
+        {
+          "title": "Manual Harvest Trigger",
+          "description": "Trigger an immediate data harvest for all sources or a specific source. Body: {\"source\": \"weather\"} for specific.",
+          "endpoint": "POST /api/harvester/trigger"
+        }
+      ]
+    },
+    {
+      "id": "system",
+      "title": "System & Infrastructure",
+      "icon": "server",
+      "items": [
+        {
+          "title": "AC Control",
+          "description": "View current AC status or control the Haier AC unit (power on/off, temperature, mode: cool/heat/auto/fan/dry).",
+          "endpoint": "GET /api/ac, POST /api/ac",
+          "tip": "Requires HON_EMAIL and HON_PASSWORD in .env for Haier hOn API access."
+        },
+        {
+          "title": "ETL Pipeline Status",
+          "description": "Check the InfluxDB → PostgreSQL ETL pipeline status, watermarks, and last processing times.",
+          "endpoint": "GET /api/etl/status",
+          "tip": "Public endpoint. Enable background ETL with ETL_ENABLED=true in .env."
+        },
+        {
+          "title": "Manual ETL Trigger",
+          "description": "Manually trigger an ETL cycle. Body: {\"cycle\": \"hourly\"}, {\"cycle\": \"daily\"}, or {\"cycle\": \"full\"}.",
+          "endpoint": "POST /api/etl/run"
+        },
+        {
+          "title": "Sensor Calibration",
+          "description": "Record a sensor calibration with sensor ID, type, calibration value, reference value, and notes.",
+          "endpoint": "POST /api/calibrations"
+        },
+        {
+          "title": "Calibration Due Dates",
+          "description": "List sensors that are due or overdue for calibration.",
+          "endpoint": "GET /api/calibrations/due"
+        },
+        {
+          "title": "Drift Detection",
+          "description": "Monitor sensor drift — gradual shifts from expected values that indicate calibration is needed.",
+          "endpoint": "GET /api/sensors/drift/status"
+        }
+      ]
+    }
+  ],
+  "quick_tips": [
+    {
+      "title": "API Authentication",
+      "description": "All endpoints except health, docs, help, business UI, site-visits UI, and ETL status require an X-API-Key header. Set API_KEY in your .env file."
+    },
+    {
+      "title": "Optimal VPD Range",
+      "description": "Target VPD of 0.8-1.2 kPa for vegetative growth and 1.2-1.6 kPa for flowering. Below 0.4 risks mold; above 1.6 causes plant stress."
+    },
+    {
+      "title": "Notification Cooldown",
+      "description": "Alerts have a 15-minute cooldown per rule to prevent spam. Adjust with NOTIFICATION_COOLDOWN in .env (value in seconds)."
+    },
+    {
+      "title": "Rule Changes Are Instant",
+      "description": "Creating, updating, or deleting rules takes effect immediately on the next sensor reading — no server restart needed."
+    },
+    {
+      "title": "Crop Auto-Advancement",
+      "description": "Crops automatically advance to the next growth stage when minimum duration is met. The server checks on every startup and can be triggered manually."
+    },
+    {
+      "title": "CSV Export for Spreadsheets",
+      "description": "Use GET /api/export/sensor-csv?hours=168 to download a week of sensor data as CSV for analysis in Excel or Google Sheets."
+    },
+    {
+      "title": "ETL for Business Intelligence",
+      "description": "Enable ETL_ENABLED=true in .env to automatically aggregate sensor data into PostgreSQL for Grafana BI dashboards."
+    },
+    {
+      "title": "Dual Sensor Redundancy",
+      "description": "For critical measurements, post dual sensor readings via POST /api/sensors/dual. The system detects discrepancies and alerts on sensor drift."
+    }
+  ],
+  "documentation_links": [
+    {
+      "title": "User Guide",
+      "path": "docs/USER_GUIDE.md",
+      "description": "Comprehensive usage guide for product owners and operators"
+    },
+    {
+      "title": "Backend README",
+      "path": "backend/README.md",
+      "description": "Developer-focused API reference, setup instructions, and Arduino integration"
+    },
+    {
+      "title": "Alert Escalation",
+      "path": "backend/docs/ALERT_ESCALATION.md",
+      "description": "4-level smart alert escalation system with timing and intelligence features"
+    },
+    {
+      "title": "Growth Stage System",
+      "path": "backend/docs/GROWTH_STAGE_SYSTEM.md",
+      "description": "Crop lifecycle management with variety-specific stages and conditions"
+    },
+    {
+      "title": "SaaS Business Platform",
+      "path": "backend/docs/SAAS_BUSINESS_PLATFORM.md",
+      "description": "Multi-tenant SaaS model with 4 subscription tiers and revenue tracking"
+    },
+    {
+      "title": "ETL Guide",
+      "path": "backend/docs/ETL_GUIDE.md",
+      "description": "InfluxDB to PostgreSQL data pipeline with hourly/daily cycles"
+    },
+    {
+      "title": "Variety Configurations",
+      "path": "backend/docs/VARIETY_CONFIGS.md",
+      "description": "Stage-specific optimal conditions for all 6 crop varieties"
+    },
+    {
+      "title": "Architecture Documentation",
+      "path": "docs/architecture/",
+      "description": "Database design, microservices architecture, and multi-location plans"
+    },
+    {
+      "title": "DevOps & Deployment",
+      "path": "docs/devops/",
+      "description": "Deployment guides, CI/CD pipeline, and Raspberry Pi setup"
+    },
+    {
+      "title": "Strategy & Vision",
+      "path": "docs/strategy/",
+      "description": "Executive summary, grant proposals, and remote community deployment vision"
+    }
+  ]
+}

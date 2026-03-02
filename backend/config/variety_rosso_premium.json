@@ -82,6 +82,18 @@
       "critical_max": 900.0,
       "warning_margin": 100.0,
       "notes": "Higher light intensity for red pigment development (anthocyanins)"
+    },
+    "vpd": {
+      "optimal_min": 0.8,
+      "optimal_max": 1.2,
+      "warning_low": 0.4,
+      "warning_high": 1.6,
+      "notes": "Standard lettuce VPD range — red varieties tolerate slightly higher"
+    },
+    "dli": {
+      "optimal_min": 14,
+      "optimal_max": 20,
+      "notes": "Higher DLI needed for anthocyanin production and color development"
     }
   },
 

@@ -111,7 +111,15 @@
       "sensor": "ph",
       "condition": "above",
       "threshold": 7.0,
-      "action": {"type": "notify", "severity": "critical", "message": "pH too alkaline — nutrient lockout risk"}
+      "warning_margin": 0.3,
+      "action": {
+        "type": "notify",
+        "severity": "critical",
+        "message": "pH too alkaline — nutrient lockout risk",
+        "recommended_action": "1) Add pH down solution gradually. 2) Check water source pH. 3) Verify pH probe calibration. 4) Test nutrient solution concentration."
+      },
+      "preventive_message": "pH rising toward alkaline threshold",
+      "preventive_action": "Monitor pH buffer capacity. Prepare pH down solution. Check if water source changed."
     },
     {
       "id": "notify_low_ph",
@@ -120,7 +128,15 @@
       "sensor": "ph",
       "condition": "below",
       "threshold": 5.5,
-      "action": {"type": "notify", "severity": "critical", "message": "pH too acidic — root damage risk"}
+      "warning_margin": 0.3,
+      "action": {
+        "type": "notify",
+        "severity": "critical",
+        "message": "pH too acidic — root damage risk",
+        "recommended_action": "1) Add pH up solution gradually. 2) Check nutrient mix ratios. 3) Verify pH probe calibration. 4) Inspect for organic acid buildup."
+      },
+      "preventive_message": "pH dropping toward acidic threshold",
+      "preventive_action": "Monitor pH buffer. Prepare pH up solution. Check nutrient dosing system."
     },
     {
       "id": "notify_high_ec",
@@ -129,7 +145,15 @@
       "sensor": "ec",
       "condition": "above",
       "threshold": 2.5,
-      "action": {"type": "notify", "severity": "warning", "message": "EC too high — nutrient burn risk"}
+      "warning_margin": 0.3,
+      "action": {
+        "type": "notify",
+        "severity": "warning",
+        "message": "EC too high — nutrient burn risk",
+        "recommended_action": "1) Dilute with fresh water. 2) Check nutrient dosing system. 3) Verify EC probe calibration. 4) Monitor leaf tips for burn signs."
+      },
+      "preventive_message": "EC rising toward maximum threshold",
+      "preventive_action": "Prepare fresh water for dilution. Check nutrient dosing system. Monitor plant tips for early burn."
     },
     {
       "id": "notify_low_ec",
@@ -138,7 +162,15 @@
       "sensor": "ec",
       "condition": "below",
       "threshold": 0.8,
-      "action": {"type": "notify", "severity": "warning", "message": "EC too low — nutrient deficiency"}
+      "warning_margin": 0.2,
+      "action": {
+        "type": "notify",
+        "severity": "warning",
+        "message": "EC too low — nutrient deficiency",
+        "recommended_action": "1) Add nutrient concentrate. 2) Check for leaks or over-dilution. 3) Verify EC probe calibration. 4) Monitor plant color for deficiency signs."
+      },
+      "preventive_message": "EC dropping below effective nutrient level",
+      "preventive_action": "Prepare nutrient concentrate. Check for leaks or excessive water top-ups."
     },
     {
       "id": "notify_low_water",
@@ -148,6 +180,110 @@
       "condition": "below",
       "threshold": 20.0,
       "action": {"type": "notify", "severity": "critical", "message": "Water level critically low — refill needed"}
+    },
+
+    {
+      "id": "compound_heatwave_cooling",
+      "name": "Compound: Heatwave + High Indoor Temp",
+      "enabled": true,
+      "sensor": "temperature",
+      "condition": "above",
+      "threshold": 26.0,
+      "warning_margin": 2.0,
+      "external_condition": {
+        "source_field": "weather.is_hot",
+        "condition": "equals",
+        "threshold": true
+      },
+      "action": {
+        "type": "notify",
+        "severity": "critical",
+        "message": "Heatwave + indoor temp rising — cooling capacity may be insufficient",
+        "recommended_action": "1) Maximize ventilation and AC. 2) Deploy shade cloth. 3) Reduce light intensity. 4) Add ice bottles to reservoir."
+      },
+      "preventive_message": "Outdoor heatwave detected while indoor temperature rising",
+      "preventive_action": "Pre-cool greenhouse. Check AC capacity. Prepare shade cloth."
+    },
+    {
+      "id": "compound_rain_humidity",
+      "name": "Compound: Rain + High Indoor Humidity",
+      "enabled": true,
+      "sensor": "humidity",
+      "condition": "above",
+      "threshold": 75.0,
+      "warning_margin": 5.0,
+      "external_condition": {
+        "source_field": "weather.is_rainy",
+        "condition": "equals",
+        "threshold": true
+      },
+      "action": {
+        "type": "notify",
+        "severity": "warning",
+        "message": "Rain outside + high indoor humidity — mold risk elevated",
+        "recommended_action": "1) Run dehumidifier at maximum. 2) Reduce ventilation (humid outside air). 3) Increase plant spacing. 4) Check for roof leaks."
+      },
+      "preventive_message": "Rain detected outside while indoor humidity climbing",
+      "preventive_action": "Close vents to outside air. Run dehumidifier. Check seals and drainage."
+    },
+    {
+      "id": "compound_cold_night",
+      "name": "Compound: Cold Weather + Low Indoor Temp",
+      "enabled": true,
+      "sensor": "temperature",
+      "condition": "below",
+      "threshold": 16.0,
+      "warning_margin": 2.0,
+      "external_condition": {
+        "source_field": "weather.is_cold",
+        "condition": "equals",
+        "threshold": true
+      },
+      "action": {
+        "type": "notify",
+        "severity": "critical",
+        "message": "Cold weather + indoor temp dropping — heating needed",
+        "recommended_action": "1) Activate greenhouse heating. 2) Close all vents. 3) Check insulation. 4) Warm reservoir water if below 18°C."
+      },
+      "preventive_message": "Cold weather outside and indoor temperature declining",
+      "preventive_action": "Pre-heat greenhouse. Close vents. Check heating system readiness."
+    },
+    {
+      "id": "compound_short_day_low_light",
+      "name": "Compound: Short Day + Low Light",
+      "enabled": true,
+      "sensor": "light_level",
+      "condition": "below",
+      "threshold": 200.0,
+      "external_condition": {
+        "source_field": "solar.is_short_day",
+        "condition": "equals",
+        "threshold": true
+      },
+      "action": {
+        "type": "notify",
+        "severity": "warning",
+        "message": "Short day length + low light — DLI target at risk",
+        "recommended_action": "1) Extend supplemental lighting hours. 2) Increase LED intensity. 3) Clean light fixtures. 4) Consider adjusting photoperiod schedule."
+      }
+    },
+    {
+      "id": "compound_cheap_power_ac",
+      "name": "Compound: Cheap Electricity + High Temp",
+      "enabled": true,
+      "sensor": "temperature",
+      "condition": "above",
+      "threshold": 25.0,
+      "external_condition": {
+        "source_field": "electricity.is_cheap_hour",
+        "condition": "equals",
+        "threshold": true
+      },
+      "action": {
+        "type": "ac",
+        "command": "cool",
+        "target_temp": 22
+      }
     }
   ]
 }

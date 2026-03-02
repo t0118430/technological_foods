@@ -225,8 +225,8 @@ class WeatherService:
                     'radiation_wm2': _safe_index(rads, i) or 0,
                 })
 
-        # Lighting advisory
-        target_photoperiod = 14  # hours for lettuce
+        # Lighting advisory (matches sensor_analytics DEFAULT_PHOTOPERIOD_HOURS)
+        target_photoperiod = 14  # hours — default for lettuce/herbs
         supplemental_hours_needed = max(0, target_photoperiod - daylight_hours)
 
         if supplemental_hours_needed == 0:

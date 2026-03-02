@@ -49,6 +49,21 @@
     }
   },
 
+  "optimal_ranges": {
+    "vpd": {
+      "optimal_min": 1.0,
+      "optimal_max": 1.5,
+      "warning_low": 0.5,
+      "warning_high": 2.0,
+      "notes": "Mediterranean herb — tolerates higher VPD, likes warm and dry"
+    },
+    "dli": {
+      "optimal_min": 16,
+      "optimal_max": 22,
+      "notes": "High-light herb, needs strong light for essential oil production"
+    }
+  },
+
   "algarve_climate": {
     "optimal_season": "may_to_september",
     "heat_tolerance": "excellent",

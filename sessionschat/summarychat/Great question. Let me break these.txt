@@ -1,0 +1,112 @@
+Great question. Let me break these down for your context — Python backend, Arduino C++, GitHub repo, Raspberry Pi deployment,     
+  solo/small team.
+
+  What You Already Have
+
+  SonarQube — covers the most ground:
+  - Code quality (bugs, code smells, duplication)
+  - Security hotspots (hardcoded secrets, SQL injection patterns)
+  - Technical debt tracking
+  - Supports Python + C++ (Arduino)
+
+  That's your foundation. Now let's see what layers on top.
+
+  Free / Already Included with GitHub
+  ┌───────────────────────┬───────────────────────────────────────────────────┬──────────────────┬─────────────────────────────────┐
+  │         Tool          │                   What It Does                    │       Cost       │        Effort to Enable         │
+  ├───────────────────────┼───────────────────────────────────────────────────┼──────────────────┼─────────────────────────────────┤
+  │ Dependabot            │ Alerts on vulnerable Python/npm dependencies      │ Free             │ 2 clicks in GitHub Settings >   │
+  │                       │                                                   │                  │ Security                        │
+  ├───────────────────────┼───────────────────────────────────────────────────┼──────────────────┼─────────────────────────────────┤
+  │ Secret Scanning       │ Detects committed API keys, tokens, passwords     │ Free             │ Auto-enabled on public repos    │
+  ├───────────────────────┼───────────────────────────────────────────────────┼──────────────────┼─────────────────────────────────┤
+  │ CodeQL                │ Deep SAST — finds SQL injection, XSS, command     │ Free for public  │ Add 1 workflow file             │
+  │                       │ injection in code                                 │ repos            │                                 │
+  ├───────────────────────┼───────────────────────────────────────────────────┼──────────────────┼─────────────────────────────────┤
+  │ GitHub Security       │ CVE alerts for your dependency tree               │ Free             │ Enabled by default              │
+  │ Advisories            │                                                   │                  │                                 │
+  └───────────────────────┴───────────────────────────────────────────────────┴──────────────────┴─────────────────────────────────┘
+  My recommendation: enable all 4. They're free and take minutes to set up. Dependabot and Secret Scanning are just toggles. CodeQL 
+  needs one workflow:
+
+  # .github/workflows/codeql.yml
+  name: CodeQL
+  on:
+    push:
+      branches: [master]
+    pull_request:
+      branches: [master]
+    schedule:
+      - cron: '0 6 * * 1'  # Weekly Monday scan
+
+  jobs:
+    analyze:
+      runs-on: ubuntu-latest
+      permissions:
+        security-events: write
+      steps:
+        - uses: actions/checkout@v4
+        - uses: github/codeql-action/init@v3
+          with:
+            languages: python
+        - uses: github/codeql-action/analyze@v3
+
+  What About Wiz?
+
+  Wiz is an enterprise cloud security platform (AWS/Azure/GCP). It scans:
+  - Cloud infrastructure misconfigurations
+  - Container image vulnerabilities
+  - Runtime threats
+  - IAM policies
+
+  Verdict: Skip it. You're deploying to a Raspberry Pi via Docker Compose, not cloud infrastructure. Wiz solves problems you don't  
+  have yet. It's also expensive (enterprise pricing, typically $50k+/year).
+
+  Recommended Stack for Your Scale
+  ┌─────────────────────────┬────────────────────────┬────────────────────────────────────────────────┐
+  │          Layer          │          Tool          │                      Why                       │
+  ├─────────────────────────┼────────────────────────┼────────────────────────────────────────────────┤
+  │ Code quality            │ SonarQube              │ You already have it planned                    │
+  ├─────────────────────────┼────────────────────────┼────────────────────────────────────────────────┤
+  │ SAST (security in code) │ CodeQL                 │ Free, finds injection/auth bugs, GitHub-native │
+  ├─────────────────────────┼────────────────────────┼────────────────────────────────────────────────┤
+  │ Dependencies            │ Dependabot             │ Free, auto-PRs for vulnerable packages         │
+  ├─────────────────────────┼────────────────────────┼────────────────────────────────────────────────┤
+  │ Secrets                 │ GitHub Secret Scanning │ Free, catches committed credentials            │
+  ├─────────────────────────┼────────────────────────┼────────────────────────────────────────────────┤
+  │ Container images        │ Trivy                  │ Free, scans Docker images for CVEs             │
+  └─────────────────────────┴────────────────────────┴────────────────────────────────────────────────┘
+  Trivy is the one addition worth considering — it scans your Docker images (influxdb, grafana, postgres, etc.) for known
+  vulnerabilities:
+
+  # Add to pr-checks.yml or standalone
+  - name: Scan Docker images
+    uses: aquasecurity/trivy-action@master
+    with:
+      scan-type: 'fs'
+      scan-ref: 'backend/'
+      severity: 'CRITICAL,HIGH'
+
+  What NOT to Add
+  ┌──────────────────┬─────────────────────────────────────────────────────────────────────────┐
+  │       Tool       │                                Why Skip                                 │
+  ├──────────────────┼─────────────────────────────────────────────────────────────────────────┤
+  │ Wiz              │ Cloud-native, you're on bare metal Pi                                   │
+  ├──────────────────┼─────────────────────────────────────────────────────────────────────────┤
+  │ Snyk (paid tier) │ Dependabot does the same for free                                       │
+  ├──────────────────┼─────────────────────────────────────────────────────────────────────────┤
+  │ Checkmarx        │ Enterprise SAST, CodeQL covers you                                      │
+  ├──────────────────┼─────────────────────────────────────────────────────────────────────────┤
+  │ Fortify          │ Same — enterprise, expensive, overkill                                  │
+  ├──────────────────┼─────────────────────────────────────────────────────────────────────────┤
+  │ OWASP ZAP (DAST) │ Dynamic scanning — useful later when you have HTTPS + public-facing API │
+  └──────────────────┴─────────────────────────────────────────────────────────────────────────┘
+  Priority Order
+
+  1. Dependabot + Secret Scanning — enable today (2 minutes, GitHub Settings > Code Security)
+  2. CodeQL workflow — add this week (1 file, free)
+  3. SonarQube — you already have it planned
+  4. Trivy — add when you want container image scanning
+
+  These 4 tools + SonarQube give you coverage across code quality, SAST, dependency vulnerabilities, secrets, and container security
+   — all free, all appropriate for your scale.

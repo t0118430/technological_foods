@@ -129,7 +129,8 @@ class RuleEngine:
         return False
 
     def evaluate(self, sensor_data: Dict[str, Any], sensor_id: str = "arduino_1",
-                 external_data: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+                 external_data: Dict[str, Any] = None,
+                 extra_rules: List[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         """
         Evaluate all enabled rules against incoming sensor data.
         Returns list of triggered actions.
@@ -142,10 +143,15 @@ class RuleEngine:
         Supports compound rules with external_condition:
         - If external_condition is set, sensor condition AND external condition must both be true
         - 100% backward compatible: existing rules work unchanged when external_data is None
+
+        Args:
+            extra_rules: Optional additional rules (e.g. stage-specific crop rules)
+                         evaluated alongside base rules but not persisted.
         """
         triggered = []
+        all_rules = self.rules + (extra_rules or [])
 
-        for rule in self.rules:
+        for rule in all_rules:
             if not rule.get('enabled', True):
                 continue
 

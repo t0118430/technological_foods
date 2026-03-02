@@ -805,6 +805,2572 @@
           }
         }
       }
+    },
+    "/api/crops": {
+      "get": {
+        "summary": "List active crops",
+        "description": "Returns all active crop batches with their current growth stage.",
+        "operationId": "listCrops",
+        "tags": ["Crops"],
+        "responses": {
+          "200": {
+            "description": "List of active crops",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "crops": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create new crop batch",
+        "description": "Start a new crop production batch. The crop begins in the germination stage.",
+        "operationId": "createCrop",
+        "tags": ["Crops"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "variety": {
+                    "type": "string",
+                    "example": "rosso_premium",
+                    "description": "Variety identifier (rosso_premium, curly_green, arugula_rocket, basil_genovese, mint_spearmint, tomato_cherry)"
+                  },
+                  "plant_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Planting date (defaults to today)",
+                    "example": "2026-02-12"
+                  },
+                  "zone": {
+                    "type": "string",
+                    "default": "main",
+                    "description": "Growing zone identifier",
+                    "example": "main"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Optional notes about this batch"
+                  }
+                },
+                "required": ["variety"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Crop batch created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "created" },
+                    "crop": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error (variety required)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/crops/{id}": {
+      "get": {
+        "summary": "Get crop details with stage history",
+        "description": "Returns full crop details including current stage, stage transition history, and metadata.",
+        "operationId": "getCrop",
+        "tags": ["Crops"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Crop batch ID",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Crop details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "404": {
+            "description": "Crop not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/crops/{id}/conditions": {
+      "get": {
+        "summary": "Get stage-specific optimal conditions",
+        "description": "Returns optimal growing conditions (temperature, humidity, pH, EC, light) for the crop's current growth stage.",
+        "operationId": "getCropConditions",
+        "tags": ["Crops"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Crop batch ID",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Optimal conditions for current stage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "404": {
+            "description": "Crop not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/crops/{id}/rules": {
+      "get": {
+        "summary": "Get stage-specific monitoring rules",
+        "description": "Returns dynamically generated monitoring rules tailored to the crop's current growth stage and variety.",
+        "operationId": "getCropRules",
+        "tags": ["Crops"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Crop batch ID",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stage-specific rules",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rules": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/crops/{id}/advance": {
+      "post": {
+        "summary": "Advance growth stage",
+        "description": "Manually advance a crop to a specific growth stage. Records the transition with a reason.",
+        "operationId": "advanceCropStage",
+        "tags": ["Crops"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Crop batch ID",
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "stage": {
+                    "type": "string",
+                    "description": "Target growth stage",
+                    "example": "vegetative",
+                    "enum": ["germination", "seedling", "transplant", "vegetative", "flowering", "fruiting", "maturity", "harvest_ready"]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "default": "Manual advancement",
+                    "description": "Reason for the stage transition",
+                    "example": "Visual inspection confirms readiness"
+                  }
+                },
+                "required": ["stage"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stage advanced successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "advanced" },
+                    "crop_id": { "type": "integer", "example": 1 },
+                    "stage": { "type": "string", "example": "vegetative" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error (stage required)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Failed to advance stage",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/crops/{id}/harvest": {
+      "post": {
+        "summary": "Record harvest",
+        "description": "Record a harvest event for a crop batch, including weight, quality, market value, and notes.",
+        "operationId": "recordHarvest",
+        "tags": ["Crops"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Crop batch ID",
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "weight_kg": {
+                    "type": "number",
+                    "description": "Harvest weight in kilograms",
+                    "example": 2.5
+                  },
+                  "quality_grade": {
+                    "type": "string",
+                    "default": "standard",
+                    "description": "Quality grade (premium, standard, economy)",
+                    "example": "premium"
+                  },
+                  "market_value": {
+                    "type": "number",
+                    "description": "Market value in local currency",
+                    "example": 15.50
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Optional harvest notes"
+                  }
+                },
+                "required": ["weight_kg"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Harvest recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "harvested" },
+                    "harvest_id": { "type": "integer", "example": 1 }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error (weight_kg required)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/dashboard": {
+      "get": {
+        "summary": "Comprehensive crop dashboard",
+        "description": "Returns a complete overview of all crops, their stages, conditions, and alerts.",
+        "operationId": "getCropDashboard",
+        "tags": ["Crops"],
+        "responses": {
+          "200": {
+            "description": "Dashboard data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/harvest/analytics": {
+      "get": {
+        "summary": "Harvest performance metrics",
+        "description": "Returns harvest analytics including yield per variety, quality distribution, and trends.",
+        "operationId": "getHarvestAnalytics",
+        "tags": ["Crops"],
+        "responses": {
+          "200": {
+            "description": "Harvest analytics data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/business/dashboard": {
+      "get": {
+        "summary": "Complete business dashboard",
+        "description": "Returns the full business intelligence dashboard including revenue, costs, margins, forecasts, and operational KPIs.",
+        "operationId": "getBusinessDashboard",
+        "tags": ["Business Intelligence"],
+        "responses": {
+          "200": {
+            "description": "Business dashboard data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/calibrations": {
+      "post": {
+        "summary": "Record sensor calibration",
+        "description": "Record that a sensor has been calibrated. Sets the next calibration due date based on next_due_days.",
+        "operationId": "recordCalibration",
+        "tags": ["Calibrations"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sensor_type": {
+                    "type": "string",
+                    "description": "Type of sensor calibrated (e.g. ph, ec, temperature)",
+                    "example": "ph"
+                  },
+                  "next_due_days": {
+                    "type": "integer",
+                    "default": 30,
+                    "description": "Days until next calibration is due",
+                    "example": 30
+                  },
+                  "performed_by": {
+                    "type": "string",
+                    "description": "Person who performed the calibration",
+                    "example": "technician_1"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Calibration notes"
+                  }
+                },
+                "required": ["sensor_type"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Calibration recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "recorded" },
+                    "calibration_id": { "type": "integer", "example": 1 }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error (sensor_type required)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/calibrations/due": {
+      "get": {
+        "summary": "Get sensors needing calibration",
+        "description": "Returns a list of sensors that are due or overdue for calibration.",
+        "operationId": "getDueCalibrations",
+        "tags": ["Calibrations"],
+        "responses": {
+          "200": {
+            "description": "Calibrations due list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "calibrations_due": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/sensors/drift/status": {
+      "get": {
+        "summary": "Drift detection status",
+        "description": "Returns the current drift detection status for all monitored sensors, including drift magnitude and calibration recommendations.",
+        "operationId": "getDriftStatus",
+        "tags": ["Sensor Drift"],
+        "responses": {
+          "200": {
+            "description": "Drift status for all sensors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/sensors/drift/{sensor_id}": {
+      "get": {
+        "summary": "Drift trend for specific sensor",
+        "description": "Returns the historical drift trend for a specific sensor, including drift over time and projected failure date.",
+        "operationId": "getDriftTrend",
+        "tags": ["Sensor Drift"],
+        "parameters": [
+          {
+            "name": "sensor_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Sensor identifier",
+            "example": "arduino_1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drift trend data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sensor_id": { "type": "string", "example": "arduino_1" },
+                    "trend": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/sensors/dual": {
+      "post": {
+        "summary": "Submit dual sensor reading with drift analysis",
+        "description": "Submit readings from a primary and secondary sensor pair. The system analyzes drift between the two, calculates revenue risk, and sends alerts if thresholds are exceeded.",
+        "operationId": "submitDualSensorReading",
+        "tags": ["Sensor Drift"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sensor_id": {
+                    "type": "string",
+                    "description": "Sensor pair identifier",
+                    "example": "arduino_1"
+                  },
+                  "primary": {
+                    "type": "object",
+                    "description": "Primary sensor readings",
+                    "additionalProperties": true,
+                    "example": { "temperature": 25.5, "humidity": 60.0 }
+                  },
+                  "secondary": {
+                    "type": "object",
+                    "description": "Secondary sensor readings",
+                    "additionalProperties": true,
+                    "example": { "temperature": 25.8, "humidity": 61.2 }
+                  },
+                  "drift": {
+                    "type": "object",
+                    "description": "Optional pre-calculated drift data",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Drift analysis complete",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "analyzed" },
+                    "sensor_id": { "type": "string", "example": "arduino_1" },
+                    "analysis": {
+                      "type": "object",
+                      "properties": {
+                        "status": { "type": "string", "example": "healthy" },
+                        "temp_diff": { "type": "number", "example": 0.3 },
+                        "humidity_diff": { "type": "number", "example": 1.2 },
+                        "needs_calibration": { "type": "boolean", "example": false },
+                        "days_until_failure": { "type": "number", "example": 45 }
+                      }
+                    },
+                    "revenue_risk": {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "trend": {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "alert_sent": { "type": "boolean", "example": false }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/analytics/summary": {
+      "get": {
+        "summary": "Full analytics snapshot",
+        "description": "Returns a comprehensive analytics summary including VPD, DLI, trends, anomalies, and sensor statistics.",
+        "operationId": "getAnalyticsSummary",
+        "tags": ["Sensor Analytics"],
+        "parameters": [
+          {
+            "name": "sensor_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "arduino_1" },
+            "description": "Sensor identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analytics summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/analytics/vpd": {
+      "get": {
+        "summary": "Current VPD",
+        "description": "Calculates the current Vapour Pressure Deficit from the latest temperature and humidity readings, with zone classification for hydroponics.",
+        "operationId": "getVPD",
+        "tags": ["Sensor Analytics"],
+        "parameters": [
+          {
+            "name": "sensor_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "arduino_1" },
+            "description": "Sensor identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "VPD data with classification",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "404": {
+            "description": "No temperature/humidity data available",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/analytics/dli": {
+      "get": {
+        "summary": "DLI progress",
+        "description": "Calculates the Daily Light Integral progress and projected daily total based on accumulated light readings.",
+        "operationId": "getDLI",
+        "tags": ["Sensor Analytics"],
+        "parameters": [
+          {
+            "name": "sensor_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "arduino_1" },
+            "description": "Sensor identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DLI data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/analytics/trends": {
+      "get": {
+        "summary": "Trend direction",
+        "description": "Detects the trend direction (rising, falling, stable) for all sensor fields over a configurable time window.",
+        "operationId": "getTrends",
+        "tags": ["Sensor Analytics"],
+        "parameters": [
+          {
+            "name": "sensor_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "arduino_1" },
+            "description": "Sensor identifier"
+          },
+          {
+            "name": "window",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 60 },
+            "description": "Time window in minutes"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trend data per sensor field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sensor_id": { "type": "string", "example": "arduino_1" },
+                    "trends": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/analytics/anomalies": {
+      "get": {
+        "summary": "Active anomalies",
+        "description": "Detects anomalies in the latest sensor readings including spikes, flatlines, and sudden jumps.",
+        "operationId": "getAnomalies",
+        "tags": ["Sensor Analytics"],
+        "parameters": [
+          {
+            "name": "sensor_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "arduino_1" },
+            "description": "Sensor identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Active anomalies",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sensor_id": { "type": "string", "example": "arduino_1" },
+                    "anomalies": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/analytics/history": {
+      "get": {
+        "summary": "Historical data",
+        "description": "Query historical sensor data with configurable time range and aggregation window.",
+        "operationId": "getAnalyticsHistory",
+        "tags": ["Sensor Analytics"],
+        "parameters": [
+          {
+            "name": "sensor_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "arduino_1" },
+            "description": "Sensor identifier"
+          },
+          {
+            "name": "field",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "temperature" },
+            "description": "Sensor field to query (temperature, humidity, ph, ec, etc.)"
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "-7d" },
+            "description": "Start time (InfluxDB duration or RFC3339)"
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "now()" },
+            "description": "End time (InfluxDB duration or RFC3339)"
+          },
+          {
+            "name": "aggregation",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "1h" },
+            "description": "Aggregation window (e.g. 1h, 15m, 1d)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historical data points",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/weather/current": {
+      "get": {
+        "summary": "Current outdoor weather",
+        "description": "Returns current outdoor weather conditions from Open-Meteo API.",
+        "operationId": "getCurrentWeather",
+        "tags": ["Weather"],
+        "responses": {
+          "200": {
+            "description": "Current weather data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/weather/forecast": {
+      "get": {
+        "summary": "Weather forecast",
+        "description": "Returns a multi-day weather forecast from Open-Meteo API.",
+        "operationId": "getWeatherForecast",
+        "tags": ["Weather"],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 3 },
+            "description": "Number of forecast days"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Forecast data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/weather/solar": {
+      "get": {
+        "summary": "Solar data",
+        "description": "Returns sunrise, sunset, day length, and supplemental light advisory.",
+        "operationId": "getSolarData",
+        "tags": ["Weather"],
+        "responses": {
+          "200": {
+            "description": "Solar data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/weather/correlation": {
+      "get": {
+        "summary": "Indoor vs outdoor correlation",
+        "description": "Compares indoor sensor readings with outdoor weather to show greenhouse effectiveness and environmental correlation.",
+        "operationId": "getWeatherCorrelation",
+        "tags": ["Weather"],
+        "responses": {
+          "200": {
+            "description": "Correlation data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/weather/advisory": {
+      "get": {
+        "summary": "Growing advisory",
+        "description": "Returns weather-based growing condition advisories, optionally tailored to a specific variety.",
+        "operationId": "getGrowingAdvisory",
+        "tags": ["Weather"],
+        "parameters": [
+          {
+            "name": "variety",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Crop variety for targeted advice (e.g. rosso_premium, basil_genovese)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Advisory data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/market/prices": {
+      "get": {
+        "summary": "Market prices",
+        "description": "Returns current market prices for all tracked produce varieties.",
+        "operationId": "getMarketPrices",
+        "tags": ["Market Data"],
+        "responses": {
+          "200": {
+            "description": "Market price data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      },
+      "post": {
+        "summary": "Update market prices",
+        "description": "Update market prices for produce varieties.",
+        "operationId": "updateMarketPrices",
+        "tags": ["Market Data"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Prices updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/market/demand": {
+      "get": {
+        "summary": "Seasonal demand",
+        "description": "Returns seasonal demand multipliers for all produce varieties.",
+        "operationId": "getSeasonalDemand",
+        "tags": ["Market Data"],
+        "responses": {
+          "200": {
+            "description": "Demand data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/intelligence/correlations": {
+      "get": {
+        "summary": "Condition-harvest correlation",
+        "description": "Analyzes the correlation between growing conditions and harvest outcomes for a specific variety.",
+        "operationId": "getCorrelations",
+        "tags": ["Crop Intelligence"],
+        "parameters": [
+          {
+            "name": "variety",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "rosso_premium" },
+            "description": "Crop variety to analyze"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Correlation data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/intelligence/recommendations/{id}": {
+      "get": {
+        "summary": "Optimization recommendations",
+        "description": "Returns AI-generated growth optimization recommendations for a specific crop based on historical data and current conditions.",
+        "operationId": "getRecommendations",
+        "tags": ["Crop Intelligence"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Crop batch ID",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Optimization recommendations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/intelligence/predict/{id}": {
+      "get": {
+        "summary": "Yield prediction",
+        "description": "Predicts expected yield for a crop batch based on current conditions, growth stage progress, and historical performance.",
+        "operationId": "predictYield",
+        "tags": ["Crop Intelligence"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Crop batch ID",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Yield prediction data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/intelligence/health/{id}": {
+      "get": {
+        "summary": "Crop health score",
+        "description": "Calculates a composite health score for a crop batch based on environmental conditions, growth progress, and anomaly history.",
+        "operationId": "getCropHealthScore",
+        "tags": ["Crop Intelligence"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Crop batch ID",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Health score data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/export/sensor-csv": {
+      "get": {
+        "summary": "CSV download",
+        "description": "Export sensor data as a CSV file. Supports time range filtering, field selection, and aggregation.",
+        "operationId": "exportSensorCSV",
+        "tags": ["Export & Reports"],
+        "parameters": [
+          {
+            "name": "sensor_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "arduino_1" },
+            "description": "Sensor identifier"
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "-7d" },
+            "description": "Start time (InfluxDB duration or RFC3339)"
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "now()" },
+            "description": "End time (InfluxDB duration or RFC3339)"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Comma-separated list of fields to include"
+          },
+          {
+            "name": "aggregation",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Aggregation window (e.g. 1h, 15m, 1d)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV file download",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/export/crop-report/{id}": {
+      "get": {
+        "summary": "Crop lifecycle report",
+        "description": "Generates a comprehensive lifecycle report for a crop batch including stage history, conditions, and harvest data.",
+        "operationId": "exportCropReport",
+        "tags": ["Export & Reports"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Crop batch ID",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Crop lifecycle report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/reports/weekly": {
+      "get": {
+        "summary": "Weekly summary",
+        "description": "Generates a weekly summary report with sensor statistics, trends, and key events.",
+        "operationId": "getWeeklyReport",
+        "tags": ["Export & Reports"],
+        "parameters": [
+          {
+            "name": "sensor_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "arduino_1" },
+            "description": "Sensor identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Weekly summary data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/reports/monthly": {
+      "get": {
+        "summary": "Monthly summary",
+        "description": "Generates a monthly summary report with aggregated sensor statistics, trends, and operational metrics.",
+        "operationId": "getMonthlyReport",
+        "tags": ["Export & Reports"],
+        "parameters": [
+          {
+            "name": "sensor_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "arduino_1" },
+            "description": "Sensor identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Monthly summary data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/site-visits": {
+      "get": {
+        "summary": "List visits",
+        "description": "Returns a paginated and filterable list of site visits. Supports sorting, text search, and multiple filter criteria.",
+        "operationId": "listSiteVisits",
+        "tags": ["Site Visits"],
+        "security": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 1 },
+            "description": "Page number"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 20 },
+            "description": "Items per page"
+          },
+          {
+            "name": "visit_type",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Filter by visit type"
+          },
+          {
+            "name": "inspector",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Filter by inspector name"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date" },
+            "description": "Filter visits from this date"
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date" },
+            "description": "Filter visits until this date"
+          },
+          {
+            "name": "follow_up",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Filter by follow-up status"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Free text search across visit fields"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "visit_date" },
+            "description": "Sort field"
+          },
+          {
+            "name": "sort_dir",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "desc", "enum": ["asc", "desc"] },
+            "description": "Sort direction"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated visit list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create visit",
+        "description": "Create a new site visit record.",
+        "operationId": "createSiteVisit",
+        "tags": ["Site Visits"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "inspector_name": {
+                    "type": "string",
+                    "description": "Name of the inspector",
+                    "example": "John Smith"
+                  },
+                  "visit_type": {
+                    "type": "string",
+                    "description": "Type of visit",
+                    "example": "routine_inspection"
+                  },
+                  "visit_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Date of the visit"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Visit notes"
+                  }
+                },
+                "required": ["inspector_name", "visit_type"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Visit created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "created" },
+                    "id": { "type": "integer", "example": 1 }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/site-visits/dashboard": {
+      "get": {
+        "summary": "Visit analytics",
+        "description": "Returns aggregated site visit statistics and analytics for the dashboard.",
+        "operationId": "getSiteVisitsDashboard",
+        "tags": ["Site Visits"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Visit analytics data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/site-visits/clients": {
+      "get": {
+        "summary": "Client list for dropdown",
+        "description": "Returns a list of clients for use in form dropdowns.",
+        "operationId": "getSiteVisitClients",
+        "tags": ["Site Visits"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Client list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "clients": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/site-visits/export": {
+      "get": {
+        "summary": "All visits for export",
+        "description": "Returns all site visits in a format suitable for CSV export.",
+        "operationId": "exportSiteVisits",
+        "tags": ["Site Visits"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Export data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "visits": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/site-visits/{id}": {
+      "get": {
+        "summary": "Single visit detail",
+        "description": "Returns full details for a single site visit.",
+        "operationId": "getSiteVisit",
+        "tags": ["Site Visits"],
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Visit ID",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Visit details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid visit ID",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "404": {
+            "description": "Visit not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update visit",
+        "description": "Update an existing site visit record. Send only the fields you want to change.",
+        "operationId": "updateSiteVisit",
+        "tags": ["Site Visits"],
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Visit ID",
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Visit updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "updated" },
+                    "id": { "type": "integer", "example": 1 }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid visit ID",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "404": {
+            "description": "Visit not found or no fields to update",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete visit",
+        "description": "Permanently delete a site visit record.",
+        "operationId": "deleteSiteVisit",
+        "tags": ["Site Visits"],
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Visit ID",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Visit deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "deleted" },
+                    "id": { "type": "integer", "example": 1 }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid visit ID",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "404": {
+            "description": "Visit not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/site-visits/{id}/complete-follow-up": {
+      "post": {
+        "summary": "Mark follow-up done",
+        "description": "Marks a pending follow-up as completed for a site visit.",
+        "operationId": "completeSiteVisitFollowUp",
+        "tags": ["Site Visits"],
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Visit ID",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Follow-up completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "completed" },
+                    "id": { "type": "integer", "example": 1 }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid visit ID",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "404": {
+            "description": "Visit not found or no follow-up pending",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/etl/status": {
+      "get": {
+        "summary": "ETL status",
+        "description": "Returns ETL pipeline status including last run timestamps, watermarks, and processing statistics.",
+        "operationId": "getETLStatus",
+        "tags": ["ETL"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "ETL status data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/etl/run": {
+      "post": {
+        "summary": "Manual ETL trigger",
+        "description": "Manually trigger an ETL processing cycle. Supports different commands: full, hourly, daily, cleanup, backfill.",
+        "operationId": "runETL",
+        "tags": ["ETL"],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "command": {
+                    "type": "string",
+                    "default": "full",
+                    "enum": ["full", "hourly", "daily", "cleanup", "backfill"],
+                    "description": "ETL command to execute"
+                  },
+                  "dry_run": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Preview changes without applying them"
+                  },
+                  "days": {
+                    "type": "integer",
+                    "default": 30,
+                    "description": "Number of days to backfill (only for backfill command)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ETL completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "completed" },
+                    "command": { "type": "string", "example": "full" },
+                    "result": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/harvester/status": {
+      "get": {
+        "summary": "All sources status",
+        "description": "Returns the status of all registered data harvester sources including last harvest time and health.",
+        "operationId": "getHarvesterStatus",
+        "tags": ["Data Harvester"],
+        "responses": {
+          "200": {
+            "description": "Harvester status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/harvester/weather": {
+      "get": {
+        "summary": "Weather summary",
+        "description": "Returns current weather conditions and 24-hour forecast from the data harvester.",
+        "operationId": "getHarvesterWeather",
+        "tags": ["Data Harvester"],
+        "responses": {
+          "200": {
+            "description": "Weather data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "current": {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "forecast_24h": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/harvester/electricity": {
+      "get": {
+        "summary": "Electricity prices",
+        "description": "Returns current electricity price summary including cheapest hours for optimal energy usage.",
+        "operationId": "getHarvesterElectricity",
+        "tags": ["Data Harvester"],
+        "responses": {
+          "200": {
+            "description": "Electricity price data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/harvester/solar": {
+      "get": {
+        "summary": "Solar summary",
+        "description": "Returns solar data including sunrise, sunset, and day length from the data harvester.",
+        "operationId": "getHarvesterSolar",
+        "tags": ["Data Harvester"],
+        "responses": {
+          "200": {
+            "description": "Solar data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/harvester/market-prices": {
+      "get": {
+        "summary": "Market prices",
+        "description": "Returns latest market prices for tracked produce. Optionally filter by produce type.",
+        "operationId": "getHarvesterMarketPrices",
+        "tags": ["Data Harvester"],
+        "parameters": [
+          {
+            "name": "produce",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Filter by produce type"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Market price data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add price entry",
+        "description": "Manually add a market price entry for a produce type.",
+        "operationId": "addHarvesterMarketPrice",
+        "tags": ["Data Harvester"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "produce_type": {
+                    "type": "string",
+                    "description": "Type of produce",
+                    "example": "lettuce"
+                  },
+                  "market_id": {
+                    "type": "string",
+                    "description": "Market identifier",
+                    "example": "market_1"
+                  },
+                  "price_per_kg": {
+                    "type": "number",
+                    "description": "Price per kilogram",
+                    "example": 3.50
+                  },
+                  "price_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Date of the price (defaults to today)"
+                  },
+                  "source": {
+                    "type": "string",
+                    "default": "manual",
+                    "description": "Price data source"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Optional notes"
+                  }
+                },
+                "required": ["produce_type", "market_id", "price_per_kg"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Price entry created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "created" },
+                    "id": { "type": "integer", "example": 1 }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/harvester/tourism": {
+      "get": {
+        "summary": "Tourism summary",
+        "description": "Returns tourism index data and forecast from the data harvester.",
+        "operationId": "getHarvesterTourism",
+        "tags": ["Data Harvester"],
+        "responses": {
+          "200": {
+            "description": "Tourism data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/harvester/trigger": {
+      "post": {
+        "summary": "Manual harvest",
+        "description": "Manually trigger a data harvest for a specific source or all sources.",
+        "operationId": "triggerHarvest",
+        "tags": ["Data Harvester"],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string",
+                    "description": "Source name to harvest (omit for all sources)",
+                    "example": "weather"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Harvest completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "harvested" },
+                    "results": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "404": {
+            "description": "Source not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/harvester/market-prices/import": {
+      "post": {
+        "summary": "Import CSV",
+        "description": "Import market price data from a CSV string.",
+        "operationId": "importMarketPricesCSV",
+        "tags": ["Data Harvester"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "csv": {
+                    "type": "string",
+                    "description": "CSV data as a string"
+                  }
+                },
+                "required": ["csv"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Import completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "imported" },
+                    "rows": { "type": "integer", "example": 25 }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error (csv field required)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/harvester/tourism/import": {
+      "post": {
+        "summary": "Import tourism CSV",
+        "description": "Import tourism data from a CSV string.",
+        "operationId": "importTourismCSV",
+        "tags": ["Data Harvester"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "csv": {
+                    "type": "string",
+                    "description": "CSV data as a string"
+                  }
+                },
+                "required": ["csv"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Import completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "imported" },
+                    "rows": { "type": "integer", "example": 12 }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error (csv field required)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/api/help": {
+      "get": {
+        "summary": "Dashboard help content",
+        "description": "Returns help content for the dashboard UI as a JSON document.",
+        "operationId": "getHelp",
+        "tags": ["Health"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Help content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "help.json not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
     }
   },
   "tags": [
@@ -813,6 +3379,18 @@
     { "name": "AC Control", "description": "Haier AC unit control via hOn API" },
     { "name": "Rule Engine", "description": "Config server — CRUD for automation rules" },
     { "name": "Arduino Commands", "description": "Command polling for Arduino devices" },
-    { "name": "Notifications", "description": "Multi-channel alert system (console, WhatsApp, SMS, email)" }
+    { "name": "Notifications", "description": "Multi-channel alert system (console, WhatsApp, SMS, email)" },
+    { "name": "Crops", "description": "Crop lifecycle management — batches, growth stages, harvest tracking" },
+    { "name": "Business Intelligence", "description": "Business dashboard with revenue, costs, margins, and KPIs" },
+    { "name": "Calibrations", "description": "Sensor calibration tracking and due date management" },
+    { "name": "Sensor Drift", "description": "Dual-sensor drift detection and calibration alerts" },
+    { "name": "Sensor Analytics", "description": "VPD, DLI, trend detection, anomaly detection, and historical analytics" },
+    { "name": "Weather", "description": "Outdoor weather data, forecasts, solar info, and growing advisories" },
+    { "name": "Market Data", "description": "Market prices and seasonal demand data" },
+    { "name": "Crop Intelligence", "description": "AI-driven correlations, recommendations, yield predictions, and health scores" },
+    { "name": "Export & Reports", "description": "Data export (CSV) and periodic summary reports" },
+    { "name": "Site Visits", "description": "Site visit backoffice — CRUD, analytics, and export" },
+    { "name": "ETL", "description": "ETL pipeline from InfluxDB to PostgreSQL" },
+    { "name": "Data Harvester", "description": "External data collection — weather, electricity, solar, market prices, tourism" }
   ]
 }

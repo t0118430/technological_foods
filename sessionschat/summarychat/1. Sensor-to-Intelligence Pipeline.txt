@@ -1,0 +1,23 @@
+  1. Sensor-to-Intelligence Pipeline Map — All 6 sensors (temperature, humidity, pH, EC, water_level, light_level)     
+  traced from POST /api/data through derived metrics, rules, notifications, reports, and storage
+  2. Formula & Threshold Audit — 11 formulas and 15+ magic numbers assessed for correctness
+  3. Cross-Module Dependency Map — Connected, underused, and disconnected paths identified
+  4. Gap Analysis — 8 logic gaps, accuracy concerns, 5 missing automations
+  5. 15 Ranked Improvements across 3 tiers (quick wins, new APIs, advanced analytics)
+  6. Implementation Plans for Top 5 improvements
+
+  The Top 5 prioritized improvements from the analysis were:
+  ┌─────┬────────────────────────────────────────────────────┬────────┬──────────────────────────────────────────────┐ 
+  │  #  │                    Improvement                     │ Effort │                    Impact                    │ 
+  ├─────┼────────────────────────────────────────────────────┼────────┼──────────────────────────────────────────────┤ 
+  │ 1   │ Wire anomaly detection → notification system       │ ~2h    │ Anomalies detected but never alerted         │ 
+  ├─────┼────────────────────────────────────────────────────┼────────┼──────────────────────────────────────────────┤ 
+  │ 2   │ Add compound weather rules to rule engine          │ ~3h    │ Weather data collected but not used in rules │ 
+  ├─────┼────────────────────────────────────────────────────┼────────┼──────────────────────────────────────────────┤ 
+  │ 3   │ Variety-specific VPD/DLI targets per growth stage  │ ~4h    │ All varieties use same generic ranges        │ 
+  ├─────┼────────────────────────────────────────────────────┼────────┼──────────────────────────────────────────────┤ 
+  │ 4   │ IPMA integration (Portuguese meteo, UV, fire risk) │ ~6h    │ Better local weather than Open-Meteo alone   │ 
+  ├─────┼────────────────────────────────────────────────────┼────────┼──────────────────────────────────────────────┤ 
+  │ 5   │ Dynamic EC×temperature interaction model           │ ~4h    │ EC thresholds should shift with temperature  │ 
+  └─────┴────────────────────────────────────────────────────┴────────┴──────────────────────────────────────────────┘ 
+  Would you like me to start implementing any of these improvements, or is there something else you'd like to work on? 

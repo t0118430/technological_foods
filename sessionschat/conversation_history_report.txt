@@ -1,0 +1,419 @@
+================================================================================
+  TECHNOLOGICAL FOODS - Conversation History Report
+  Generated: 2026-02-12 via conversation_explorer.py
+  Project: C:\git\technological_foods
+================================================================================
+
+OVERVIEW
+--------
+  Total Sessions:     37 (project-specific)
+  Date Range:         2026-02-08 to 2026-02-12 (5 days)
+  Total Messages:     290+
+  Total Active Time:  ~55+ hours of session duration
+
+================================================================================
+SESSION TIMELINE & ACTIVITY
+================================================================================
+
+  DAY 1 — Feb 8 (Saturday)
+  -------------------------
+  Sessions: 2 | Messages: 24 | Active Time: ~5h 55m
+
+  [a4deb874] 20:22 - 00:00 (3h 37m, 17 msgs)
+    - First real notification test from Arduino sensor data
+    - Snapshot endpoint development (sensor dashboard view)
+    - Preventive alert system design (threshold proximity warnings)
+    - Anti-spam notification escalation logic
+    - Crop config files: rosso_premium & curly lettuce with growth stages
+    - Database model discussion for relational sensor storage
+    - Business-tier notification channels concept
+    - GitHub Actions pipeline discussion, deploy to Raspberry Pi
+
+  [55ed202a] 22:25 - 00:43 (2h 18m, 7 msgs)
+    - DevOps planning: GitHub Actions CI/CD
+    - Service recovery & local data storage on Raspberry Pi
+    - Business intelligence dashboard creation
+    - Dual sensor redundancy system
+    - Hot-culture crop recommendations by local weather
+    - Social impact vision: hydroponics for remote communities (Algarve)
+    - NFT food-grade PVC pipe scaling plans
+
+  DAY 2 — Feb 9 (Sunday)
+  -----------------------
+  Sessions: 6 | Messages: 49 | Active Time: ~14h 40m
+
+  [4f229f5a] 00:26 - 02:34 (2h 7m, 8 msgs)
+    - Conversation history access tooling request
+    - Branch comparison: feature/notification vs origin/master
+    - Dev branch creation from master
+    - GitHub issue summary creation
+
+  [74d8f954] 00:58 - 01:04 (5m, 2 msgs)
+    - SonarQube implementation decision
+    - Local SonarQube on Raspberry Pi, cold storage after 180 days
+
+  [47c3b3d5] 01:23 - 05:28 (4h 4m, 12 msgs)
+    - Code review: feature/dashboard -> origin/dev
+    - Raspberry Pi Wi-Fi configuration
+    - Notion integration for task management
+    - Vision: Technological Foods for Remote Communities
+    - Sustainability framework: organic farming, water recycling
+
+  [01b15732] 01:28 - 05:48 (4h 20m, 8 msgs)
+    - Scalability & SOLID principles code review
+    - User stories and task generation
+    - P0 blocking: Code Quality & Test Coverage GitHub issue
+    - Integration tests with real data
+
+  [8b6094ed] 01:46 - 05:19 (3h 33m, 16 msgs)
+    - GitHub Actions deprecated artifact v3 fix
+    - Code review for scalability
+    - Kubernetes discussion for management
+    - Notion adapter for task creation
+
+  [70429333] 02:12 - 03:01 (48m, 2 msgs)
+    - Pipeline monitoring dashboard requirement
+
+  DAY 3 — Feb 10 (Monday) — HEAVIEST DAY
+  ----------------------------------------
+  Sessions: 14 | Messages: 120+ | Active Time: ~25h+
+
+  [df1335a8] 10:59 - 20:35 (9h 36m, 28 msgs) *** LONGEST SESSION ***
+    - Git commit workflow
+    - Notion integration setup (API token, page ID)
+    - Jira-to-GitHub migration script discovery
+    - Arduino sensor field mapping to backend
+    - Docker Compose troubleshooting
+    - Snapshot notification on Swagger
+    - PostgreSQL on Raspberry Pi need identified
+    - Data strategy: crop lifecycle from nursery to fruit
+    - Business intelligence data architecture
+
+  [5ba684d9] 11:49 - 16:10 (4h 20m, 7 msgs)
+    - Sensor reading DB storage analysis
+    - Arduino code update for all sensor fields
+    - Docker Compose Node-RED image issue
+    - Snapshot endpoint Swagger exposure
+    - Production filtering by crop selection
+
+  [ea1d9e1b] 14:49 - 16:12 (1h 22m, 23 msgs)
+    - Raspberry Pi SSH access (lost password -> reinstall)
+    - Ubuntu Server fresh install on SD card
+    - Ethernet + Wi-Fi network configuration
+    - Static IP 192.168.1.100 setup
+    - SSH key generation for GitHub
+    - DevOps folder structure creation
+
+  [a531a57d] 15:48 - 15:52 (3m, 3 msgs)
+    - Raspberry Pi API configuration kickoff
+
+  [55d3fb4c] 16:31 - 20:04 (3h 32m, 3 msgs)
+    - Codebase & documentation analysis
+    - Future improvements plan: API gateway, Kubernetes
+    - Config server pattern discussion
+
+  [f4436bd7] 16:38 (1 msg)
+    - Raspberry Pi setup tutorial reference
+
+  [52ce395d] 16:41 - 18:34 (1h 53m, 18 msgs)
+    - Tutorial improvements: copyable commands, vim instructions
+    - Network config: static IP, netplan apply
+    - InfluxDB write permission fix (403 forbidden)
+    - Arduino sensor kit name: ArduinoUNOR4Wifi
+    - Backend config guide for manual Pi setup
+
+  [7699875e] 17:33 - 19:58 (2h 24m, 18 msgs)
+    - Git clone on Pi (SSH key setup)
+    - .env configuration from project reference
+    - Arduino Wi-Fi R4 authentication issues
+    - InfluxDB bucket/token verification
+    - API service status check on Pi
+    - Swagger on Raspberry Pi
+    - Notification testing
+    - Professional crop data collection architecture
+
+  [ff8f6846] 18:14 - 20:10 (1h 56m, 5 msgs)
+    - Arduino LED status indicator (blink on error, solid on OK)
+    - Seeed D2 port LED from Arduino sensor kit
+    - Deploy pipeline planning: different hardware = different deploys
+
+  [eead3ed0] 19:31 (1 msg) - Quick vim undo question
+
+  [fdfdad2e] 19:49 - 19:50 (1m, 3 msgs)
+    - Security/safekeeping review
+    - Preventive measures & tutorial creation
+
+  [f3879b3f] 20:13 (1 msg)
+    - Branch description: fix/pipeline/notification-dashboard
+
+  [c6ec65d2] 20:32 - 01:00 (4h 28m, 5 msgs)
+    - CI/CD documentation & improvement strategy
+    - SSH key for GitHub Actions
+    - Chat summary & actions
+
+  [8ef1076a] 23:51 - 00:00 (8m, 2 msgs)
+    - seed_site_visits.py script creation
+    - PostgreSQL integration testing with real data
+
+  DAY 4 — Feb 11 (Tuesday)
+  -------------------------
+  Sessions: 12 | Messages: 88+ | Active Time: ~20h+
+
+  [77c00701] 00:06 - 00:49 (42m, 3 msgs)
+    - PR creation with session summary
+    - Sensor data processing pipeline discussion
+    - InfluxDB read -> backend transform architecture
+
+  [2198cd5c] 00:28 - 01:33 (1h 4m, 4 msgs)
+    - Test folder reorganization
+    - site_visits_guide review
+    - PostgreSQL integration verification
+
+  [7be6ee3d] 01:04 - 01:13 (8m, 2 msgs)
+    - API folder restructuring (organize by concern)
+
+  [d3c57ec6] 01:36 - 02:17 (40m, 7 msgs)
+    - Commit & merge request workflow
+    - Indicative branch naming
+    - Postman/curl request examples folder
+    - Unauthorized endpoint access fix
+
+  [d0bc2397] 02:22 - 02:43 (21m, 5 msgs)
+    - Branch comparison: docker-compose-changes vs origin/master
+    - Raspberry Pi Docker configuration review
+
+  [254c6c1b] 15:37 - 16:11 (34m, 3 msgs)
+    - Previous report enhancement with conversation_explorer
+    - Merge ai-improvements with origin/master
+    - New session prompt generation
+
+  [6d44c0ec] 16:03 (6s, 2 msgs)
+    - PlantUML Java dependency issue in VS Code
+
+  [9430c043] 16:39 - 23:34 (6h 54m, 38 msgs) *** MOST MESSAGES ***
+    - python-is-python3 fix on Ubuntu
+    - Swagger CORS fix (removed hardcoded localhost)
+    - ntfy notification fix (load_dotenv order)
+    - SonarQube GitHub App configuration
+    - ngrok installation on Raspberry Pi (ARM64)
+    - GitHub Actions: deprecated actions fix (v3->v4)
+    - pytest path fix (test_*.py -> tests/)
+    - 6 test collection errors fixed (imports, SubscriptionTier, mkdir)
+    - SonarQube admin password recovery
+    - Deep analysis prompt creation
+    - Redis removal discussion (agreed: remove)
+    - ntfy notification message improvements:
+      * All Portuguese language
+      * Human-readable values (no z-scores)
+      * Proper units (°C, %, mS/cm)
+      * light_level sensor added to SENSOR_META
+
+  [19d2f0de] 17:32 - 17:59 (26m, 5 msgs)
+    - Component diagram (high-level/"Granularidade Grossa")
+    - Deployment diagram with Docker nodes
+    - Grafana dashboards: business, production, development
+
+  [c7e731ef] 18:29 - 23:19 (4h 49m, 10 msgs)
+    - Documentation audit & archival to archived/docs/
+    - ELK Stack evaluation (rejected: 4GB RAM too heavy)
+    - Security tools review: CodeQL, Wiz, GitHub Vulnerabilities
+    - Deep search plan with prioritization
+    - Crop registration issue (empty available_crops)
+    - README for product owner
+    - User guide planning for dashboard
+
+  [f6534f91] 23:38 (1 msg)
+    - Summary & propositions request
+
+  DAY 5 — Feb 12 (Wednesday) — Current
+  --------------------------------------
+  Sessions: 1 | Messages: 3
+
+  [ef5a57b0] 16:09 - ongoing
+    - This session: reading history & generating this report
+
+================================================================================
+KEY THEMES & WORK STREAMS
+================================================================================
+
+  1. SENSOR PIPELINE & DATA ARCHITECTURE
+     - Arduino UNO R4 WiFi -> InfluxDB -> Backend processing
+     - All sensor fields: temperature, humidity, pH, EC, water_level, light_level
+     - Three-layer data: InfluxDB (hot) + PostgreSQL (warm) + Redis (cache)
+     - Decision: REMOVE Redis (agreed, not yet implemented)
+     - Crop lifecycle: germination -> seedling -> transplant -> vegetative ->
+       flowering* -> fruiting* -> maturity -> harvest_ready
+     - 6 varieties configured with growth stage thresholds
+
+  2. NOTIFICATION SYSTEM
+     - Channels: console, ntfy, whatsapp (future), sms (future), email (future)
+     - ntfy fix: load_dotenv() ordering bug resolved
+     - Anti-spam: escalation logic (warn -> critical if no action)
+     - Messages: all Portuguese, human-readable, with units and gauge bars
+     - Business-tier private notifications (digest: aggressive/medium/optimist)
+
+  3. RASPBERRY PI INFRASTRUCTURE
+     - Ubuntu Server on Raspberry Pi (192.168.1.100 static IP)
+     - Docker services: InfluxDB, Grafana, Node-RED, PostgreSQL
+     - SSH key setup for GitHub
+     - API server (port 3001) with Swagger
+     - Systemd service for API auto-start
+
+  4. CI/CD & DEVOPS
+     - GitHub Actions: unit tests, deprecated actions fixed (v3->v4, v4->v5)
+     - pytest path corrected, import errors resolved
+     - SonarQube: partially configured (needs token, project key, ngrok)
+     - Deploy pipeline planned for multi-hardware (Pi + Arduino)
+     - Branch strategy: master -> dev -> feature branches
+
+  5. DOCUMENTATION & ORGANIZATION
+     - Stale docs archived to archived/docs/
+     - Comprehensive project report v3
+     - Component & deployment diagrams (PlantUML)
+     - Grafana dashboards (15 total: business, production, development)
+     - Postman/curl request examples
+     - Raspberry Pi setup tutorial
+     - Product owner README planned
+
+  6. BUSINESS INTELLIGENCE & VISION
+     - Crop recommendation by local weather (Porto/Algarve)
+     - Dual sensor redundancy for production reliability
+     - Hot-culture prioritization for market value
+     - Social impact: hydroponics for remote communities
+     - NFT system scaling with food-grade PVC
+     - Sustainability: water recycling, solar panel heat reuse
+     - Notion integration for project management
+
+  7. TOOLING & INTEGRATIONS
+     - Notion API integration (task management)
+     - conversation_explorer.py for session history
+     - Jira-to-GitHub migration script
+     - seed_varieties.py, seed_site_visits.py
+     - migrate_sqlite_to_postgres.py
+
+================================================================================
+OPEN ITEMS & NEXT ACTIONS
+================================================================================
+
+  PRIORITY 1 — Infrastructure
+  [x] Fix ntfy notifications (load_dotenv order)
+  [x] Fix Swagger CORS
+  [x] Fix GitHub Actions (deprecated actions, pytest path, imports)
+  [ ] Remove Redis from architecture (agreed, not implemented)
+  [ ] Complete SonarQube setup (admin password, project key, token, ngrok)
+
+  PRIORITY 2 — Sensor Testing & Data Pipeline
+  [ ] Test remaining sensors — only DHT22 (temp/humidity), water level & LED
+      have been tested. Still need to test:
+      - pH sensor
+      - EC (electrical conductivity) sensor
+      - Light level sensor
+  [ ] Wire snapshot notifications to filter by sensor_id/zone
+  [ ] Document simulated-to-real sensor transition plan
+  [ ] PostgreSQL integration on Raspberry Pi (full lifecycle storage)
+
+  PRIORITY 3 — Testing & Quality
+  [ ] Add tests for crop_intelligence.py, data_export.py, market_data_service.py
+  [ ] Integration tests with real sensor data
+  [ ] SonarQube code analysis in CI pipeline
+
+  PRIORITY 4 — Documentation
+  [ ] Update openapi.json with 22 new AI analytics endpoints
+  [ ] Product owner README
+  [ ] User guide for dashboard functionality
+
+  PRIORITY 5 — Business Features
+  [ ] Hot-culture crop recommendations by local weather
+  [ ] Business intelligence dashboard refinement
+  [ ] Private ntfy channel for business digest reports
+  [ ] Dual sensor redundancy implementation
+
+================================================================================
+PRODUCTIVITY METRICS
+================================================================================
+
+  Sessions per day:    Feb 8: 2 | Feb 9: 6 | Feb 10: 14 | Feb 11: 12 | Feb 12: 1
+  Peak day:            Feb 10 (Monday) — 14 sessions, 120+ messages
+  Longest session:     df1335a8 (Feb 10) — 9h 36m, 28 messages
+  Most messages:       9430c043 (Feb 11) — 38 messages, 6h 54m
+  Busiest hours:       16:00-00:00 (late afternoon to midnight)
+
+  Work pattern: Intensive evening/night sessions with rapid iteration.
+  Communication style: Fast, informal, bilingual (EN/PT), action-oriented.
+
+================================================================================
+ESP32 SENSOR STATION STATUS (as of 2026-02-12)
+================================================================================
+
+  Board: ESP32 WROOM (WiFi connected)
+  Backend target: 192.168.1.100:3001 (Raspberry Pi)
+
+  WORKING SENSORS
+  ---------------
+  GPIO33  DHT22 (air temp/humidity)     18°C / 68% humidity
+  GPIO26  Water level sensor             digital 0/1
+  GPIO25  LED with 330Ω resistor         status indicator
+
+  BROKEN / DEAD
+  -------------
+  GPIO27  DS18B20 x2 (water temp)        burned — bare wires shorted
+
+  NOT YET WIRED
+  -------------
+  GPIO34  TDS sensor (EC)                ready, next to wire
+  GPIO35  LDR (light level)              incoming (10x ordered)
+  -       pH sensor                      not yet purchased
+
+  STILL SIMULATED: pH, EC, light level (random drift values in code)
+
+  HARDWARE ISSUES RESOLVED
+  ------------------------
+  - DHT22 VCC/DATA wires were swapped
+  - GPIO25 (DAC) incompatible with DHT -> moved to GPIO33
+  - Adafruit DHT library timing issues -> switched to DHTesp
+  - DS18B20 x2 burned (bare wires shorted on breadboard)
+  - LED burned (connected to 5V without resistor)
+  - ESP32 "dead" scare -> just needed all wires removed
+  - EN pin pulled low by breadboard -> needs 3.3V jumper (temp fix)
+  - Baud rate mismatch 115200 -> 9600
+
+  HARDWARE SAFETY RULES (LEARNED THE HARD WAY)
+  ---------------------------------------------
+  1. Always wire with USB unplugged
+  2. Plastic connectors only — never bare wires on breadboard
+  3. 220-330Ω resistor with every LED
+  4. 4.7kΩ pull-up resistor with every DS18B20 — wire BEFORE power
+  5. One new component at a time — test each before adding next
+
+================================================================================
+BUDGET TRACKING — Phase 1
+================================================================================
+
+  Total spent:        ~500€+ (just above with latest order)
+  Unplanned costs:    Nursery setup + grow light (not in original plan)
+  Hardware losses:    2x DS18B20 burned, 1x LED burned
+
+  LATEST ORDER (pushed past 500€)
+  --------------------------------
+  - 5x DS18B20 water temperature sensors (replacements + spares)
+  - 10x photo/light sensors (LDR)
+  - 5x micro USB cables
+  - 3x breakout boards
+
+  STILL NEEDED
+  -------------
+  [ ] pH sensor (~15-30€) — can defer, estimate from EC + water temp
+  [ ] Screw terminal board — or use breakout boards from order
+
+  SENSOR TEST PLAN (next actions)
+  --------------------------------
+  [ ] Wire TDS sensor on GPIO34 — replace simulated EC
+  [ ] Wire LDR on GPIO35 — replace simulated light level (parts incoming)
+  [ ] Wire new DS18B20 on GPIO27 — replace burned water temp sensors
+      (use waterproof connector + 4.7kΩ pull-up this time)
+  [ ] Fix EN pin issue properly — eliminate 3.3V jumper workaround
+  [ ] Test all real sensors end-to-end with backend API
+
+================================================================================
+  End of Report
+================================================================================

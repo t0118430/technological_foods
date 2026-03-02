@@ -81,19 +81,6 @@ services:
     networks:
       - agritech-network
 
-  # Redis - Cache layer for latest readings, dashboard refresh, rate limiting
-  redis:
-    image: redis:7-alpine
-    container_name: agritech-redis
-    ports:
-      - "6379:6379"
-    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
-    volumes:
-      - redis-data:/data
-    restart: unless-stopped
-    networks:
-      - agritech-network
-
 networks:
   agritech-network:
     driver: bridge
@@ -104,4 +91,3 @@ volumes:
   grafana-data:
   nodered-data:
   postgres-data:
-  redis-data:

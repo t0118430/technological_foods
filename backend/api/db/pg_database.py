@@ -1,10 +1,9 @@
 """
 PostgreSQL Database Abstraction Layer with Connection Pooling.
 
-Professional data layer for the three-tier architecture:
+Professional data layer for the two-tier architecture:
 - PostgreSQL: Crop lifecycle, clients, operational queries, BI
 - InfluxDB: Real-time sensor time-series (handled separately)
-- Redis: Latest readings cache, dashboard refresh
 
 Author: AgriTech Hydroponics
 License: MIT
@@ -29,14 +28,6 @@ except ImportError:
     HAS_PSYCOPG2 = False
     logger.warning("psycopg2 not installed. PostgreSQL backend unavailable.")
 
-try:
-    import redis
-    HAS_REDIS = True
-except ImportError:
-    HAS_REDIS = False
-    logger.warning("redis not installed. Redis caching unavailable.")
-
-
 def _json_serial(obj):
     """JSON serializer for objects not serializable by default."""
     if isinstance(obj, (datetime, date)):
@@ -46,94 +37,12 @@ def _json_serial(obj):
     raise TypeError(f"Type {type(obj)} not serializable")
 
 
-class RedisCache:
-    """Redis cache wrapper for latest sensor readings and dashboard data."""
-
-    def __init__(self):
-        self.client = None
-        self.available = False
-        self._connect()
-
-    def _connect(self):
-        if not HAS_REDIS:
-            return
-        try:
-            host = os.getenv('REDIS_HOST', 'localhost')
-            port = int(os.getenv('REDIS_PORT', '6379'))
-            self.client = redis.Redis(host=host, port=port, decode_responses=True)
-            self.client.ping()
-            self.available = True
-            logger.info(f"Redis connected at {host}:{port}")
-        except Exception as e:
-            logger.warning(f"Redis not available: {e}")
-            self.available = False
-
-    def set_latest_reading(self, sensor_id: str, data: Dict[str, Any], ttl: int = 30):
-        """Cache latest sensor reading with TTL."""
-        if not self.available:
-            return
-        try:
-            key = f"latest:{sensor_id}"
-            self.client.setex(key, ttl, json.dumps(data, default=_json_serial))
-        except Exception as e:
-            logger.debug(f"Redis set error: {e}")
-
-    def get_latest_reading(self, sensor_id: str) -> Optional[Dict[str, Any]]:
-        """Get cached latest reading."""
-        if not self.available:
-            return None
-        try:
-            key = f"latest:{sensor_id}"
-            data = self.client.get(key)
-            return json.loads(data) if data else None
-        except Exception as e:
-            logger.debug(f"Redis get error: {e}")
-            return None
-
-    def get_all_latest_readings(self) -> Dict[str, Any]:
-        """Get all cached latest readings."""
-        if not self.available:
-            return {}
-        try:
-            keys = self.client.keys("latest:*")
-            result = {}
-            for key in keys:
-                sensor_id = key.replace("latest:", "")
-                data = self.client.get(key)
-                if data:
-                    result[sensor_id] = json.loads(data)
-            return result
-        except Exception as e:
-            logger.debug(f"Redis scan error: {e}")
-            return {}
-
-    def set_cached(self, key: str, data: Any, ttl: int = 60):
-        """Generic cache set."""
-        if not self.available:
-            return
-        try:
-            self.client.setex(f"cache:{key}", ttl, json.dumps(data, default=_json_serial))
-        except Exception:
-            pass
-
-    def get_cached(self, key: str) -> Optional[Any]:
-        """Generic cache get."""
-        if not self.available:
-            return None
-        try:
-            data = self.client.get(f"cache:{key}")
-            return json.loads(data) if data else None
-        except Exception:
-            return None
-
-
 class PostgresDatabase:
     """PostgreSQL database manager with connection pooling for crop lifecycle and BI."""
 
     def __init__(self):
         self.pool = None
         self.available = False
-        self.cache = RedisCache()
         self._connect()
 
     def _connect(self):
@@ -843,10 +752,6 @@ class PostgresDatabase:
 
     def get_dashboard(self) -> Dict[str, Any]:
         """Get comprehensive crop dashboard data."""
-        cached = self.cache.get_cached("dashboard")
-        if cached:
-            return cached
-
         active_crops = self.get_active_crops()
 
         stage_summary = {}
@@ -873,16 +778,13 @@ class PostgresDatabase:
                 'sensors': due_calibrations
             })
 
-        dashboard = {
+        return {
             'total_active_crops': len(active_crops),
             'crops': active_crops,
             'stage_summary': stage_summary,
             'variety_summary': variety_summary,
             'alerts': alerts
         }
-
-        self.cache.set_cached("dashboard", dashboard, ttl=30)
-        return dashboard
 
     def get_harvest_analytics(self) -> Dict[str, Any]:
         """Get harvest analytics and performance metrics."""

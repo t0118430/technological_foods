@@ -139,23 +139,6 @@ services:
         max-size: "5m"
         max-file: "2"
 
-  redis:
-    # Memory limit: Redis is lightweight
-    mem_limit: 128m
-    mem_reservation: 64m
-    cpus: 0.25
-
-    # Override volumes to use /data directory
-    volumes:
-      - /data/redis:/data
-
-    # Logging
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "5m"
-        max-file: "2"
-
 # Network configuration (inherited from main docker-compose.yml)
 networks:
   agritech-network:
@@ -199,9 +182,3 @@ volumes:
       o: bind
       device: /data/postgres
 
-  redis-data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /data/redis

@@ -21,6 +21,7 @@ SENSOR_META = {
     "ec":          {"label": "EC",           "unit": " mS/cm","min": 0.8, "max": 2.5, "abs_min": 0,   "abs_max": 5,   "emoji": "\u26a1"},
     "water_level": {"label": "Nivel Agua",   "unit": "%",     "min": 20,  "max": 100, "abs_min": 0,   "abs_max": 100, "emoji": "\U0001f6b0"},
     "light":       {"label": "Luz",          "unit": " lux",  "min": 200, "max": 8000,"abs_min": 0,   "abs_max": 10000,"emoji": "\u2600\ufe0f"},
+    "light_level": {"label": "Luz",          "unit": " lux",  "min": 200, "max": 8000,"abs_min": 0,   "abs_max": 10000,"emoji": "\u2600\ufe0f"},
 }
 
 
