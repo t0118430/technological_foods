@@ -201,7 +201,7 @@ class NtfyChannel(NotificationChannel):
             headers["Tags"] = self._TAG_MAP[severity]
         if self.token:
             headers["Authorization"] = f"Bearer {self.token}"
-        req = urllib.request.Request(endpoint, data=body.encode(), headers=headers)
+        req = urllib.request.Request(endpoint, data=body.encode('utf-8', errors='replace'), headers=headers)
         urllib.request.urlopen(req, timeout=10)
         return True
 
@@ -218,7 +218,7 @@ class NtfyChannel(NotificationChannel):
         }
         if self.token:
             headers["Authorization"] = f"Bearer {self.token}"
-        req = urllib.request.Request(endpoint, data=body.encode(), headers=headers)
+        req = urllib.request.Request(endpoint, data=body.encode('utf-8', errors='replace'), headers=headers)
         urllib.request.urlopen(req, timeout=10)
         return True
 

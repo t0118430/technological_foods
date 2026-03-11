@@ -94,7 +94,7 @@ class MultiChannelNtfy:
             headers["Authorization"] = f"Bearer {self.token}"
 
         try:
-            req = urllib.request.Request(endpoint, data=body.encode(), headers=headers)
+            req = urllib.request.Request(endpoint, data=body.encode('utf-8', errors='replace'), headers=headers)
             urllib.request.urlopen(req, timeout=10)
             logger.info(f"Sent {level.value} alert to {channel.value}: {title}")
             return True
